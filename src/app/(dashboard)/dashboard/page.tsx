@@ -12,6 +12,7 @@ import {
   Receipt,
   ArrowRight,
   ShieldAlert,
+  Coins,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -26,6 +27,10 @@ export default async function DashboardPage() {
 
   const metricsRes = await getDashboardMetrics();
   const metrics = metricsRes.success ? metricsRes.data : null;
+
+  const todayRevenue = metrics?.todaySalesTotal || 0;
+  const todayExpenses = metrics?.todayExpensesTotal || 0;
+  const todayNetProfit = todayRevenue - todayExpenses;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
@@ -55,12 +60,12 @@ export default async function DashboardPage() {
       </div>
 
       {/* Metrics Cards Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Today's Sales Total */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {/* Today's Sales Total (Revenue) */}
         <Card className="border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-slate-900 to-slate-900">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-slate-300">
-              Today&apos;s Revenue
+              Today&apos;s Revenue (Selling)
             </CardTitle>
             <div className="rounded-lg bg-amber-500/20 p-2 text-amber-400">
               <TrendingUp className="h-5 w-5" />
@@ -68,35 +73,17 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-amber-400">
-              {formatCurrency(metrics?.todaySalesTotal || 0)}
+              {formatCurrency(todayRevenue)}
             </div>
             <p className="mt-1 text-xs text-slate-400">
-              {metrics?.todaySalesCount || 0} completed transaction(s) today
+              {metrics?.todaySalesCount || 0} completed transaction(s)
             </p>
           </CardContent>
         </Card>
 
-        {/* Today's Sales Count */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-300">
-              Today&apos;s Bills
-            </CardTitle>
-            <div className="rounded-lg bg-blue-500/20 p-2 text-blue-400">
-              <ShoppingCart className="h-5 w-5" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-slate-100">
-              {metrics?.todaySalesCount || 0}
-            </div>
-            <p className="mt-1 text-xs text-slate-400">Bills issued today</p>
-          </CardContent>
-        </Card>
-
-        {/* Today Expenses (Admin Only) */}
+        {/* Today's Expenses (Admin Only) */}
         {isAdmin ? (
-          <Card>
+          <Card className="border-rose-500/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-slate-300">
                 Today&apos;s Expenses
@@ -106,8 +93,8 @@ export default async function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-slate-100">
-                {formatCurrency(metrics?.todayExpensesTotal || 0)}
+              <div className="text-2xl font-bold text-rose-400">
+                {formatCurrency(todayExpenses)}
               </div>
               <p className="mt-1 text-xs text-slate-400">Logged operating expenses</p>
             </CardContent>
@@ -130,6 +117,60 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
         )}
+
+        {/* Today's Net Profit (Selling Revenue - Expenses) */}
+        {isAdmin && (
+          <Card
+            className={
+              todayNetProfit >= 0
+                ? "border-emerald-500/40 bg-gradient-to-br from-emerald-500/10 via-slate-900 to-slate-900"
+                : "border-rose-500/40 bg-gradient-to-br from-rose-500/10 via-slate-900 to-slate-900"
+            }
+          >
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-slate-300">
+                Today&apos;s Net Profit
+              </CardTitle>
+              <div
+                className={`rounded-lg p-2 ${
+                  todayNetProfit >= 0
+                    ? "bg-emerald-500/20 text-emerald-400"
+                    : "bg-rose-500/20 text-rose-400"
+                }`}
+              >
+                <Coins className="h-5 w-5" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div
+                className={`text-2xl font-bold ${
+                  todayNetProfit >= 0 ? "text-emerald-400" : "text-rose-400"
+                }`}
+              >
+                {formatCurrency(todayNetProfit)}
+              </div>
+              <p className="mt-1 text-xs text-slate-400">Selling − Expenses</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Today's Sales Count */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-slate-300">
+              Today&apos;s Bills
+            </CardTitle>
+            <div className="rounded-lg bg-blue-500/20 p-2 text-blue-400">
+              <ShoppingCart className="h-5 w-5" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-slate-100">
+              {metrics?.todaySalesCount || 0}
+            </div>
+            <p className="mt-1 text-xs text-slate-400">Bills issued today</p>
+          </CardContent>
+        </Card>
 
         {/* Low Stock Alerts */}
         <Card className={metrics?.lowStockCount ? "border-rose-500/40 bg-rose-950/10" : ""}>
