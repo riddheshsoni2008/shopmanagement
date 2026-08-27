@@ -7,7 +7,11 @@ interface MongooseCache {
   promise: Promise<typeof mongoose> | null;
 }
 
-let cached: MongooseCache = (global as any)._mongoose || { conn: null, promise: null };
+let cached: MongooseCache = (global as any)._mongoose;
+
+if (!cached) {
+  cached = (global as any)._mongoose = { conn: null, promise: null };
+}
 
 export async function connectDB() {
   if (cached.conn) {
@@ -17,6 +21,9 @@ export async function connectDB() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((m: any) => {
@@ -31,6 +38,5 @@ export async function connectDB() {
     throw e;
   }
 
-  (global as any)._mongoose = cached;
   return cached.conn;
 }

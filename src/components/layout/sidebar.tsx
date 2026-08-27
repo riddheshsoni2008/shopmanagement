@@ -117,7 +117,7 @@ export function Sidebar({ user }: SidebarProps) {
           const Icon = item.icon;
           const isActive =
             pathname === item.href ||
-            (item.href !== "/dashboard" && pathname.startsWith(item.href));
+            (item.href === "/stock" && pathname.startsWith("/stock/"));
 
           return (
             <Link
