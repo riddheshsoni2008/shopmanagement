@@ -204,7 +204,7 @@ export default async function DashboardPage() {
                       <TableCell className="font-bold text-amber-400">
                         {formatCurrency(sale.totalAmount)}
                       </TableCell>
-                      <TableCell className="text-xs text-slate-400">
+                      <TableCell className="text-xs text-slate-400" suppressHydrationWarning>
                         {formatDateTime(sale.createdAt)}
                       </TableCell>
                     </TableRow>

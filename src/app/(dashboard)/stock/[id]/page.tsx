@@ -105,7 +105,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 <span className="text-xs text-slate-400 flex items-center gap-1">
                   <Calendar className="h-3.5 w-3.5" /> Date Added
                 </span>
-                <p className="text-sm font-semibold text-slate-200">
+                <p className="text-sm font-semibold text-slate-200" suppressHydrationWarning>
                   {formatDateTime(product.createdAt)}
                 </p>
               </div>

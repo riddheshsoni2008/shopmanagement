@@ -81,7 +81,7 @@ export function InvoiceModal({ isOpen, onClose, sale, shopName = "Aura Luxury Je
               <p className="text-xs font-mono font-bold text-slate-300 mt-2">
                 INV #{sale._id.slice(-8).toUpperCase()}
               </p>
-              <p className="text-xs text-slate-400">{formatDateTime(sale.createdAt)}</p>
+              <p className="text-xs text-slate-400" suppressHydrationWarning>{formatDateTime(sale.createdAt)}</p>
             </div>
           </div>
 

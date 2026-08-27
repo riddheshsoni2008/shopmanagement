@@ -178,8 +178,8 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
             </div>
 
             <div className="pt-2 text-xs text-slate-400 flex items-center justify-between border-t border-slate-800">
-              <span>
-                Last Updated: <strong className="text-slate-200">{formatDateTime(initialRates.updatedAt)}</strong>
+              <span suppressHydrationWarning>
+                Last Updated: <strong className="text-slate-200" suppressHydrationWarning>{formatDateTime(initialRates.updatedAt)}</strong>
               </span>
               {initialRates.updatedBy && (
                 <span>

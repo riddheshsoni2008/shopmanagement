@@ -187,7 +187,7 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
                   {formatCurrency(sale.totalAmount)}
                 </TableCell>
 
-                <TableCell className="text-xs text-slate-400">
+                <TableCell className="text-xs text-slate-400" suppressHydrationWarning>
                   {formatDateTime(sale.createdAt)}
                 </TableCell>
 
