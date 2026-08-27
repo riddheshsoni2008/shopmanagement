@@ -82,6 +82,7 @@ export function Navbar({ user, rates }: NavbarProps) {
         isOpen={mobileOpen}
         onClose={() => setMobileOpen(false)}
         user={user}
+        shopName={rates?.shopName}
       />
     </>
   );

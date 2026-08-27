@@ -26,9 +26,10 @@ interface MobileNavProps {
     email?: string | null;
     role?: "admin" | "staff";
   };
+  shopName?: string;
 }
 
-export function MobileNav({ isOpen, onClose, user }: MobileNavProps) {
+export function MobileNav({ isOpen, onClose, user, shopName }: MobileNavProps) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -71,11 +72,11 @@ export function MobileNav({ isOpen, onClose, user }: MobileNavProps) {
       {/* Drawer Panel */}
       <div className="relative z-10 flex w-4/5 max-w-xs flex-col bg-slate-950 p-6 shadow-2xl border-r border-slate-800">
         <div className="flex items-center justify-between pb-6 border-b border-slate-800">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500 text-slate-950 font-bold">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-slate-950 font-bold">
               <Gem className="h-5 w-5" />
             </div>
-            <span className="font-serif font-bold text-amber-400">Aura Jewelers</span>
+            <span className="font-serif font-bold text-amber-400 truncate">{shopName || "Aura Jewelers"}</span>
           </div>
           <button
             onClick={onClose}

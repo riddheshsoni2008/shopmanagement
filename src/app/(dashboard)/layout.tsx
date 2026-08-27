@@ -23,7 +23,7 @@ export default async function DashboardLayout({
     <div className="flex min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-amber-500 selection:text-slate-950">
       <ToastProvider />
       {/* Sidebar for Desktop */}
-      <Sidebar user={session.user} />
+      <Sidebar user={session.user} shopName={rates?.shopName} />
 
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-x-hidden">

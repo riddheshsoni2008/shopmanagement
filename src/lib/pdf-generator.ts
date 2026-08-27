@@ -145,7 +145,7 @@ export function generateInvoicePDF(data: InvoicePDFData) {
   doc.setFontSize(8);
   doc.setFont("helvetica", "italic");
   doc.setTextColor(148, 163, 184);
-  doc.text("Thank you for choosing Aura Luxury Jewelers! All sales are subject to terms & purity verification.", 105, 280, { align: "center" });
+  doc.text(`Thank you for choosing ${data.shopName}! All sales are subject to terms & purity verification.`, 105, 280, { align: "center" });
 
   // Save / Download PDF
   doc.save(`Invoice_${data.customerName.replace(/\s+/g, "_")}_${data.invoiceId.slice(-6)}.pdf`);

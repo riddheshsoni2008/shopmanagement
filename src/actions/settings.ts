@@ -116,8 +116,10 @@ export async function updateRateSettings(
     cachedRateData = null;
     lastCacheTime = 0;
 
+    revalidatePath("/", "layout");
     revalidatePath("/settings");
     revalidatePath("/sales/new");
+    revalidatePath("/sales");
     revalidatePath("/dashboard");
 
     return { success: true, data: "Rate settings updated successfully" };

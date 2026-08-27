@@ -24,9 +24,10 @@ interface SidebarProps {
     email?: string | null;
     role?: "admin" | "staff";
   };
+  shopName?: string;
 }
 
-export function Sidebar({ user }: SidebarProps) {
+export function Sidebar({ user, shopName }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const isAdmin = user.role === "admin";
@@ -95,12 +96,13 @@ export function Sidebar({ user }: SidebarProps) {
     <aside className="hidden md:flex h-screen w-64 flex-col border-r border-slate-800 bg-slate-950/95 text-slate-100 backdrop-blur-xl sticky top-0">
       {/* Brand Header */}
       <div className="flex h-16 items-center gap-3 px-6 border-b border-slate-800/80">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 shadow-lg shadow-amber-500/20">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 shadow-lg shadow-amber-500/20">
           <Gem className="h-6 w-6" />
         </div>
-        <div>
-          <h1 className="font-serif font-bold text-lg text-amber-400 leading-none flex items-center gap-1">
-            Aura Jewelry <Sparkles className="h-3 w-3 text-amber-300 animate-pulse" />
+        <div className="overflow-hidden">
+          <h1 className="font-serif font-bold text-lg text-amber-400 leading-none flex items-center gap-1 truncate">
+            <span className="truncate">{shopName || "Aura Jewelry"}</span>
+            <Sparkles className="h-3 w-3 text-amber-300 animate-pulse shrink-0" />
           </h1>
           <span className="text-[10px] text-slate-400 uppercase tracking-widest font-medium">
             Shop Manager
