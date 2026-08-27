@@ -6,18 +6,23 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { rateSchema, RateInput } from "@/lib/validators/rate";
 import { updateRateSettings, RateSettingsData } from "@/actions/settings";
 import { toast } from "sonner";
-import { formatCurrency, formatDateTime } from "@/lib/utils";
+import { formatDateTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Settings, TrendingUp, Gem, Store, Loader2, Save } from "lucide-react";
+import { TrendingUp, Store, User as UserIcon, Loader2, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface SettingsFormProps {
   initialRates: RateSettingsData;
+  currentUser?: {
+    name?: string | null;
+    email?: string | null;
+    role?: "admin" | "staff";
+  };
 }
 
-export function SettingsForm({ initialRates }: SettingsFormProps) {
+export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -32,6 +37,7 @@ export function SettingsForm({ initialRates }: SettingsFormProps) {
       goldRate18k: initialRates.goldRate18k,
       silverRate: initialRates.silverRate,
       shopName: initialRates.shopName,
+      ownerName: currentUser?.name || "",
     },
   });
 
@@ -40,8 +46,8 @@ export function SettingsForm({ initialRates }: SettingsFormProps) {
     try {
       const res = await updateRateSettings(values);
       if (res.success) {
-        toast.success("Live metal rates & shop settings updated!");
-        router.refresh();
+        toast.success("Live rates & shop settings updated successfully!");
+        window.location.reload();
       } else {
         toast.error(res.error);
       }
@@ -55,6 +61,7 @@ export function SettingsForm({ initialRates }: SettingsFormProps) {
   return (
     <div className="space-y-8">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-3xl">
+        {/* Metal Rates Card */}
         <Card className="border-amber-500/30">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -129,27 +136,45 @@ export function SettingsForm({ initialRates }: SettingsFormProps) {
           </CardContent>
         </Card>
 
-        {/* Shop Branding Card */}
+        {/* Shop Branding & Owner Card */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Store className="h-5 w-5 text-amber-400" /> Store Branding & Header Details
+              <Store className="h-5 w-5 text-amber-400" /> Store Branding & Admin Account Details
             </CardTitle>
-            <CardDescription>Legal shop name displayed on customer bills & receipts</CardDescription>
+            <CardDescription>
+              Legal shop name and admin profile name displayed across the system
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300">
-                Official Shop Business Name *
-              </label>
-              <Input
-                placeholder="Aura Luxury Jewelers"
-                {...register("shopName")}
-                disabled={isSubmitting}
-              />
-              {errors.shopName && (
-                <p className="mt-1 text-xs text-rose-400">{errors.shopName.message}</p>
-              )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300">
+                  Official Shop Business Name *
+                </label>
+                <Input
+                  placeholder="Aura Luxury Jewelers"
+                  {...register("shopName")}
+                  disabled={isSubmitting}
+                />
+                {errors.shopName && (
+                  <p className="mt-1 text-xs text-rose-400">{errors.shopName.message}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300">
+                  Admin / Owner Account Name
+                </label>
+                <Input
+                  placeholder="Aura Admin"
+                  {...register("ownerName")}
+                  disabled={isSubmitting}
+                />
+                {errors.ownerName && (
+                  <p className="mt-1 text-xs text-rose-400">{errors.ownerName.message}</p>
+                )}
+              </div>
             </div>
 
             <div className="pt-2 text-xs text-slate-400 flex items-center justify-between border-t border-slate-800">

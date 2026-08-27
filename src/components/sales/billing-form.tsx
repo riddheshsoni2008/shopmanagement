@@ -106,7 +106,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     const qty = 1;
     const weight = selectedProduct.weightPerPiece || 1;
     const making = 1200;
-    const lineTotal = weight * ratePerGram + making;
+    const lineTotal = qty * (weight * ratePerGram + making);
 
     setValue(`items.${index}.productId`, selectedProduct._id);
     setValue(`items.${index}.name`, selectedProduct.name);
@@ -117,14 +117,15 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     setValue(`items.${index}.lineTotal`, lineTotal);
   };
 
-  // Re-calculate line item total whenever weight, rate, or making charges change
+  // Re-calculate line item total whenever qty, weight, rate, or making charges change
   const updateLineTotal = (index: number) => {
     const item = watchItems[index];
     if (!item) return;
-    const w = Number(item.weight) || 0;
-    const p = Number(item.pricePerGram) || 0;
-    const m = Number(item.makingCharge) || 0;
-    const total = w * p + m;
+    const q = Math.max(1, Number(item.qty) || 1);
+    const w = Math.max(0, Number(item.weight) || 0);
+    const p = Math.max(0, Number(item.pricePerGram) || 0);
+    const m = Math.max(0, Number(item.makingCharge) || 0);
+    const total = q * (w * p + m);
     setValue(`items.${index}.lineTotal`, Math.max(0, total));
   };
 
@@ -323,7 +324,10 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                           </label>
                           <Input
                             type="number"
+                            min="1"
+                            step="1"
                             {...register(`items.${index}.qty`, {
+                              valueAsNumber: true,
                               onChange: () => updateLineTotal(index),
                             })}
                             disabled={isSubmitting}
@@ -337,8 +341,10 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                           </label>
                           <Input
                             type="number"
+                            min="0.01"
                             step="0.01"
                             {...register(`items.${index}.weight`, {
+                              valueAsNumber: true,
                               onChange: () => updateLineTotal(index),
                             })}
                             disabled={isSubmitting}
@@ -352,8 +358,10 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                           </label>
                           <Input
                             type="number"
+                            min="0"
                             step="0.01"
                             {...register(`items.${index}.pricePerGram`, {
+                              valueAsNumber: true,
                               onChange: () => updateLineTotal(index),
                             })}
                             disabled={isSubmitting}
@@ -367,8 +375,10 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                           </label>
                           <Input
                             type="number"
+                            min="0"
                             step="0.01"
                             {...register(`items.${index}.makingCharge`, {
+                              valueAsNumber: true,
                               onChange: () => updateLineTotal(index),
                             })}
                             disabled={isSubmitting}

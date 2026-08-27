@@ -33,7 +33,7 @@ export default async function SettingsPage() {
         </p>
       </div>
 
-      <SettingsForm initialRates={res.data} />
+      <SettingsForm initialRates={res.data} currentUser={session?.user} />
     </div>
   );
 }

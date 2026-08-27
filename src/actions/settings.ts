@@ -2,6 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
+import { User } from "@/models/User";
 import { Rate } from "@/models/Rate";
 import { rateSchema, RateInput } from "@/lib/validators/rate";
 import { ActionResult } from "@/actions/auth";
@@ -107,9 +108,16 @@ export async function updateRateSettings(
       await existingRate.save();
     } else {
       await Rate.create({
-        ...validated.data,
+        goldRate22k: validated.data.goldRate22k,
+        goldRate18k: validated.data.goldRate18k,
+        silverRate: validated.data.silverRate,
+        shopName: validated.data.shopName,
         updatedBy: new mongoose.Types.ObjectId(userId),
       });
+    }
+
+    if (validated.data.ownerName && validated.data.ownerName.trim()) {
+      await User.findByIdAndUpdate(userId, { name: validated.data.ownerName.trim() });
     }
 
     // Invalidate memory cache on rate updates
