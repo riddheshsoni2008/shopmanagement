@@ -20,12 +20,6 @@ export interface RateSettingsData {
 
 export async function getRateSettings(): Promise<ActionResult<RateSettingsData>> {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return { success: false, error: "Unauthorized access" };
-    }
-    const userId = session.user.id;
-
     await connectDB();
 
     let rate = await Rate.findOne().populate("updatedBy", "name email").lean();
@@ -37,7 +31,6 @@ export async function getRateSettings(): Promise<ActionResult<RateSettingsData>>
         goldRate18k: 5900,
         silverRate: 85,
         shopName: "Aura Luxury Jewelers",
-        updatedBy: new mongoose.Types.ObjectId(userId),
       });
       rate = await Rate.findOne().populate("updatedBy", "name email").lean();
     }
