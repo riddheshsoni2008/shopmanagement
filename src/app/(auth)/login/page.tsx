@@ -33,8 +33,7 @@ export default function LoginPage() {
       const res = await loginUser(values);
       if (res.success) {
         toast.success("Welcome back! Authentication successful.");
-        router.push("/dashboard");
-        router.refresh();
+        window.location.href = "/dashboard";
       } else {
         toast.error(res.error || "Invalid credentials");
       }
