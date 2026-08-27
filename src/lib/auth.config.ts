@@ -1,6 +1,8 @@
 import type { NextAuthConfig } from "next-auth";
 
 export const authConfig: NextAuthConfig = {
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "jewelry-shop-super-secret-key-32-chars-min",
+  trustHost: true,
   pages: {
     signIn: "/login",
   },
