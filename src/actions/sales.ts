@@ -23,6 +23,7 @@ export async function createSale(input: SaleInput): Promise<ActionResult<string>
     if (!session?.user?.id) {
       return { success: false, error: "Unauthorized access" };
     }
+    const userId = session.user.id;
 
     const validated = saleSchema.safeParse(input);
     if (!validated.success) {
@@ -98,7 +99,7 @@ export async function createSale(input: SaleInput): Promise<ActionResult<string>
               customerPhone,
               discount,
               totalAmount,
-              soldBy: new mongoose.Types.ObjectId(session.user.id),
+              soldBy: new mongoose.Types.ObjectId(userId),
             },
           ],
           { session: dbSession }
@@ -129,7 +130,7 @@ export async function createSale(input: SaleInput): Promise<ActionResult<string>
             customerPhone,
             discount,
             totalAmount,
-            soldBy: new mongoose.Types.ObjectId(session.user.id),
+            soldBy: new mongoose.Types.ObjectId(userId),
           });
 
           saleIdStr = createdSale._id.toString();
