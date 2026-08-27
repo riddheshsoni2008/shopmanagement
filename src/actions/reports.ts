@@ -1,0 +1,255 @@
+"use server";
+
+import { auth } from "@/lib/auth";
+import { connectDB } from "@/lib/db";
+import { Sale } from "@/models/Sale";
+import { Expense } from "@/models/Expense";
+import { Product } from "@/models/Product";
+import { ActionResult } from "@/actions/auth";
+
+export interface DashboardMetrics {
+  todaySalesTotal: number;
+  todaySalesCount: number;
+  todayExpensesTotal: number;
+  totalProductsCount: number;
+  lowStockCount: number;
+  recentSales: Array<{
+    _id: string;
+    customerName: string;
+    totalAmount: number;
+    itemsCount: number;
+    createdAt: string;
+  }>;
+  lowStockProducts: Array<{
+    _id: string;
+    name: string;
+    category: string;
+    metal: string;
+    quantity: number;
+    lowStockThreshold: number;
+  }>;
+}
+
+export interface ReportData {
+  startDate: string;
+  endDate: string;
+  totalRevenue: number;
+  totalSalesCount: number;
+  totalExpenses: number;
+  netProfit: number;
+  salesTrend: Array<{
+    date: string;
+    revenue: number;
+    salesCount: number;
+  }>;
+  expensesByCategory: Array<{
+    category: string;
+    amount: number;
+  }>;
+  categorySalesDistribution: Array<{
+    category: string;
+    totalRevenue: number;
+  }>;
+}
+
+export async function getDashboardMetrics(): Promise<ActionResult<DashboardMetrics>> {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return { success: false, error: "Unauthorized access" };
+    }
+
+    await connectDB();
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    // Mongoose aggregations for Today's totals
+    const [todaySalesAgg, todayExpensesAgg, totalProductsCount, lowStockProducts, recentSales] =
+      await Promise.all([
+        Sale.aggregate([
+          { $match: { createdAt: { $gte: startOfToday, $lte: endOfToday } } },
+          {
+            $group: {
+              _id: null,
+              totalAmount: { $sum: "$totalAmount" },
+              count: { $sum: 1 },
+            },
+          },
+        ]),
+        Expense.aggregate([
+          { $match: { date: { $gte: startOfToday, $lte: endOfToday } } },
+          {
+            $group: {
+              _id: null,
+              totalAmount: { $sum: "$amount" },
+            },
+          },
+        ]),
+        Product.countDocuments(),
+        Product.find({ $expr: { $lte: ["$quantity", "$lowStockThreshold"] } })
+          .select("name category metal quantity lowStockThreshold")
+          .limit(10)
+          .lean(),
+        Sale.find()
+          .sort({ createdAt: -1 })
+          .limit(5)
+          .select("customerName totalAmount items createdAt")
+          .lean(),
+      ]);
+
+    const todaySalesTotal = todaySalesAgg[0]?.totalAmount || 0;
+    const todaySalesCount = todaySalesAgg[0]?.count || 0;
+    const todayExpensesTotal = todayExpensesAgg[0]?.totalAmount || 0;
+
+    const formattedRecentSales = recentSales.map((s: any) => ({
+      _id: s._id.toString(),
+      customerName: s.customerName,
+      totalAmount: s.totalAmount,
+      itemsCount: s.items?.length || 0,
+      createdAt: new Date(s.createdAt).toISOString(),
+    }));
+
+    const formattedLowStock = lowStockProducts.map((p: any) => ({
+      _id: p._id.toString(),
+      name: p.name,
+      category: p.category,
+      metal: p.metal,
+      quantity: p.quantity,
+      lowStockThreshold: p.lowStockThreshold,
+    }));
+
+    return {
+      success: true,
+      data: {
+        todaySalesTotal,
+        todaySalesCount,
+        todayExpensesTotal,
+        totalProductsCount,
+        lowStockCount: formattedLowStock.length,
+        recentSales: formattedRecentSales,
+        lowStockProducts: formattedLowStock,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching dashboard metrics:", error);
+    return { success: false, error: "Failed to load dashboard metrics" };
+  }
+}
+
+export async function getReportData(
+  startDateStr?: string,
+  endDateStr?: string
+): Promise<ActionResult<ReportData>> {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return { success: false, error: "Unauthorized access" };
+    }
+
+    const role = (session.user as any).role;
+    if (role !== "admin") {
+      return { success: false, error: "Access denied. Admin permissions required." };
+    }
+
+    await connectDB();
+
+    // Default to last 30 days if no range provided
+    const now = new Date();
+    const defaultStart = new Date();
+    defaultStart.setDate(now.getDate() - 30);
+    defaultStart.setHours(0, 0, 0, 0);
+
+    const startDate = startDateStr ? new Date(startDateStr) : defaultStart;
+    const endDate = endDateStr ? new Date(endDateStr) : now;
+    endDate.setHours(23, 59, 59, 999);
+
+    // Mongoose Aggregation 1: Sales Summary & Daily Trend Pipeline
+    const salesTrendAgg = await Sale.aggregate([
+      { $match: { createdAt: { $gte: startDate, $lte: endDate } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          revenue: { $sum: "$totalAmount" },
+          salesCount: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // Mongoose Aggregation 2: Category Breakdown from embedded sale items
+    const categorySalesAgg = await Sale.aggregate([
+      { $match: { createdAt: { $gte: startDate, $lte: endDate } } },
+      { $unwind: "$items" },
+      {
+        $group: {
+          _id: "$items.name",
+          totalRevenue: { $sum: "$items.lineTotal" },
+        },
+      },
+      { $sort: { totalRevenue: -1 } },
+      { $limit: 10 },
+    ]);
+
+    // Mongoose Aggregation 3: Expenses By Category Pipeline
+    const expensesAgg = await Expense.aggregate([
+      { $match: { date: { $gte: startDate, $lte: endDate } } },
+      {
+        $group: {
+          _id: "$category",
+          amount: { $sum: "$amount" },
+        },
+      },
+      { $sort: { amount: -1 } },
+    ]);
+
+    let totalRevenue = 0;
+    let totalSalesCount = 0;
+    const salesTrend = salesTrendAgg.map((item) => {
+      totalRevenue += item.revenue;
+      totalSalesCount += item.salesCount;
+      return {
+        date: item._id,
+        revenue: item.revenue,
+        salesCount: item.salesCount,
+      };
+    });
+
+    let totalExpenses = 0;
+    const expensesByCategory = expensesAgg.map((item) => {
+      totalExpenses += item.amount;
+      return {
+        category: item._id,
+        amount: item.amount,
+      };
+    });
+
+    const categorySalesDistribution = categorySalesAgg.map((item) => ({
+      category: item._id,
+      totalRevenue: item.totalRevenue,
+    }));
+
+    const netProfit = totalRevenue - totalExpenses;
+
+    return {
+      success: true,
+      data: {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        totalRevenue,
+        totalSalesCount,
+        totalExpenses,
+        netProfit,
+        salesTrend,
+        expensesByCategory,
+        categorySalesDistribution,
+      },
+    };
+  } catch (error) {
+    console.error("Error in getReportData aggregation:", error);
+    return { success: false, error: "Failed to generate report analytics" };
+  }
+}
