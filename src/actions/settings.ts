@@ -18,8 +18,18 @@ export interface RateSettingsData {
   updatedBy?: { name: string; email: string };
 }
 
+// In-Memory Serverless Caching for Shop Rates to eliminate Layout DB Latency
+let cachedRateData: RateSettingsData | null = null;
+let lastCacheTime = 0;
+const CACHE_TTL_MS = 60000; // 60 seconds memory cache
+
 export async function getRateSettings(): Promise<ActionResult<RateSettingsData>> {
   try {
+    const now = Date.now();
+    if (cachedRateData && now - lastCacheTime < CACHE_TTL_MS) {
+      return { success: true, data: cachedRateData };
+    }
+
     await connectDB();
 
     let rate = await Rate.findOne().populate("updatedBy", "name email").lean();
@@ -50,6 +60,9 @@ export async function getRateSettings(): Promise<ActionResult<RateSettingsData>>
         ? { name: (rate.updatedBy as any).name, email: (rate.updatedBy as any).email }
         : undefined,
     };
+
+    cachedRateData = formatted;
+    lastCacheTime = now;
 
     return { success: true, data: formatted };
   } catch (error) {
@@ -98,6 +111,10 @@ export async function updateRateSettings(
         updatedBy: new mongoose.Types.ObjectId(userId),
       });
     }
+
+    // Invalidate memory cache on rate updates
+    cachedRateData = null;
+    lastCacheTime = 0;
 
     revalidatePath("/settings");
     revalidatePath("/sales/new");
