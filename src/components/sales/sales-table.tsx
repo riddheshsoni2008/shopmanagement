@@ -158,6 +158,7 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
               <TableHead>Phone</TableHead>
               <TableHead>Items</TableHead>
               <TableHead>Total Amount</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Date & Time</TableHead>
               <TableHead>Billed By</TableHead>
               <TableHead className="text-right">Invoice</TableHead>
@@ -185,6 +186,16 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
 
                 <TableCell className="font-bold text-amber-400">
                   {formatCurrency(sale.totalAmount)}
+                </TableCell>
+
+                <TableCell>
+                  {sale.paymentStatus === "PENDING" ? (
+                    <Badge className="bg-amber-500/20 text-amber-400 border border-amber-500/30">PENDING</Badge>
+                  ) : sale.paymentStatus === "PARTIAL" ? (
+                    <Badge className="bg-orange-500/20 text-orange-400 border border-orange-500/30">PARTIAL</Badge>
+                  ) : (
+                    <Badge className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">PAID</Badge>
+                  )}
                 </TableCell>
 
                 <TableCell className="text-xs text-slate-400" suppressHydrationWarning>

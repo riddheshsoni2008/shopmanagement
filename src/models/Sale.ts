@@ -17,6 +17,8 @@ export interface ISale extends Document {
   customerPhone: string;
   discount: number;
   totalAmount: number;
+  paymentStatus: "PAID" | "PENDING" | "PARTIAL";
+  paymentMethod: "Cash" | "UPI / GPay" | "Card" | "Bank Transfer";
   soldBy: mongoose.Types.ObjectId;
   createdAt: Date;
 }
@@ -38,6 +40,16 @@ const SaleSchema = new Schema<ISale>(
     customerPhone: { type: String, required: true, trim: true },
     discount: { type: Number, required: true, default: 0, min: 0 },
     totalAmount: { type: Number, required: true, min: 0 },
+    paymentStatus: {
+      type: String,
+      enum: ["PAID", "PENDING", "PARTIAL"],
+      default: "PAID",
+    },
+    paymentMethod: {
+      type: String,
+      enum: ["Cash", "UPI / GPay", "Card", "Bank Transfer"],
+      default: "Cash",
+    },
     soldBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },
   {

@@ -33,7 +33,7 @@ export async function createSale(input: SaleInput): Promise<ActionResult<string>
       };
     }
 
-    const { customerName, customerPhone, discount, items } = validated.data;
+    const { customerName, customerPhone, discount, paymentStatus, paymentMethod, items } = validated.data;
 
     await connectDB();
 
@@ -99,6 +99,8 @@ export async function createSale(input: SaleInput): Promise<ActionResult<string>
               customerPhone,
               discount,
               totalAmount,
+              paymentStatus: paymentStatus || "PAID",
+              paymentMethod: paymentMethod || "Cash",
               soldBy: new mongoose.Types.ObjectId(userId),
             },
           ],
@@ -130,6 +132,8 @@ export async function createSale(input: SaleInput): Promise<ActionResult<string>
             customerPhone,
             discount,
             totalAmount,
+            paymentStatus: paymentStatus || "PAID",
+            paymentMethod: paymentMethod || "Cash",
             soldBy: new mongoose.Types.ObjectId(userId),
           });
 
@@ -215,6 +219,8 @@ export async function getSales(
       customerPhone: s.customerPhone,
       discount: s.discount,
       totalAmount: s.totalAmount,
+      paymentStatus: s.paymentStatus || "PAID",
+      paymentMethod: s.paymentMethod || "Cash",
       itemsCount: s.items?.length || 0,
       items: s.items.map((i: any) => ({
         product: i.product?.toString() || "",
@@ -264,6 +270,8 @@ export async function getSaleById(id: string): Promise<ActionResult<any>> {
       customerPhone: sale.customerPhone,
       discount: sale.discount,
       totalAmount: sale.totalAmount,
+      paymentStatus: (sale as any).paymentStatus || "PAID",
+      paymentMethod: (sale as any).paymentMethod || "Cash",
       items: sale.items.map((i: any) => ({
         product: i.product?.toString() || "",
         name: i.name,

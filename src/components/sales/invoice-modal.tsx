@@ -24,6 +24,8 @@ interface InvoiceModalProps {
     }>;
     discount: number;
     totalAmount: number;
+    paymentStatus?: string;
+    paymentMethod?: string;
     soldBy?: { name: string };
     createdAt: string;
   } | null;
@@ -40,6 +42,8 @@ export function InvoiceModal({ isOpen, onClose, sale, shopName = "Aura Luxury Je
     customerPhone: sale.customerPhone,
     createdAt: sale.createdAt,
     soldBy: sale.soldBy?.name || "Staff",
+    paymentStatus: sale.paymentStatus || "PAID",
+    paymentMethod: sale.paymentMethod || "Cash",
     items: sale.items,
     discount: sale.discount,
     totalAmount: sale.totalAmount,
@@ -55,6 +59,9 @@ export function InvoiceModal({ isOpen, onClose, sale, shopName = "Aura Luxury Je
 
   let subtotal = 0;
   sale.items.forEach((item) => (subtotal += item.lineTotal));
+
+  const pStatus = sale.paymentStatus || "PAID";
+  const pMethod = sale.paymentMethod || "Cash";
 
   return (
     <Dialog
@@ -75,9 +82,21 @@ export function InvoiceModal({ isOpen, onClose, sale, shopName = "Aura Luxury Je
               <p className="text-xs text-slate-400 mt-0.5">Premium Fine Jewelry & Tax Invoice</p>
             </div>
             <div className="text-right">
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-400 border border-emerald-500/30">
-                <CheckCircle className="h-3.5 w-3.5" /> PAID RECEIPT
-              </span>
+              {pStatus === "PAID" && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-400 border border-emerald-500/30">
+                  <CheckCircle className="h-3.5 w-3.5" /> PAID RECEIPT
+                </span>
+              )}
+              {pStatus === "PENDING" && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-400 border border-amber-500/30">
+                  PENDING PAYMENT
+                </span>
+              )}
+              {pStatus === "PARTIAL" && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/10 px-2.5 py-0.5 text-xs font-semibold text-orange-400 border border-orange-500/30">
+                  PARTIAL PAYMENT
+                </span>
+              )}
               <p className="text-xs font-mono font-bold text-slate-300 mt-2">
                 INV #{sale._id.slice(-8).toUpperCase()}
               </p>
@@ -99,7 +118,7 @@ export function InvoiceModal({ isOpen, onClose, sale, shopName = "Aura Luxury Je
                 Issued By Staff
               </span>
               <p className="text-sm font-bold text-slate-100">{sale.soldBy?.name || "Store Cashier"}</p>
-              <p className="text-slate-300 mt-0.5">Status: Settlement Completed</p>
+              <p className="text-slate-300 mt-0.5">Mode: {pMethod} • Status: {pStatus}</p>
             </div>
           </div>
 
