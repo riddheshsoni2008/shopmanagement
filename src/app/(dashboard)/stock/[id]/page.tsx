@@ -19,7 +19,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
   const { id } = resolvedParams;
 
   const session = await auth();
-  const isAdmin = session?.user?.role === "admin";
+  const isAdmin = (session?.user as any)?.role === "admin";
 
   const res = await getProductById(id);
   if (!res.success || !res.data) {

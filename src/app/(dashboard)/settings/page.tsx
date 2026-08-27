@@ -9,7 +9,7 @@ export const revalidate = 0; // SSR live rendering
 export default async function SettingsPage() {
   const session = await auth();
 
-  if (session?.user?.role !== "admin") {
+  if ((session?.user as any)?.role !== "admin") {
     redirect("/dashboard");
   }
 

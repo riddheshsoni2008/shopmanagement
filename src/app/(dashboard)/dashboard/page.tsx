@@ -22,7 +22,7 @@ export const revalidate = 0; // SSR live rendering
 
 export default async function DashboardPage() {
   const session = await auth();
-  const isAdmin = session?.user?.role === "admin";
+  const isAdmin = (session?.user as any)?.role === "admin";
 
   const metricsRes = await getDashboardMetrics();
   const metrics = metricsRes.success ? metricsRes.data : null;

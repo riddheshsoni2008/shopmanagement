@@ -7,7 +7,7 @@ export const revalidate = 0; // SSR live rendering
 
 export default async function StockPage() {
   const session = await auth();
-  const userRole = session?.user?.role || "staff";
+  const userRole = (session?.user as any)?.role || "staff";
 
   const result = await getProducts({ limit: 100 });
   const initialData = result.success
