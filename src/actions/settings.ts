@@ -21,9 +21,10 @@ export interface RateSettingsData {
 export async function getRateSettings(): Promise<ActionResult<RateSettingsData>> {
   try {
     const session = await auth();
-    if (!session?.user) {
+    if (!session?.user?.id) {
       return { success: false, error: "Unauthorized access" };
     }
+    const userId = session.user.id;
 
     await connectDB();
 
@@ -36,7 +37,7 @@ export async function getRateSettings(): Promise<ActionResult<RateSettingsData>>
         goldRate18k: 5900,
         silverRate: 85,
         shopName: "Aura Luxury Jewelers",
-        updatedBy: new mongoose.Types.ObjectId(session.user.id),
+        updatedBy: new mongoose.Types.ObjectId(userId),
       });
       rate = await Rate.findOne().populate("updatedBy", "name email").lean();
     }
@@ -72,6 +73,7 @@ export async function updateRateSettings(
     if (!session?.user?.id) {
       return { success: false, error: "Unauthorized access" };
     }
+    const userId = session.user.id;
 
     const role = (session.user as any).role;
     if (role !== "admin") {
@@ -95,12 +97,12 @@ export async function updateRateSettings(
       existingRate.goldRate18k = validated.data.goldRate18k;
       existingRate.silverRate = validated.data.silverRate;
       existingRate.shopName = validated.data.shopName;
-      existingRate.updatedBy = new mongoose.Types.ObjectId(session.user.id);
+      existingRate.updatedBy = new mongoose.Types.ObjectId(userId);
       await existingRate.save();
     } else {
       await Rate.create({
         ...validated.data,
-        updatedBy: new mongoose.Types.ObjectId(session.user.id),
+        updatedBy: new mongoose.Types.ObjectId(userId),
       });
     }
 

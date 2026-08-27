@@ -91,6 +91,7 @@ export async function createExpense(input: ExpenseInput): Promise<ActionResult<s
     if (!session?.user?.id) {
       return { success: false, error: "Unauthorized access" };
     }
+    const userId = session.user.id;
 
     const role = (session.user as any).role;
     if (role !== "admin") {
@@ -112,7 +113,7 @@ export async function createExpense(input: ExpenseInput): Promise<ActionResult<s
       amount: validated.data.amount,
       note: validated.data.note || "",
       date: new Date(validated.data.date),
-      addedBy: new mongoose.Types.ObjectId(session.user.id),
+      addedBy: new mongoose.Types.ObjectId(userId),
     });
 
     revalidatePath("/expenses");
