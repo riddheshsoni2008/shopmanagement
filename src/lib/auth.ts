@@ -27,9 +27,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         await connectDB();
 
-        const user = await User.findOne({ email: email.toLowerCase() }).select(
-          "+passwordHash"
-        );
+        const user = await User.findOne({
+          email: email.toLowerCase().trim(),
+        }).select("+passwordHash");
 
         if (!user || !user.passwordHash) {
           return null;

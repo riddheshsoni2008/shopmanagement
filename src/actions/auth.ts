@@ -121,11 +121,11 @@ export async function registerUser(
       success: true,
       data: "Account created successfully! You can now sign in.",
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Register user error:", error);
     return {
       success: false,
-      error: "Failed to create account. Please try again.",
+      error: error?.message || "Failed to create account. Please check your database connection.",
     };
   }
 }
