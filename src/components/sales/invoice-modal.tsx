@@ -32,7 +32,7 @@ interface InvoiceModalProps {
   shopName?: string;
 }
 
-export function InvoiceModal({ isOpen, onClose, sale, shopName = "Aura Luxury Jewelers" }: InvoiceModalProps) {
+export function InvoiceModal({ isOpen, onClose, sale, shopName = "Zeal Jewellers" }: InvoiceModalProps) {
   if (!sale) return null;
 
   const pdfData: InvoicePDFData = {
@@ -75,11 +75,18 @@ export function InvoiceModal({ isOpen, onClose, sale, shopName = "Aura Luxury Je
         <div id="printable-invoice" className="space-y-6 rounded-xl border border-slate-800 bg-slate-950 p-6 text-slate-100 shadow-xl">
           {/* Header */}
           <div className="flex justify-between items-start border-b border-slate-800 pb-4">
-            <div>
-              <h2 className="text-2xl font-serif font-bold text-amber-400 flex items-center gap-2">
-                <Gem className="h-6 w-6 text-amber-400" /> {shopName}
-              </h2>
-              <p className="text-xs text-slate-400 mt-0.5">Premium Fine Jewelry & Tax Invoice</p>
+            <div className="flex items-center gap-3">
+              <img
+                src="/logo.png"
+                alt="Zeal Jewellers Logo"
+                className="h-12 w-auto object-contain"
+              />
+              <div>
+                <h2 className="text-xl font-serif font-bold text-amber-400">
+                  {shopName}
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5">Premium Fine Jewelry & Tax Invoice</p>
+              </div>
             </div>
             <div className="text-right">
               {pStatus === "PAID" && (

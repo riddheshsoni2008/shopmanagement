@@ -73,10 +73,14 @@ export function MobileNav({ isOpen, onClose, user, shopName }: MobileNavProps) {
       <div className="relative z-10 flex w-4/5 max-w-xs flex-col bg-slate-950 p-6 shadow-2xl border-r border-slate-800">
         <div className="flex items-center justify-between pb-6 border-b border-slate-800">
           <div className="flex items-center gap-2 overflow-hidden">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-slate-950 font-bold">
-              <Gem className="h-5 w-5" />
-            </div>
-            <span className="font-serif font-bold text-amber-400 truncate">{shopName || "Zeal Jewellers"}</span>
+            <img
+              src="/logo.png"
+              alt="Zeal Jewellers Logo"
+              className="h-8 w-auto object-contain shrink-0"
+            />
+            <span className="font-serif font-bold text-sm text-amber-400 truncate">
+              {shopName || "Zeal Jewellers"}
+            </span>
           </div>
           <button
             onClick={onClose}

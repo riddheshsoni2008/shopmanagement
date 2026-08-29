@@ -170,17 +170,15 @@ export default function LoginPage() {
 
       {/* Header Section */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center">
-        <div className="relative mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-tr from-amber-600 via-amber-400 to-yellow-200 text-slate-950 shadow-2xl shadow-amber-500/30 border border-amber-300/30 group transition-transform duration-300 hover:scale-105">
-          <Gem className="h-11 w-11 transition-transform duration-300 group-hover:rotate-12" />
-          <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-slate-950 border border-amber-400/50 text-amber-400 shadow">
-            <Sparkles className="h-3.5 w-3.5 animate-pulse" />
-          </div>
+        <div className="relative mx-auto flex h-24 w-auto items-center justify-center">
+          <img
+            src="/logo.png"
+            alt="Zeal Jewellers Logo"
+            className="h-24 w-auto max-w-[280px] object-contain drop-shadow-[0_10px_25px_rgba(245,158,11,0.3)] transition-transform duration-300 hover:scale-105"
+          />
         </div>
 
-        <h1 className="mt-5 text-center text-4xl font-extrabold tracking-tight font-serif text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-100 flex items-center justify-center gap-2">
-          Zeal Jewellers
-        </h1>
-        <p className="mt-1.5 text-center text-sm font-medium tracking-wide text-slate-400">
+        <p className="mt-3 text-center text-xs font-bold uppercase tracking-widest text-amber-400/90">
           Shop Management System & POS
         </p>
       </div>

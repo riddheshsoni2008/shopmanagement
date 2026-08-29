@@ -95,17 +95,18 @@ export function Sidebar({ user, shopName }: SidebarProps) {
   return (
     <aside className="hidden md:flex h-screen w-64 flex-col border-r border-slate-800 bg-slate-950/95 text-slate-100 backdrop-blur-xl sticky top-0">
       {/* Brand Header */}
-      <div className="flex h-16 items-center gap-3 px-6 border-b border-slate-800/80">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 shadow-lg shadow-amber-500/20">
-          <Gem className="h-6 w-6" />
-        </div>
-        <div className="overflow-hidden">
-          <h1 className="font-serif font-bold text-lg text-amber-400 leading-none flex items-center gap-1 truncate">
-            <span className="truncate">{shopName || "Zeal Jewellers"}</span>
-            <Sparkles className="h-3 w-3 text-amber-300 animate-pulse shrink-0" />
+      <div className="flex h-16 items-center gap-3 px-4 border-b border-slate-800/80 overflow-hidden">
+        <img
+          src="/logo.png"
+          alt="Zeal Jewellers Logo"
+          className="h-10 w-auto object-contain shrink-0 drop-shadow-[0_2px_10px_rgba(245,158,11,0.2)]"
+        />
+        <div className="overflow-hidden min-w-0">
+          <h1 className="font-serif font-bold text-sm text-amber-400 leading-tight truncate">
+            {shopName || "Zeal Jewellers"}
           </h1>
-          <span className="text-[10px] text-slate-400 uppercase tracking-widest font-medium">
-            Shop Manager
+          <span className="text-[9px] text-slate-400 uppercase tracking-widest font-semibold block">
+            POS & Inventory
           </span>
         </div>
       </div>
