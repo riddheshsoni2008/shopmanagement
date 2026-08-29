@@ -1,7 +1,17 @@
 "use server";
 
 import { signIn, signOut } from "@/lib/auth";
-import { loginSchema, LoginInput } from "@/lib/validators/auth";
+import { connectDB } from "@/lib/db";
+import { User } from "@/models/User";
+import {
+  loginSchema,
+  LoginInput,
+  resetPasswordSchema,
+  ResetPasswordInput,
+  registerSchema,
+  RegisterInput,
+} from "@/lib/validators/auth";
+import bcrypt from "bcryptjs";
 import { AuthError } from "next-auth";
 
 export type ActionResult<T = unknown> =
@@ -36,11 +46,6 @@ export async function loginUser(values: LoginInput): Promise<ActionResult<string
     return { success: false, error: "An unexpected error occurred during login" };
   }
 }
-
-import { connectDB } from "@/lib/db";
-import { User } from "@/models/User";
-import { resetPasswordSchema, ResetPasswordInput } from "@/lib/validators/auth";
-import bcrypt from "bcryptjs";
 
 export async function resetUserPassword(
   values: ResetPasswordInput
@@ -79,8 +84,6 @@ export async function resetUserPassword(
     };
   }
 }
-
-import { registerSchema, RegisterInput } from "@/lib/validators/auth";
 
 export async function registerUser(
   values: RegisterInput
@@ -132,4 +135,3 @@ export async function logoutUser(): Promise<ActionResult<string>> {
     return { success: false, error: "Failed to log out" };
   }
 }
-

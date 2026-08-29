@@ -18,6 +18,8 @@ export const resetPasswordSchema = z
     path: ["confirmPassword"],
   });
 
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
 export const registerSchema = z
   .object({
     name: z.string().min(2, "Name must be at least 2 characters"),
