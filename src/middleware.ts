@@ -17,6 +17,6 @@ export const config = {
      * - login page
      * - Any file with an extension (images, fonts, etc.)
      */
-    "/((?!api|_next/static|_next/image|_next/data|favicon\\.ico|login|.*\\..*).*)$",
+    "/((?!api|_next/static|_next/image|_next/data|favicon\\.ico|icon\\.svg|login|.*\\..*).*)$",
   ],
 };
