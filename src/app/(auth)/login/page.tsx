@@ -12,22 +12,18 @@ import {
   ResetPasswordInput,
 } from "@/lib/validators/auth";
 import { loginUser, registerUser, resetUserPassword } from "@/actions/auth";
-import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import {
-  Gem,
   Lock,
   Mail,
   User as UserIcon,
   Loader2,
-  Sparkles,
   Eye,
   EyeOff,
   KeyRound,
   LogIn,
   UserPlus,
   CheckCircle2,
-  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,19 +86,18 @@ export default function LoginPage() {
   const onLoginSubmit = async (values: LoginInput) => {
     setIsPending(true);
     try {
-      const res = await signIn("credentials", {
-        email: values.email.toLowerCase().trim(),
-        password: values.password,
-        redirect: false,
-      });
-
-      if (res?.error) {
-        toast.error("Invalid email or password. Please check your credentials or create a new account.");
-      } else {
+      const res = await loginUser(values);
+      if (res.success) {
         toast.success("Welcome to Zeal Jewellers!");
-        window.location.href = "/dashboard";
+        // Server action handles redirect via NEXT_REDIRECT
+      } else {
+        toast.error(res.error || "Invalid email or password");
       }
-    } catch {
+    } catch (err: any) {
+      // NEXT_REDIRECT throws — this means login succeeded and redirect is happening
+      if (err?.digest?.includes("NEXT_REDIRECT")) {
+        return; // Let Next.js handle the redirect
+      }
       toast.error("Failed to sign in. Please try again.");
     } finally {
       setIsPending(false);
@@ -116,17 +111,19 @@ export default function LoginPage() {
       if (res.success) {
         toast.success(res.data);
         resetRegForm();
-        
-        // Auto sign-in after account creation
-        const loginRes = await signIn("credentials", {
-          email: values.email.toLowerCase().trim(),
-          password: values.password,
-          redirect: false,
-        });
 
-        if (!loginRes?.error) {
-          window.location.href = "/dashboard";
-        } else {
+        // Auto sign-in after account creation via server action
+        try {
+          await loginUser({
+            email: values.email,
+            password: values.password,
+          });
+          // If loginUser succeeds, it throws NEXT_REDIRECT → goes to dashboard
+        } catch (loginErr: any) {
+          if (loginErr?.digest?.includes("NEXT_REDIRECT")) {
+            return; // redirect happening
+          }
+          // Auto-login failed, let user login manually
           setLoginValue("email", values.email);
           setLoginValue("password", values.password);
           setActiveTab("login");
@@ -134,7 +131,10 @@ export default function LoginPage() {
       } else {
         toast.error(res.error || "Failed to create account.");
       }
-    } catch {
+    } catch (err: any) {
+      if (err?.digest?.includes("NEXT_REDIRECT")) {
+        return;
+      }
       toast.error("An error occurred during registration.");
     } finally {
       setIsPending(false);

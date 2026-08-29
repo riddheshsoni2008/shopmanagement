@@ -34,18 +34,16 @@ export async function loginUser(values: LoginInput): Promise<ActionResult<string
       redirectTo: "/dashboard",
     });
     return { success: true, data: "Logged in successfully" };
-  } catch (error) {
-    if (error instanceof AuthError) {
-      switch (error.type) {
-        case "CredentialsSignin":
-          return { success: false, error: "Invalid email or password" };
-        default:
-          return { success: false, error: "Authentication failed" };
-      }
-    }
-    if ((error as any)?.digest?.startsWith("NEXT_REDIRECT") || (error as any)?.message?.includes("NEXT_REDIRECT")) {
+  } catch (error: any) {
+    // CRITICAL: Re-throw redirect errors FIRST — this is how Next.js 15 handles
+    // successful server-side redirects. If we don't re-throw, the redirect is swallowed.
+    if (error?.digest?.includes("NEXT_REDIRECT")) {
       throw error;
     }
+    if (error instanceof AuthError) {
+      return { success: false, error: "Invalid email or password. Please check your credentials." };
+    }
+    console.error("Login error:", error);
     return { success: false, error: "An unexpected error occurred during login" };
   }
 }
