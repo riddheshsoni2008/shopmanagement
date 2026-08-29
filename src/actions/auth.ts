@@ -29,9 +29,9 @@ export async function loginUser(values: LoginInput): Promise<ActionResult<string
 
   try {
     await signIn("credentials", {
-      email: validated.data.email,
+      email: validated.data.email.toLowerCase().trim(),
       password: validated.data.password,
-      redirect: false,
+      redirectTo: "/dashboard",
     });
     return { success: true, data: "Logged in successfully" };
   } catch (error) {
@@ -42,6 +42,9 @@ export async function loginUser(values: LoginInput): Promise<ActionResult<string
         default:
           return { success: false, error: "Authentication failed" };
       }
+    }
+    if ((error as any)?.digest?.startsWith("NEXT_REDIRECT") || (error as any)?.message?.includes("NEXT_REDIRECT")) {
+      throw error;
     }
     return { success: false, error: "An unexpected error occurred during login" };
   }

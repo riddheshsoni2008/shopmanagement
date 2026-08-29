@@ -12,6 +12,7 @@ import {
   ResetPasswordInput,
 } from "@/lib/validators/auth";
 import { loginUser, registerUser, resetUserPassword } from "@/actions/auth";
+import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import {
   Gem,
@@ -89,12 +90,17 @@ export default function LoginPage() {
   const onLoginSubmit = async (values: LoginInput) => {
     setIsPending(true);
     try {
-      const res = await loginUser(values);
-      if (res.success) {
+      const res = await signIn("credentials", {
+        email: values.email.toLowerCase().trim(),
+        password: values.password,
+        redirect: false,
+      });
+
+      if (res?.error) {
+        toast.error("Invalid email or password. Please check your credentials or create a new account.");
+      } else {
         toast.success("Welcome to Zeal Jewellers!");
         window.location.href = "/dashboard";
-      } else {
-        toast.error(res.error || "Invalid email or password");
       }
     } catch {
       toast.error("Failed to sign in. Please try again.");
@@ -110,9 +116,21 @@ export default function LoginPage() {
       if (res.success) {
         toast.success(res.data);
         resetRegForm();
-        setLoginValue("email", values.email);
-        setLoginValue("password", values.password);
-        setActiveTab("login");
+        
+        // Auto sign-in after account creation
+        const loginRes = await signIn("credentials", {
+          email: values.email.toLowerCase().trim(),
+          password: values.password,
+          redirect: false,
+        });
+
+        if (!loginRes?.error) {
+          window.location.href = "/dashboard";
+        } else {
+          setLoginValue("email", values.email);
+          setLoginValue("password", values.password);
+          setActiveTab("login");
+        }
       } else {
         toast.error(res.error || "Failed to create account.");
       }
