@@ -36,7 +36,7 @@ export function Navbar({ user, rates }: NavbarProps) {
           <div className="flex items-center gap-2 md:hidden">
             <Gem className="h-5 w-5 text-amber-400" />
             <span className="font-serif font-bold text-amber-400 text-sm">
-              {rates?.shopName || "Aura Jewelers"}
+              {rates?.shopName || "Zeal Jewellers"}
             </span>
           </div>
         </div>

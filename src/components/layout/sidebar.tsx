@@ -101,7 +101,7 @@ export function Sidebar({ user, shopName }: SidebarProps) {
         </div>
         <div className="overflow-hidden">
           <h1 className="font-serif font-bold text-lg text-amber-400 leading-none flex items-center gap-1 truncate">
-            <span className="truncate">{shopName || "Aura Jewelry"}</span>
+            <span className="truncate">{shopName || "Zeal Jewellers"}</span>
             <Sparkles className="h-3 w-3 text-amber-300 animate-pulse shrink-0" />
           </h1>
           <span className="text-[10px] text-slate-400 uppercase tracking-widest font-medium">

@@ -153,7 +153,7 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
                   Official Shop Business Name *
                 </label>
                 <Input
-                  placeholder="Aura Luxury Jewelers"
+                  placeholder="Zeal Jewellers"
                   {...register("shopName")}
                   disabled={isSubmitting}
                 />

@@ -76,7 +76,7 @@ export function MobileNav({ isOpen, onClose, user, shopName }: MobileNavProps) {
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-500 text-slate-950 font-bold">
               <Gem className="h-5 w-5" />
             </div>
-            <span className="font-serif font-bold text-amber-400 truncate">{shopName || "Aura Jewelers"}</span>
+            <span className="font-serif font-bold text-amber-400 truncate">{shopName || "Zeal Jewellers"}</span>
           </div>
           <button
             onClick={onClose}

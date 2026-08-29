@@ -41,7 +41,7 @@ export async function getRateSettings(): Promise<ActionResult<RateSettingsData>>
         goldRate22k: 7200,
         goldRate18k: 5900,
         silverRate: 85,
-        shopName: "Aura Luxury Jewelers",
+        shopName: "Zeal Jewellers",
       });
       rate = await Rate.findOne().populate("updatedBy", "name email").lean();
     }
@@ -55,7 +55,7 @@ export async function getRateSettings(): Promise<ActionResult<RateSettingsData>>
       goldRate22k: rate.goldRate22k,
       goldRate18k: rate.goldRate18k,
       silverRate: rate.silverRate,
-      shopName: rate.shopName || "Aura Luxury Jewelers",
+      shopName: rate.shopName || "Zeal Jewellers",
       updatedAt: rate.updatedAt ? new Date(rate.updatedAt).toISOString() : new Date().toISOString(),
       updatedBy: rate.updatedBy
         ? { name: (rate.updatedBy as any).name, email: (rate.updatedBy as any).email }
