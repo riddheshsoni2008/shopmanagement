@@ -162,30 +162,35 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col justify-center bg-slate-950 px-4 py-12 sm:px-6 lg:px-8 relative overflow-hidden selection:bg-amber-500 selection:text-slate-950">
+    <div className="flex min-h-screen flex-col justify-center bg-gradient-to-b from-slate-950 via-[#120a18] to-slate-950 px-4 py-8 sm:px-6 lg:px-8 relative overflow-hidden selection:bg-amber-500 selection:text-slate-950">
       {/* Luxury Ambient Glow Background */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-amber-500/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-96 h-96 bg-amber-600/10 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute top-10 left-10 w-72 h-72 bg-amber-400/5 rounded-full blur-[80px] pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-amber-500/[0.07] rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-900/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/3 left-0 w-[400px] h-[400px] bg-amber-600/[0.04] rounded-full blur-[100px] pointer-events-none" />
 
-      {/* Header Section */}
-      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center">
-        <div className="relative mx-auto flex h-24 w-auto items-center justify-center">
+      {/* Logo & Brand Header */}
+      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center mb-6">
+        <div className="relative mx-auto flex items-center justify-center">
           <img
             src="/logo.png"
-            alt="Zeal Jewellers Logo"
-            className="h-24 w-auto max-w-[280px] object-contain drop-shadow-[0_10px_25px_rgba(245,158,11,0.3)] transition-transform duration-300 hover:scale-105"
+            alt="Zeal Jewellers"
+            className="h-28 sm:h-36 w-auto object-contain drop-shadow-[0_8px_30px_rgba(217,119,6,0.25)] transition-transform duration-500 hover:scale-[1.03]"
           />
         </div>
 
-        <p className="mt-3 text-center text-xs font-bold uppercase tracking-widest text-amber-400/90">
-          Shop Management System & POS
-        </p>
+        {/* Decorative Divider */}
+        <div className="flex items-center justify-center gap-3 mt-4">
+          <div className="h-px w-12 bg-gradient-to-r from-transparent to-amber-500/40" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-400/70">
+            Shop Management & POS
+          </span>
+          <div className="h-px w-12 bg-gradient-to-l from-transparent to-amber-500/40" />
+        </div>
       </div>
 
       {/* Main Card */}
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="rounded-3xl border border-amber-500/20 bg-slate-900/90 p-6 sm:p-8 shadow-2xl shadow-black/80 backdrop-blur-2xl transition-all duration-300">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
+        <div className="rounded-2xl border border-amber-500/15 bg-slate-900/80 p-6 sm:p-8 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] backdrop-blur-xl transition-all duration-300">
           
           {/* Top Tab Bar Switcher */}
           <div className="grid grid-cols-2 gap-1 rounded-2xl bg-slate-950/80 p-1.5 border border-slate-800/80 mb-6">

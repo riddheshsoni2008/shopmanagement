@@ -123,7 +123,7 @@ export async function registerUser(
     console.error("Register user error:", error);
     return {
       success: false,
-      error: error?.message || "Failed to create account. Please check your database connection.",
+      error: "Unable to connect to server. Please try again in a moment.",
     };
   }
 }
