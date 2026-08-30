@@ -57,7 +57,11 @@ export async function createSale(input: SaleInput): Promise<ActionResult<string>
     // Calculate subtotal & final total server-side for security
     let subtotal = 0;
     const processedItems = items.map((item) => {
-      const lineTotal = item.weight * item.pricePerGram + item.makingCharge;
+      const hallmark = item.hallmarkCharge || 0;
+      const jadatar = item.jadatarCharge || 0;
+      const rhodium = item.rhodiumCharge || 0;
+      const nang = item.nangCharge || 0;
+      const lineTotal = item.qty * (item.weight * item.pricePerGram + item.makingCharge + hallmark + jadatar + rhodium + nang);
       subtotal += lineTotal;
       return {
         product: new mongoose.Types.ObjectId(item.productId),
@@ -66,6 +70,10 @@ export async function createSale(input: SaleInput): Promise<ActionResult<string>
         weight: item.weight,
         pricePerGram: item.pricePerGram,
         makingCharge: item.makingCharge,
+        hallmarkCharge: hallmark,
+        jadatarCharge: jadatar,
+        rhodiumCharge: rhodium,
+        nangCharge: nang,
         lineTotal,
       };
     });
@@ -228,7 +236,11 @@ export async function getSales(
         qty: i.qty,
         weight: i.weight,
         pricePerGram: i.pricePerGram,
-        makingCharge: i.makingCharge,
+        makingCharge: i.makingCharge || 0,
+        hallmarkCharge: i.hallmarkCharge || 0,
+        jadatarCharge: i.jadatarCharge || 0,
+        rhodiumCharge: i.rhodiumCharge || 0,
+        nangCharge: i.nangCharge || 0,
         lineTotal: i.lineTotal,
       })),
       soldBy: s.soldBy ? { name: s.soldBy.name, email: s.soldBy.email } : { name: "Staff" },
@@ -278,7 +290,11 @@ export async function getSaleById(id: string): Promise<ActionResult<any>> {
         qty: i.qty,
         weight: i.weight,
         pricePerGram: i.pricePerGram,
-        makingCharge: i.makingCharge,
+        makingCharge: i.makingCharge || 0,
+        hallmarkCharge: i.hallmarkCharge || 0,
+        jadatarCharge: i.jadatarCharge || 0,
+        rhodiumCharge: i.rhodiumCharge || 0,
+        nangCharge: i.nangCharge || 0,
         lineTotal: i.lineTotal,
       })),
       soldBy: sale.soldBy ? { name: (sale.soldBy as any).name, email: (sale.soldBy as any).email } : { name: "Staff" },

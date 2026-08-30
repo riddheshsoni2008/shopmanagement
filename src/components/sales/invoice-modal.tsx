@@ -20,6 +20,10 @@ interface InvoiceModalProps {
       weight: number;
       pricePerGram: number;
       makingCharge: number;
+      hallmarkCharge?: number;
+      jadatarCharge?: number;
+      rhodiumCharge?: number;
+      nangCharge?: number;
       lineTotal: number;
     }>;
     discount: number;
@@ -146,7 +150,21 @@ export function InvoiceModal({ isOpen, onClose, sale, shopName = "Zeal Jewellers
               {sale.items.map((item, idx) => (
                 <TableRow key={idx}>
                   <TableCell className="text-xs font-mono text-slate-500">{idx + 1}</TableCell>
-                  <TableCell className="font-semibold text-slate-200">{item.name}</TableCell>
+                  <TableCell className="font-semibold text-slate-200">
+                    <div>{item.name}</div>
+                    {((item.hallmarkCharge || 0) > 0 || (item.jadatarCharge || 0) > 0 || (item.rhodiumCharge || 0) > 0 || (item.nangCharge || 0) > 0) && (
+                      <div className="text-[10px] text-amber-400 font-normal">
+                        {[
+                          item.hallmarkCharge ? `HM: ${formatCurrency(item.hallmarkCharge)}` : null,
+                          item.jadatarCharge ? `Jadatar: ${formatCurrency(item.jadatarCharge)}` : null,
+                          item.rhodiumCharge ? `Rodium: ${formatCurrency(item.rhodiumCharge)}` : null,
+                          item.nangCharge ? `Nang: ${formatCurrency(item.nangCharge)}` : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" • ")}
+                      </div>
+                    )}
+                  </TableCell>
                   <TableCell className="text-center font-mono text-xs">{item.qty}</TableCell>
                   <TableCell className="text-right font-mono text-xs">{item.weight} g</TableCell>
                   <TableCell className="text-right font-mono text-xs">{formatCurrency(item.pricePerGram)}</TableCell>

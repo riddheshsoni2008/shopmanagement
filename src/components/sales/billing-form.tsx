@@ -72,6 +72,10 @@ export function BillingForm({ products, rates }: BillingFormProps) {
           weight: 10,
           pricePerGram: rates.goldRate22k,
           makingCharge: 1500,
+          hallmarkCharge: 0,
+          jadatarCharge: 0,
+          rhodiumCharge: 0,
+          nangCharge: 0,
           lineTotal: rates.goldRate22k * 10 + 1500,
         },
       ],
@@ -106,7 +110,11 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     const qty = 1;
     const weight = selectedProduct.weightPerPiece || 1;
     const making = 1200;
-    const lineTotal = qty * (weight * ratePerGram + making);
+    const hallmark = watchItems[index]?.hallmarkCharge || 0;
+    const jadatar = watchItems[index]?.jadatarCharge || 0;
+    const rhodium = watchItems[index]?.rhodiumCharge || 0;
+    const nang = watchItems[index]?.nangCharge || 0;
+    const lineTotal = qty * (weight * ratePerGram + making + hallmark + jadatar + rhodium + nang);
 
     setValue(`items.${index}.productId`, selectedProduct._id);
     setValue(`items.${index}.name`, selectedProduct.name);
@@ -123,7 +131,11 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     const w = Math.max(0, Number(item.weight) || 0);
     const p = Math.max(0, Number(item.pricePerGram) || 0);
     const m = Math.max(0, Number(item.makingCharge) || 0);
-    const total = q * (w * p + m);
+    const h = Math.max(0, Number(item.hallmarkCharge) || 0);
+    const j = Math.max(0, Number(item.jadatarCharge) || 0);
+    const r = Math.max(0, Number(item.rhodiumCharge) || 0);
+    const n = Math.max(0, Number(item.nangCharge) || 0);
+    const total = q * (w * p + m + h + j + r + n);
     setValue(`items.${index}.lineTotal`, Math.max(0, total));
   };
 
@@ -281,6 +293,10 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                       weight: 5,
                       pricePerGram: rates.goldRate22k,
                       makingCharge: 1000,
+                      hallmarkCharge: 0,
+                      jadatarCharge: 0,
+                      rhodiumCharge: 0,
+                      nangCharge: 0,
                       lineTotal: rates.goldRate22k * 5 + 1000,
                     })
                   }
@@ -414,6 +430,86 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                             })}
                             disabled={isSubmitting}
                           />
+                        </div>
+                      </div>
+
+                      {/* Extra Customization Charges Row */}
+                      <div className="border-t border-slate-800/80 pt-3">
+                        <span className="text-[11px] font-bold text-amber-400/90 uppercase tracking-wider block mb-2">
+                          Extra Charges (Hallmark, Jadatar, Rodium, Nang)
+                        </span>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          {/* Hallmark */}
+                          <div>
+                            <label className="block text-[11px] font-semibold text-slate-400">
+                              Hall Mark (₹)
+                            </label>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              placeholder="0"
+                              {...register(`items.${index}.hallmarkCharge`, {
+                                valueAsNumber: true,
+                                onChange: () => updateLineTotal(index),
+                              })}
+                              disabled={isSubmitting}
+                            />
+                          </div>
+
+                          {/* Jadatar */}
+                          <div>
+                            <label className="block text-[11px] font-semibold text-slate-400">
+                              Jadatar (₹)
+                            </label>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              placeholder="0"
+                              {...register(`items.${index}.jadatarCharge`, {
+                                valueAsNumber: true,
+                                onChange: () => updateLineTotal(index),
+                              })}
+                              disabled={isSubmitting}
+                            />
+                          </div>
+
+                          {/* Rodium */}
+                          <div>
+                            <label className="block text-[11px] font-semibold text-slate-400">
+                              Rodium (₹)
+                            </label>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              placeholder="0"
+                              {...register(`items.${index}.rhodiumCharge`, {
+                                valueAsNumber: true,
+                                onChange: () => updateLineTotal(index),
+                              })}
+                              disabled={isSubmitting}
+                            />
+                          </div>
+
+                          {/* Nang */}
+                          <div>
+                            <label className="block text-[11px] font-semibold text-slate-400">
+                              Nang / Stone (₹)
+                            </label>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              placeholder="0"
+                              {...register(`items.${index}.nangCharge`, {
+                                valueAsNumber: true,
+                                onChange: () => updateLineTotal(index),
+                              })}
+                              disabled={isSubmitting}
+                            />
+                          </div>
                         </div>
                       </div>
 

@@ -7,6 +7,10 @@ export interface ISaleItem {
   weight: number;
   pricePerGram: number;
   makingCharge: number;
+  hallmarkCharge: number;
+  jadatarCharge: number;
+  rhodiumCharge: number;
+  nangCharge: number;
   lineTotal: number;
 }
 
@@ -30,6 +34,10 @@ const SaleItemSchema = new Schema<ISaleItem>({
   weight: { type: Number, required: true, min: 0 },
   pricePerGram: { type: Number, required: true, min: 0 },
   makingCharge: { type: Number, required: true, default: 0 },
+  hallmarkCharge: { type: Number, required: true, default: 0 },
+  jadatarCharge: { type: Number, required: true, default: 0 },
+  rhodiumCharge: { type: Number, required: true, default: 0 },
+  nangCharge: { type: Number, required: true, default: 0 },
   lineTotal: { type: Number, required: true, min: 0 },
 });
 

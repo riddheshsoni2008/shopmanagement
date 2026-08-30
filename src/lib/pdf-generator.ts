@@ -18,6 +18,10 @@ export interface InvoicePDFData {
     weight: number;
     pricePerGram: number;
     makingCharge: number;
+    hallmarkCharge?: number;
+    jadatarCharge?: number;
+    rhodiumCharge?: number;
+    nangCharge?: number;
     lineTotal: number;
   }>;
   discount: number;
@@ -247,15 +251,28 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   // ══════════════════════════════════════════
   const tableStartY = y + 1;
 
-  const tableRows = data.items.map((item, i) => [
-    `${i + 1}`,
-    item.name.toUpperCase(),
-    "7113",
-    item.weight.toFixed(4),
-    "GMS",
-    fmtINR(item.pricePerGram),
-    fmtINR(item.lineTotal),
-  ]);
+  const tableRows = data.items.map((item, i) => {
+    let nameText = item.name.toUpperCase();
+    const extras: string[] = [];
+    if (item.hallmarkCharge && item.hallmarkCharge > 0) extras.push(`HM: ${fmtINR(item.hallmarkCharge)}`);
+    if (item.jadatarCharge && item.jadatarCharge > 0) extras.push(`Jadatar: ${fmtINR(item.jadatarCharge)}`);
+    if (item.rhodiumCharge && item.rhodiumCharge > 0) extras.push(`Rodium: ${fmtINR(item.rhodiumCharge)}`);
+    if (item.nangCharge && item.nangCharge > 0) extras.push(`Nang: ${fmtINR(item.nangCharge)}`);
+    
+    if (extras.length > 0) {
+      nameText += `\n(${extras.join(" • ")})`;
+    }
+
+    return [
+      `${i + 1}`,
+      nameText,
+      "7113",
+      item.weight.toFixed(4),
+      "GMS",
+      fmtINR(item.pricePerGram),
+      fmtINR(item.lineTotal),
+    ];
+  });
 
   autoTable(doc, {
     startY: tableStartY,
@@ -313,6 +330,15 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   let totalWeight = 0;
   data.items.forEach((item) => (totalWeight += item.weight));
   const totalMaking = data.items.reduce((sum, item) => sum + item.makingCharge, 0);
+  const totalExtra = data.items.reduce(
+    (sum, item) =>
+      sum +
+      (item.hallmarkCharge || 0) +
+      (item.jadatarCharge || 0) +
+      (item.rhodiumCharge || 0) +
+      (item.nangCharge || 0),
+    0
+  );
 
   const taxableAmount = subtotal;
   const cgstRate = 1.5;
@@ -345,6 +371,16 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.setTextColor(...MID);
   doc.text("Add  :  Making Charges (included above)", totalLabelX - 35, tY);
   doc.text(fmtINR(totalMaking), amtX, tY, { align: "right" });
+
+  // Extra charges info line
+  if (totalExtra > 0) {
+    tY += 5;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    doc.setTextColor(...MID);
+    doc.text("Add  :  Extra Charges (Hallmark, Jadatar, Rodium, Nang)", totalLabelX - 35, tY);
+    doc.text(fmtINR(totalExtra), amtX, tY, { align: "right" });
+  }
 
   // Discount line
   if (data.discount > 0) {

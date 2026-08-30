@@ -7,6 +7,10 @@ export const saleItemSchema = z.object({
   weight: z.coerce.number().positive("Weight must be greater than 0"),
   pricePerGram: z.coerce.number().min(0, "Price per gram cannot be negative"),
   makingCharge: z.coerce.number().min(0, "Making charge cannot be negative").default(0),
+  hallmarkCharge: z.coerce.number().min(0, "Hallmark charge cannot be negative").default(0),
+  jadatarCharge: z.coerce.number().min(0, "Jadatar charge cannot be negative").default(0),
+  rhodiumCharge: z.coerce.number().min(0, "Rhodium charge cannot be negative").default(0),
+  nangCharge: z.coerce.number().min(0, "Nang charge cannot be negative").default(0),
   lineTotal: z.coerce.number().min(0, "Line total cannot be negative"),
 });
 
