@@ -48,20 +48,29 @@ export function Navbar({ user, rates }: NavbarProps) {
         {/* Center: Live Rates Banner Ticker */}
         {rates && (
           <div className="hidden lg:flex items-center gap-4 rounded-full border border-amber-500/20 bg-amber-500/5 px-4 py-1.5 text-xs text-slate-300">
-            <span className="flex items-center gap-1 font-semibold text-amber-400">
-              <TrendingUp className="h-3.5 w-3.5" /> Live Shop Rates:
+            <span className="flex items-center gap-1 font-semibold text-amber-400 shrink-0">
+              <TrendingUp className="h-3.5 w-3.5" /> Live Rates:
             </span>
             <div className="flex items-center gap-3 font-medium">
               <span>
                 Gold 22K: <strong className="text-amber-300">{formatCurrency(rates.goldRate22k)}/g</strong>
+                <span className="text-slate-500 mx-1">|</span>
+                <strong className="text-amber-200">{formatCurrency(rates.goldRate22k * 10)}</strong>
+                <span className="text-slate-500 text-[10px]">/10g</span>
               </span>
               <span className="text-slate-600">•</span>
               <span>
                 Gold 18K: <strong className="text-amber-300">{formatCurrency(rates.goldRate18k)}/g</strong>
+                <span className="text-slate-500 mx-1">|</span>
+                <strong className="text-amber-200">{formatCurrency(rates.goldRate18k * 10)}</strong>
+                <span className="text-slate-500 text-[10px]">/10g</span>
               </span>
               <span className="text-slate-600">•</span>
               <span>
                 Silver: <strong className="text-slate-200">{formatCurrency(rates.silverRate)}/g</strong>
+                <span className="text-slate-500 mx-1">|</span>
+                <strong className="text-slate-100">{formatCurrency(rates.silverRate * 1000)}</strong>
+                <span className="text-slate-500 text-[10px]">/kg</span>
               </span>
             </div>
           </div>
