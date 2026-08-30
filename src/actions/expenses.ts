@@ -7,6 +7,7 @@ import { expenseSchema, ExpenseInput } from "@/lib/validators/expense";
 import { ActionResult } from "@/actions/auth";
 import { revalidatePath } from "next/cache";
 import mongoose from "mongoose";
+import { getTenantId } from "@/lib/tenant";
 
 export async function getExpenses(filter: {
   category?: string;
@@ -15,7 +16,8 @@ export async function getExpenses(filter: {
 } = {}): Promise<ActionResult<any>> {
   try {
     const session = await auth();
-    if (!session?.user) {
+    const tenantId = await getTenantId();
+    if (!session?.user || !tenantId) {
       return { success: false, error: "Unauthorized access" };
     }
 
@@ -26,7 +28,7 @@ export async function getExpenses(filter: {
 
     await connectDB();
 
-    const query: Record<string, unknown> = {};
+    const query: Record<string, unknown> = { userId: tenantId };
 
     if (filter.category && filter.category !== "ALL") {
       query.category = filter.category;
@@ -88,7 +90,8 @@ export async function getExpenses(filter: {
 export async function createExpense(input: ExpenseInput): Promise<ActionResult<string>> {
   try {
     const session = await auth();
-    if (!session?.user?.id) {
+    const tenantId = await getTenantId();
+    if (!session?.user?.id || !tenantId) {
       return { success: false, error: "Unauthorized access" };
     }
     const userId = session.user.id;
@@ -109,6 +112,7 @@ export async function createExpense(input: ExpenseInput): Promise<ActionResult<s
     await connectDB();
 
     const newExpense = await Expense.create({
+      userId: tenantId,
       category: validated.data.category,
       amount: validated.data.amount,
       note: validated.data.note || "",
@@ -129,7 +133,8 @@ export async function createExpense(input: ExpenseInput): Promise<ActionResult<s
 export async function deleteExpense(id: string): Promise<ActionResult<string>> {
   try {
     const session = await auth();
-    if (!session?.user) {
+    const tenantId = await getTenantId();
+    if (!session?.user || !tenantId) {
       return { success: false, error: "Unauthorized access" };
     }
 
@@ -140,7 +145,7 @@ export async function deleteExpense(id: string): Promise<ActionResult<string>> {
 
     await connectDB();
 
-    const deleted = await Expense.findByIdAndDelete(id);
+    const deleted = await Expense.findOneAndDelete({ _id: id, userId: tenantId });
     if (!deleted) {
       return { success: false, error: "Expense entry not found" };
     }

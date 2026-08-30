@@ -8,6 +8,7 @@ import { saleSchema, SaleInput } from "@/lib/validators/sale";
 import { ActionResult } from "@/actions/auth";
 import { revalidatePath } from "next/cache";
 import mongoose from "mongoose";
+import { getTenantId } from "@/lib/tenant";
 
 export interface SaleHistoryFilter {
   search?: string;
@@ -20,7 +21,8 @@ export interface SaleHistoryFilter {
 export async function createSale(input: SaleInput): Promise<ActionResult<string>> {
   try {
     const session = await auth();
-    if (!session?.user?.id) {
+    const tenantId = await getTenantId();
+    if (!session?.user?.id || !tenantId) {
       return { success: false, error: "Unauthorized access" };
     }
     const userId = session.user.id;
@@ -39,7 +41,7 @@ export async function createSale(input: SaleInput): Promise<ActionResult<string>
 
     // Verify stock availability for all items first
     for (const item of items) {
-      const product = await Product.findById(item.productId);
+      const product = await Product.findOne({ _id: item.productId, userId: tenantId });
       if (!product) {
         return {
           success: false,
@@ -89,7 +91,7 @@ export async function createSale(input: SaleInput): Promise<ActionResult<string>
         // 1. Decrement product stock
         for (const item of items) {
           const res = await Product.updateOne(
-            { _id: item.productId, quantity: { $gte: item.qty } },
+            { _id: item.productId, userId: tenantId, quantity: { $gte: item.qty } },
             { $inc: { quantity: -item.qty } },
             { session: dbSession }
           );
@@ -102,6 +104,7 @@ export async function createSale(input: SaleInput): Promise<ActionResult<string>
         const createdSales = await Sale.create(
           [
             {
+              userId: tenantId,
               items: processedItems,
               customerName,
               customerPhone,
@@ -128,13 +131,15 @@ export async function createSale(input: SaleInput): Promise<ActionResult<string>
         const updatedProductIds: { id: string; qty: number }[] = [];
         try {
           for (const item of items) {
-            await Product.findByIdAndUpdate(item.productId, {
-              $inc: { quantity: -item.qty },
-            });
+            await Product.findOneAndUpdate(
+              { _id: item.productId, userId: tenantId },
+              { $inc: { quantity: -item.qty } }
+            );
             updatedProductIds.push({ id: item.productId, qty: item.qty });
           }
 
           const createdSale = await Sale.create({
+            userId: tenantId,
             items: processedItems,
             customerName,
             customerPhone,
@@ -149,9 +154,10 @@ export async function createSale(input: SaleInput): Promise<ActionResult<string>
         } catch (fallbackErr: any) {
           // Rollback updated stock
           for (const item of updatedProductIds) {
-            await Product.findByIdAndUpdate(item.id, {
-              $inc: { quantity: item.qty },
-            });
+            await Product.findOneAndUpdate(
+              { _id: item.id, userId: tenantId },
+              { $inc: { quantity: item.qty } }
+            );
           }
           throw fallbackErr;
         }
@@ -181,8 +187,8 @@ export async function getSales(
   filter: SaleHistoryFilter = {}
 ): Promise<ActionResult<any>> {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const tenantId = await getTenantId();
+    if (!tenantId) {
       return { success: false, error: "Unauthorized access" };
     }
 
@@ -192,7 +198,7 @@ export async function getSales(
     const limit = Math.max(1, Math.min(100, filter.limit || 10));
     const skip = (page - 1) * limit;
 
-    const query: Record<string, unknown> = {};
+    const query: Record<string, unknown> = { userId: tenantId };
 
     if (filter.search && filter.search.trim()) {
       const searchRegex = { $regex: filter.search.trim(), $options: "i" };
@@ -264,14 +270,14 @@ export async function getSales(
 
 export async function getSaleById(id: string): Promise<ActionResult<any>> {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const tenantId = await getTenantId();
+    if (!tenantId) {
       return { success: false, error: "Unauthorized access" };
     }
 
     await connectDB();
 
-    const sale = await Sale.findById(id).populate("soldBy", "name email").lean();
+    const sale = await Sale.findOne({ _id: id, userId: tenantId }).populate("soldBy", "name email").lean();
     if (!sale) {
       return { success: false, error: "Sale record not found" };
     }

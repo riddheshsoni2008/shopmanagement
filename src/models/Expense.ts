@@ -11,6 +11,7 @@ export type ExpenseCategory =
 
 export interface IExpense extends Document {
   _id: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   category: ExpenseCategory;
   amount: number;
   note: string;
@@ -21,6 +22,7 @@ export interface IExpense extends Document {
 
 const ExpenseSchema = new Schema<IExpense>(
   {
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     category: {
       type: String,
       required: true,
@@ -37,7 +39,7 @@ const ExpenseSchema = new Schema<IExpense>(
   }
 );
 
-ExpenseSchema.index({ date: -1 });
+ExpenseSchema.index({ userId: 1, date: -1 });
 
 export const Expense: Model<IExpense> =
   mongoose.models.Expense || mongoose.model<IExpense>("Expense", ExpenseSchema);

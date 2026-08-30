@@ -14,6 +14,7 @@ export type ProductMetal = "Gold" | "Silver" | "Platinum";
 
 export interface IProduct extends Document {
   _id: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   name: string;
   category: ProductCategory;
   metal: ProductMetal;
@@ -31,6 +32,7 @@ export interface IProduct extends Document {
 
 const ProductSchema = new Schema<IProduct>(
   {
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     name: { type: String, required: true, trim: true },
     category: {
       type: String,
@@ -67,7 +69,7 @@ const ProductSchema = new Schema<IProduct>(
   }
 );
 
-ProductSchema.index({ category: 1, metal: 1 });
+ProductSchema.index({ userId: 1, category: 1, metal: 1 });
 
 export const Product: Model<IProduct> =
   mongoose.models.Product || mongoose.model<IProduct>("Product", ProductSchema);

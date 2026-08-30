@@ -6,6 +6,7 @@ export interface IUser extends Document {
   email: string;
   passwordHash: string;
   role: "admin" | "staff";
+  ownerId?: mongoose.Types.ObjectId;
   createdAt: Date;
 }
 
@@ -22,6 +23,7 @@ const UserSchema = new Schema<IUser>(
     },
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ["admin", "staff"], default: "staff" },
+    ownerId: { type: Schema.Types.ObjectId, ref: "User", default: null },
   },
   {
     timestamps: true,

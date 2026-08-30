@@ -16,6 +16,7 @@ export interface ISaleItem {
 
 export interface ISale extends Document {
   _id: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   items: ISaleItem[];
   customerName: string;
   customerPhone: string;
@@ -43,6 +44,7 @@ const SaleItemSchema = new Schema<ISaleItem>({
 
 const SaleSchema = new Schema<ISale>(
   {
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     items: [SaleItemSchema],
     customerName: { type: String, required: true, trim: true },
     customerPhone: { type: String, required: true, trim: true },
@@ -65,7 +67,7 @@ const SaleSchema = new Schema<ISale>(
   }
 );
 
-SaleSchema.index({ createdAt: -1 });
+SaleSchema.index({ userId: 1, createdAt: -1 });
 
 export const Sale: Model<ISale> =
   mongoose.models.Sale || mongoose.model<ISale>("Sale", SaleSchema);

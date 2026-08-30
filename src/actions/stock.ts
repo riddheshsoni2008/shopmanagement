@@ -2,10 +2,11 @@
 
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import { Product, IProduct } from "@/models/Product";
+import { Product } from "@/models/Product";
 import { productSchema, ProductInput } from "@/lib/validators/product";
 import { ActionResult } from "@/actions/auth";
 import { revalidatePath } from "next/cache";
+import { getTenantId } from "@/lib/tenant";
 
 export interface GetProductsFilter {
   search?: string;
@@ -42,8 +43,8 @@ export async function getProducts(
   filter: GetProductsFilter = {}
 ): Promise<ActionResult<PaginatedProducts>> {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const tenantId = await getTenantId();
+    if (!tenantId) {
       return { success: false, error: "Unauthorized access" };
     }
 
@@ -53,7 +54,7 @@ export async function getProducts(
     const limit = Math.max(1, Math.min(100, filter.limit || 10));
     const skip = (page - 1) * limit;
 
-    const query: Record<string, unknown> = {};
+    const query: Record<string, unknown> = { userId: tenantId };
 
     if (filter.search && filter.search.trim()) {
       query.name = { $regex: filter.search.trim(), $options: "i" };
@@ -114,14 +115,14 @@ export async function getProducts(
 
 export async function getProductById(id: string): Promise<ActionResult<any>> {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const tenantId = await getTenantId();
+    if (!tenantId) {
       return { success: false, error: "Unauthorized access" };
     }
 
     await connectDB();
 
-    const product = await Product.findById(id).lean();
+    const product = await Product.findOne({ _id: id, userId: tenantId }).lean();
     if (!product) {
       return { success: false, error: "Product not found" };
     }
@@ -151,8 +152,8 @@ export async function getProductById(id: string): Promise<ActionResult<any>> {
 
 export async function createProduct(input: ProductInput): Promise<ActionResult<string>> {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const tenantId = await getTenantId();
+    if (!tenantId) {
       return { success: false, error: "Unauthorized access" };
     }
 
@@ -166,7 +167,11 @@ export async function createProduct(input: ProductInput): Promise<ActionResult<s
 
     await connectDB();
 
-    const newProduct = await Product.create(validated.data);
+    const newProduct = await Product.create({
+      ...validated.data,
+      userId: tenantId,
+    });
+
     revalidatePath("/stock");
     revalidatePath("/dashboard");
 
@@ -182,8 +187,8 @@ export async function updateProduct(
   input: ProductInput
 ): Promise<ActionResult<string>> {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const tenantId = await getTenantId();
+    if (!tenantId) {
       return { success: false, error: "Unauthorized access" };
     }
 
@@ -197,9 +202,11 @@ export async function updateProduct(
 
     await connectDB();
 
-    const updated = await Product.findByIdAndUpdate(id, validated.data, {
-      new: true,
-    });
+    const updated = await Product.findOneAndUpdate(
+      { _id: id, userId: tenantId },
+      validated.data,
+      { new: true }
+    );
 
     if (!updated) {
       return { success: false, error: "Product not found for update" };
@@ -218,7 +225,8 @@ export async function updateProduct(
 export async function deleteProduct(id: string): Promise<ActionResult<string>> {
   try {
     const session = await auth();
-    if (!session?.user) {
+    const tenantId = await getTenantId();
+    if (!session?.user || !tenantId) {
       return { success: false, error: "Unauthorized access" };
     }
 
@@ -229,7 +237,7 @@ export async function deleteProduct(id: string): Promise<ActionResult<string>> {
 
     await connectDB();
 
-    const deleted = await Product.findByIdAndDelete(id);
+    const deleted = await Product.findOneAndDelete({ _id: id, userId: tenantId });
     if (!deleted) {
       return { success: false, error: "Product not found" };
     }

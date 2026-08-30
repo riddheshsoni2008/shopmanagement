@@ -6,6 +6,7 @@ import { Sale } from "@/models/Sale";
 import { Expense } from "@/models/Expense";
 import { Product } from "@/models/Product";
 import { ActionResult } from "@/actions/auth";
+import { getTenantId } from "@/lib/tenant";
 
 export type DashboardPeriod = "today" | "month" | "year";
 
@@ -85,8 +86,8 @@ export async function getDashboardMetrics(
   period: DashboardPeriod = "today"
 ): Promise<ActionResult<DashboardMetrics>> {
   try {
-    const session = await auth();
-    if (!session?.user) {
+    const tenantId = await getTenantId();
+    if (!tenantId) {
       return { success: false, error: "Unauthorized access" };
     }
 
@@ -94,11 +95,11 @@ export async function getDashboardMetrics(
 
     const { start, end, label } = getPeriodRange(period);
 
-    // Mongoose aggregations for period totals
+    // Mongoose aggregations for period totals scoped by tenantId
     const [periodSalesAgg, periodExpensesAgg, totalProductsCount, lowStockProducts, recentSales] =
       await Promise.all([
         Sale.aggregate([
-          { $match: { createdAt: { $gte: start, $lte: end } } },
+          { $match: { userId: tenantId, createdAt: { $gte: start, $lte: end } } },
           {
             $group: {
               _id: null,
@@ -108,7 +109,7 @@ export async function getDashboardMetrics(
           },
         ]),
         Expense.aggregate([
-          { $match: { date: { $gte: start, $lte: end } } },
+          { $match: { userId: tenantId, date: { $gte: start, $lte: end } } },
           {
             $group: {
               _id: null,
@@ -116,12 +117,12 @@ export async function getDashboardMetrics(
             },
           },
         ]),
-        Product.countDocuments(),
-        Product.find({ $expr: { $lte: ["$quantity", "$lowStockThreshold"] } })
+        Product.countDocuments({ userId: tenantId }),
+        Product.find({ userId: tenantId, $expr: { $lte: ["$quantity", "$lowStockThreshold"] } })
           .select("name category metal quantity lowStockThreshold")
           .limit(10)
           .lean(),
-        Sale.find()
+        Sale.find({ userId: tenantId })
           .sort({ createdAt: -1 })
           .limit(5)
           .select("customerName totalAmount items createdAt")
@@ -174,7 +175,8 @@ export async function getReportData(
 ): Promise<ActionResult<ReportData>> {
   try {
     const session = await auth();
-    if (!session?.user) {
+    const tenantId = await getTenantId();
+    if (!session?.user || !tenantId) {
       return { success: false, error: "Unauthorized access" };
     }
 
@@ -195,9 +197,9 @@ export async function getReportData(
     const endDate = endDateStr ? new Date(endDateStr) : now;
     endDate.setHours(23, 59, 59, 999);
 
-    // Mongoose Aggregation 1: Sales Summary & Daily Trend Pipeline
+    // Mongoose Aggregation 1: Sales Summary & Daily Trend Pipeline scoped by tenantId
     const salesTrendAgg = await Sale.aggregate([
-      { $match: { createdAt: { $gte: startDate, $lte: endDate } } },
+      { $match: { userId: tenantId, createdAt: { $gte: startDate, $lte: endDate } } },
       {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
@@ -208,9 +210,9 @@ export async function getReportData(
       { $sort: { _id: 1 } },
     ]);
 
-    // Mongoose Aggregation 2: Category Breakdown from embedded sale items
+    // Mongoose Aggregation 2: Category Breakdown from embedded sale items scoped by tenantId
     const categorySalesAgg = await Sale.aggregate([
-      { $match: { createdAt: { $gte: startDate, $lte: endDate } } },
+      { $match: { userId: tenantId, createdAt: { $gte: startDate, $lte: endDate } } },
       { $unwind: "$items" },
       {
         $group: {
@@ -222,9 +224,9 @@ export async function getReportData(
       { $limit: 10 },
     ]);
 
-    // Mongoose Aggregation 3: Expenses By Category Pipeline
+    // Mongoose Aggregation 3: Expenses By Category Pipeline scoped by tenantId
     const expensesAgg = await Expense.aggregate([
-      { $match: { date: { $gte: startDate, $lte: endDate } } },
+      { $match: { userId: tenantId, date: { $gte: startDate, $lte: endDate } } },
       {
         $group: {
           _id: "$category",

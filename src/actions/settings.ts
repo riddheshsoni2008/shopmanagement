@@ -8,6 +8,7 @@ import { rateSchema, RateInput } from "@/lib/validators/rate";
 import { ActionResult } from "@/actions/auth";
 import { revalidatePath } from "next/cache";
 import mongoose from "mongoose";
+import { getTenantId } from "@/lib/tenant";
 
 export interface RateSettingsData {
   _id: string;
@@ -19,31 +20,38 @@ export interface RateSettingsData {
   updatedBy?: { name: string; email: string };
 }
 
-// In-Memory Serverless Caching for Shop Rates to eliminate Layout DB Latency
-let cachedRateData: RateSettingsData | null = null;
-let lastCacheTime = 0;
+// In-Memory Caching per Tenant to eliminate DB latency while maintaining multi-tenant isolation
+const cachedRateDataMap = new Map<string, { data: RateSettingsData; time: number }>();
 const CACHE_TTL_MS = 60000; // 60 seconds memory cache
 
 export async function getRateSettings(): Promise<ActionResult<RateSettingsData>> {
   try {
+    const tenantId = await getTenantId();
+    if (!tenantId) {
+      return { success: false, error: "Unauthorized access" };
+    }
+
+    const tenantKey = tenantId.toString();
     const now = Date.now();
-    if (cachedRateData && now - lastCacheTime < CACHE_TTL_MS) {
-      return { success: true, data: cachedRateData };
+    const cached = cachedRateDataMap.get(tenantKey);
+    if (cached && now - cached.time < CACHE_TTL_MS) {
+      return { success: true, data: cached.data };
     }
 
     await connectDB();
 
-    let rate = await Rate.findOne().populate("updatedBy", "name email").lean();
+    let rate = await Rate.findOne({ userId: tenantId }).populate("updatedBy", "name email").lean();
 
     if (!rate) {
-      // Create default rate settings document if none exists yet
-      await Rate.create({
+      // Create default rate settings document for this new tenant
+      const created = await Rate.create({
+        userId: tenantId,
         goldRate22k: 7200,
         goldRate18k: 5900,
         silverRate: 85,
         shopName: "Zeal Jewellers",
       });
-      rate = await Rate.findOne().populate("updatedBy", "name email").lean();
+      rate = await Rate.findById(created._id).populate("updatedBy", "name email").lean();
     }
 
     if (!rate) {
@@ -62,8 +70,7 @@ export async function getRateSettings(): Promise<ActionResult<RateSettingsData>>
         : undefined,
     };
 
-    cachedRateData = formatted;
-    lastCacheTime = now;
+    cachedRateDataMap.set(tenantKey, { data: formatted, time: now });
 
     return { success: true, data: formatted };
   } catch (error: any) {
@@ -77,7 +84,8 @@ export async function updateRateSettings(
 ): Promise<ActionResult<string>> {
   try {
     const session = await auth();
-    if (!session?.user?.id) {
+    const tenantId = await getTenantId();
+    if (!session?.user?.id || !tenantId) {
       return { success: false, error: "Unauthorized access" };
     }
     const userId = session.user.id;
@@ -97,7 +105,7 @@ export async function updateRateSettings(
 
     await connectDB();
 
-    const existingRate = await Rate.findOne();
+    const existingRate = await Rate.findOne({ userId: tenantId });
 
     if (existingRate) {
       existingRate.goldRate22k = validated.data.goldRate22k;
@@ -108,6 +116,7 @@ export async function updateRateSettings(
       await existingRate.save();
     } else {
       await Rate.create({
+        userId: tenantId,
         goldRate22k: validated.data.goldRate22k,
         goldRate18k: validated.data.goldRate18k,
         silverRate: validated.data.silverRate,
@@ -120,9 +129,8 @@ export async function updateRateSettings(
       await User.findByIdAndUpdate(userId, { name: validated.data.ownerName.trim() });
     }
 
-    // Invalidate memory cache on rate updates
-    cachedRateData = null;
-    lastCacheTime = 0;
+    // Invalidate memory cache for this tenant
+    cachedRateDataMap.delete(tenantId.toString());
 
     revalidatePath("/", "layout");
     revalidatePath("/settings");

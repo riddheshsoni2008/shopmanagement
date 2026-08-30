@@ -2,6 +2,7 @@ import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface IRate extends Document {
   _id: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
   goldRate22k: number;
   goldRate18k: number;
   silverRate: number;
@@ -12,16 +13,19 @@ export interface IRate extends Document {
 
 const RateSchema = new Schema<IRate>(
   {
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     goldRate22k: { type: Number, required: true, min: 0, default: 7200 },
     goldRate18k: { type: Number, required: true, min: 0, default: 5900 },
     silverRate: { type: Number, required: true, min: 0, default: 85 },
-    shopName: { type: String, required: true, default: "Aura Luxury Jewelers" },
+    shopName: { type: String, required: true, default: "Zeal Jewellers" },
     updatedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
   },
   {
     timestamps: true,
   }
 );
+
+RateSchema.index({ userId: 1 });
 
 export const Rate: Model<IRate> =
   mongoose.models.Rate || mongoose.model<IRate>("Rate", RateSchema);
