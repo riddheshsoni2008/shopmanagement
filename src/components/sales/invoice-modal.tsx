@@ -187,6 +187,18 @@ export function InvoiceModal({ isOpen, onClose, sale, shopName = "Zeal Jewellers
                 <span>Subtotal:</span>
                 <span className="font-semibold text-slate-200">{formatCurrency(subtotal)}</span>
               </div>
+              {sale.items.reduce((sum, item) => sum + (item.qty * item.weight * item.makingCharge), 0) > 0 && (
+                <div className="flex justify-between text-slate-400 text-[11px]">
+                  <span>Making Charges (included):</span>
+                  <span>{formatCurrency(sale.items.reduce((sum, item) => sum + (item.qty * item.weight * item.makingCharge), 0))}</span>
+                </div>
+              )}
+              {sale.items.reduce((sum, item) => sum + (item.hallmarkCharge || 0) + (item.jadatarCharge || 0) + (item.rhodiumCharge || 0) + (item.nangCharge || 0), 0) > 0 && (
+                <div className="flex justify-between text-amber-400/90 text-[11px]">
+                  <span>Extra Charges (HM/Jad/Rod/Nang):</span>
+                  <span className="font-medium">{formatCurrency(sale.items.reduce((sum, item) => sum + (item.hallmarkCharge || 0) + (item.jadatarCharge || 0) + (item.rhodiumCharge || 0) + (item.nangCharge || 0), 0))}</span>
+                </div>
+              )}
               {sale.discount > 0 && (
                 <div className="flex justify-between text-rose-400">
                   <span>Discount Applied:</span>

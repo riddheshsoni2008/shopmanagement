@@ -330,15 +330,11 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   let totalWeight = 0;
   data.items.forEach((item) => (totalWeight += item.weight));
   const totalMaking = data.items.reduce((sum, item) => sum + (item.qty * item.weight * item.makingCharge), 0);
-  const totalExtra = data.items.reduce(
-    (sum, item) =>
-      sum +
-      (item.hallmarkCharge || 0) +
-      (item.jadatarCharge || 0) +
-      (item.rhodiumCharge || 0) +
-      (item.nangCharge || 0),
-    0
-  );
+  const totalHallmark = data.items.reduce((sum, item) => sum + (item.hallmarkCharge || 0), 0);
+  const totalJadatar = data.items.reduce((sum, item) => sum + (item.jadatarCharge || 0), 0);
+  const totalRhodium = data.items.reduce((sum, item) => sum + (item.rhodiumCharge || 0), 0);
+  const totalNang = data.items.reduce((sum, item) => sum + (item.nangCharge || 0), 0);
+  const totalExtra = totalHallmark + totalJadatar + totalRhodium + totalNang;
 
   const taxableAmount = subtotal;
   const cgstRate = 1.5;
@@ -372,14 +368,38 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.text("Add  :  Making Charges (included above)", totalLabelX - 35, tY);
   doc.text(fmtINR(totalMaking), amtX, tY, { align: "right" });
 
-  // Extra charges info line
-  if (totalExtra > 0) {
-    tY += 5;
+  // Granular Extra charges info lines
+  if (totalHallmark > 0) {
+    tY += 4.5;
     doc.setFont("helvetica", "italic");
     doc.setFontSize(8);
     doc.setTextColor(...MID);
-    doc.text("Add  :  Extra Charges (Hallmark, Jadatar, Rodium, Nang)", totalLabelX - 35, tY);
-    doc.text(fmtINR(totalExtra), amtX, tY, { align: "right" });
+    doc.text("Add  :  Hallmark Charges (included above)", totalLabelX - 35, tY);
+    doc.text(fmtINR(totalHallmark), amtX, tY, { align: "right" });
+  }
+  if (totalJadatar > 0) {
+    tY += 4.5;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    doc.setTextColor(...MID);
+    doc.text("Add  :  Jadatar Charges (included above)", totalLabelX - 35, tY);
+    doc.text(fmtINR(totalJadatar), amtX, tY, { align: "right" });
+  }
+  if (totalRhodium > 0) {
+    tY += 4.5;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    doc.setTextColor(...MID);
+    doc.text("Add  :  Rodium Polish (included above)", totalLabelX - 35, tY);
+    doc.text(fmtINR(totalRhodium), amtX, tY, { align: "right" });
+  }
+  if (totalNang > 0) {
+    tY += 4.5;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    doc.setTextColor(...MID);
+    doc.text("Add  :  Nang / Stone Charges (included above)", totalLabelX - 35, tY);
+    doc.text(fmtINR(totalNang), amtX, tY, { align: "right" });
   }
 
   // Discount line
