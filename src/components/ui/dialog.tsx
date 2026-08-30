@@ -47,27 +47,27 @@ export function Dialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity animate-in fade-in"
+        className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity animate-in fade-in"
         onClick={onClose}
       />
 
       {/* Content Container */}
       <div
         className={cn(
-          "relative z-10 w-full rounded-2xl border border-amber-200 bg-white p-6 text-slate-900 shadow-2xl backdrop-blur-xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto",
+          "relative z-10 w-full rounded-2xl border border-amber-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 text-slate-900 dark:text-slate-100 shadow-2xl backdrop-blur-xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto transition-colors duration-200",
           maxWidthClasses[maxWidth]
         )}
       >
-        <div className="flex items-start justify-between pb-4 border-b border-amber-100">
+        <div className="flex items-start justify-between pb-4 border-b border-amber-100 dark:border-slate-800">
           <div>
-            <h2 className="text-xl font-bold text-amber-700">{title}</h2>
+            <h2 className="text-xl font-bold text-amber-700 dark:text-amber-400">{title}</h2>
             {description && (
-              <p className="mt-1 text-xs text-slate-500">{description}</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{description}</p>
             )}
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-amber-50 hover:text-amber-700 transition-colors"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-amber-50 dark:hover:bg-slate-800 hover:text-amber-700 dark:hover:text-slate-200 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>

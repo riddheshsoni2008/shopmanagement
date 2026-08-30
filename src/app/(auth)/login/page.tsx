@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState<"login" | "register" | "reset">("login");
@@ -89,14 +90,12 @@ export default function LoginPage() {
       const res = await loginUser(values);
       if (res.success) {
         toast.success("Welcome to Zeal Jewellers!");
-        // Server action handles redirect via NEXT_REDIRECT
       } else {
         toast.error(res.error || "Invalid email or password");
       }
     } catch (err: any) {
-      // NEXT_REDIRECT throws — this means login succeeded and redirect is happening
       if (err?.digest?.includes("NEXT_REDIRECT")) {
-        return; // Let Next.js handle the redirect
+        return;
       }
       toast.error("Failed to sign in. Please try again.");
     } finally {
@@ -112,18 +111,15 @@ export default function LoginPage() {
         toast.success(res.data);
         resetRegForm();
 
-        // Auto sign-in after account creation via server action
         try {
           await loginUser({
             email: values.email,
             password: values.password,
           });
-          // If loginUser succeeds, it throws NEXT_REDIRECT → goes to dashboard
         } catch (loginErr: any) {
           if (loginErr?.digest?.includes("NEXT_REDIRECT")) {
-            return; // redirect happening
+            return;
           }
-          // Auto-login failed, let user login manually
           setLoginValue("email", values.email);
           setLoginValue("password", values.password);
           setActiveTab("login");
@@ -162,10 +158,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col justify-center bg-gradient-to-b from-[#faf8f5] via-[#f5efe4] to-[#faf8f5] px-4 py-8 sm:px-6 lg:px-8 relative overflow-hidden selection:bg-amber-500 selection:text-white">
+    <div className="flex min-h-screen flex-col justify-center bg-gradient-to-b from-[#faf8f5] via-[#f5efe4] to-[#faf8f5] dark:from-slate-950 dark:via-[#120a18] dark:to-slate-950 px-4 py-8 sm:px-6 lg:px-8 relative overflow-hidden selection:bg-amber-500 selection:text-white dark:selection:text-slate-950 transition-colors duration-200">
       {/* Luxury Ambient Glow Background */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-amber-400/[0.12] rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-amber-300/[0.1] rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-amber-400/[0.12] dark:bg-amber-500/[0.07] rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-amber-300/[0.1] dark:bg-purple-900/10 rounded-full blur-[140px] pointer-events-none" />
+
+      {/* Top Corner Theme Switcher */}
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle showLabel />
+      </div>
 
       {/* Logo & Brand Header */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center mb-6">
@@ -173,14 +174,14 @@ export default function LoginPage() {
           <img
             src="/logo.png"
             alt="Zeal Jewellers"
-            className="h-28 sm:h-36 w-auto object-contain drop-shadow-md transition-transform duration-500 hover:scale-[1.03]"
+            className="h-28 sm:h-36 w-auto object-contain drop-shadow-md dark:drop-shadow-[0_8px_30px_rgba(217,119,6,0.25)] transition-transform duration-500 hover:scale-[1.03]"
           />
         </div>
 
         {/* Decorative Divider */}
         <div className="flex items-center justify-center gap-3 mt-4">
           <div className="h-px w-12 bg-gradient-to-r from-transparent to-amber-500/40" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-800">
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-800 dark:text-amber-400">
             Shop Management & POS
           </span>
           <div className="h-px w-12 bg-gradient-to-l from-transparent to-amber-500/40" />
@@ -189,17 +190,17 @@ export default function LoginPage() {
 
       {/* Main Card */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="rounded-2xl border border-amber-200 bg-white p-6 sm:p-8 shadow-xl backdrop-blur-xl transition-all duration-300">
+        <div className="rounded-2xl border border-amber-200 dark:border-amber-500/20 bg-white dark:bg-slate-900/90 p-6 sm:p-8 shadow-xl backdrop-blur-xl transition-all duration-300">
           
           {/* Top Tab Bar Switcher */}
-          <div className="grid grid-cols-2 gap-1 rounded-2xl bg-amber-50 p-1.5 border border-amber-200 mb-6">
+          <div className="grid grid-cols-2 gap-1 rounded-2xl bg-amber-50 dark:bg-slate-950/80 p-1.5 border border-amber-200 dark:border-slate-800 mb-6">
             <button
               type="button"
               onClick={() => setActiveTab("login")}
               className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all duration-200 ${
                 activeTab === "login"
                   ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md"
-                  : "text-slate-600 hover:text-amber-900 hover:bg-amber-100/50"
+                  : "text-slate-600 dark:text-slate-400 hover:text-amber-900 dark:hover:text-slate-200 hover:bg-amber-100/50 dark:hover:bg-slate-900/50"
               }`}
             >
               <LogIn className="h-3.5 w-3.5" /> Sign In
@@ -210,7 +211,7 @@ export default function LoginPage() {
               className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all duration-200 ${
                 activeTab === "register"
                   ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md"
-                  : "text-slate-600 hover:text-amber-900 hover:bg-amber-100/50"
+                  : "text-slate-600 dark:text-slate-400 hover:text-amber-900 dark:hover:text-slate-200 hover:bg-amber-100/50 dark:hover:bg-slate-900/50"
               }`}
             >
               <UserPlus className="h-3.5 w-3.5" /> Create Account
@@ -223,25 +224,25 @@ export default function LoginPage() {
               <div>
                 <label
                   htmlFor="login-email"
-                  className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5"
+                  className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
                 >
                   Account Email
                 </label>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-600">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-600 dark:text-amber-400">
                     <Mail className="h-4 w-4" />
                   </div>
                   <Input
                     id="login-email"
                     type="email"
                     placeholder="name@example.com"
-                    className="pl-10 h-11 bg-white border-amber-200 focus:border-amber-500 focus:ring-amber-500/20 text-slate-900 placeholder:text-slate-400 rounded-xl"
+                    className="pl-10 h-11"
                     disabled={isPending}
                     {...registerLogin("email")}
                   />
                 </div>
                 {loginErrors.email && (
-                  <p className="mt-1.5 text-xs text-rose-600 font-medium">
+                  <p className="mt-1.5 text-xs text-rose-600 dark:text-rose-400 font-medium">
                     {loginErrors.email.message}
                   </p>
                 )}
@@ -251,40 +252,40 @@ export default function LoginPage() {
                 <div className="flex items-center justify-between mb-1.5">
                   <label
                     htmlFor="login-password"
-                    className="block text-xs font-bold uppercase tracking-wider text-slate-700"
+                    className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300"
                   >
                     Password
                   </label>
                   <button
                     type="button"
                     onClick={() => setActiveTab("reset")}
-                    className="text-xs font-semibold text-amber-700 hover:text-amber-800 hover:underline transition-colors"
+                    className="text-xs font-semibold text-amber-700 dark:text-amber-400 hover:underline transition-colors"
                   >
                     Set / Reset Password?
                   </button>
                 </div>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-600">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-600 dark:text-amber-400">
                     <Lock className="h-4 w-4" />
                   </div>
                   <Input
                     id="login-password"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
-                    className="pl-10 pr-10 h-11 bg-white border-amber-200 focus:border-amber-500 focus:ring-amber-500/20 text-slate-900 placeholder:text-slate-400 rounded-xl"
+                    className="pl-10 pr-10 h-11"
                     disabled={isPending}
                     {...registerLogin("password")}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600 transition-colors"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
                 {loginErrors.password && (
-                  <p className="mt-1.5 text-xs text-rose-600 font-medium">
+                  <p className="mt-1.5 text-xs text-rose-600 dark:text-rose-400 font-medium">
                     {loginErrors.password.message}
                   </p>
                 )}
@@ -313,50 +314,50 @@ export default function LoginPage() {
               <div>
                 <label
                   htmlFor="reg-name"
-                  className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1"
+                  className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1"
                 >
                   Full Name
                 </label>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-500/70">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-600 dark:text-amber-400">
                     <UserIcon className="h-4 w-4" />
                   </div>
                   <Input
                     id="reg-name"
                     type="text"
                     placeholder="Your Full Name"
-                    className="pl-10 h-10 bg-slate-950/60 border-slate-800 focus:border-amber-500 focus:ring-amber-500/20 text-slate-100 placeholder:text-slate-600 rounded-xl text-sm"
+                    className="pl-10 h-10 text-sm"
                     disabled={isPending}
                     {...registerReg("name")}
                   />
                 </div>
                 {regErrors.name && (
-                  <p className="mt-1 text-xs text-rose-400 font-medium">{regErrors.name.message}</p>
+                  <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{regErrors.name.message}</p>
                 )}
               </div>
 
               <div>
                 <label
                   htmlFor="reg-email"
-                  className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1"
+                  className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1"
                 >
                   Account Email
                 </label>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-500/70">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-600 dark:text-amber-400">
                     <Mail className="h-4 w-4" />
                   </div>
                   <Input
                     id="reg-email"
                     type="email"
                     placeholder="name@jewellers.com"
-                    className="pl-10 h-10 bg-slate-950/60 border-slate-800 focus:border-amber-500 focus:ring-amber-500/20 text-slate-100 placeholder:text-slate-600 rounded-xl text-sm"
+                    className="pl-10 h-10 text-sm"
                     disabled={isPending}
                     {...registerReg("email")}
                   />
                 </div>
                 {regErrors.email && (
-                  <p className="mt-1 text-xs text-rose-400 font-medium">{regErrors.email.message}</p>
+                  <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{regErrors.email.message}</p>
                 )}
               </div>
 
@@ -364,7 +365,7 @@ export default function LoginPage() {
                 <div>
                   <label
                     htmlFor="reg-password"
-                    className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1"
+                    className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1"
                   >
                     Password
                   </label>
@@ -373,20 +374,20 @@ export default function LoginPage() {
                       id="reg-password"
                       type={showRegPassword ? "text" : "password"}
                       placeholder="••••••••"
-                      className="pr-9 h-10 bg-slate-950/60 border-slate-800 focus:border-amber-500 focus:ring-amber-500/20 text-slate-100 placeholder:text-slate-600 rounded-xl text-sm"
+                      className="pr-9 h-10 text-sm"
                       disabled={isPending}
                       {...registerReg("password")}
                     />
                     <button
                       type="button"
                       onClick={() => setShowRegPassword(!showRegPassword)}
-                      className="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-500 hover:text-slate-300"
+                      className="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                     >
                       {showRegPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                     </button>
                   </div>
                   {regErrors.password && (
-                    <p className="mt-1 text-[11px] text-rose-400 font-medium">
+                    <p className="mt-1 text-[11px] text-rose-600 dark:text-rose-400 font-medium">
                       {regErrors.password.message}
                     </p>
                   )}
@@ -395,7 +396,7 @@ export default function LoginPage() {
                 <div>
                   <label
                     htmlFor="reg-confirm"
-                    className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1"
+                    className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1"
                   >
                     Confirm
                   </label>
@@ -404,20 +405,20 @@ export default function LoginPage() {
                       id="reg-confirm"
                       type={showRegConfirm ? "text" : "password"}
                       placeholder="••••••••"
-                      className="pr-9 h-10 bg-slate-950/60 border-slate-800 focus:border-amber-500 focus:ring-amber-500/20 text-slate-100 placeholder:text-slate-600 rounded-xl text-sm"
+                      className="pr-9 h-10 text-sm"
                       disabled={isPending}
                       {...registerReg("confirmPassword")}
                     />
                     <button
                       type="button"
                       onClick={() => setShowRegConfirm(!showRegConfirm)}
-                      className="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-500 hover:text-slate-300"
+                      className="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                     >
                       {showRegConfirm ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                     </button>
                   </div>
                   {regErrors.confirmPassword && (
-                    <p className="mt-1 text-[11px] text-rose-400 font-medium">
+                    <p className="mt-1 text-[11px] text-rose-600 dark:text-rose-400 font-medium">
                       {regErrors.confirmPassword.message}
                     </p>
                   )}
@@ -427,20 +428,20 @@ export default function LoginPage() {
               <div>
                 <label
                   htmlFor="reg-role"
-                  className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1"
+                  className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1"
                 >
                   Role Access Level
                 </label>
                 <select
                   id="reg-role"
-                  className="w-full h-10 px-3 bg-slate-950/60 border border-slate-800 focus:border-amber-500 text-slate-100 rounded-xl text-sm outline-none"
+                  className="w-full h-10 px-3 bg-white dark:bg-slate-950 border border-amber-200 dark:border-slate-800 focus:border-amber-500 text-slate-900 dark:text-slate-100 rounded-xl text-sm outline-none"
                   disabled={isPending}
                   {...registerReg("role")}
                 >
-                  <option value="admin" className="bg-slate-900 text-slate-100">
+                  <option value="admin">
                     Admin (Full Access & Reports)
                   </option>
-                  <option value="staff" className="bg-slate-900 text-slate-100">
+                  <option value="staff">
                     Staff (POS & Stock Management)
                   </option>
                 </select>
@@ -448,12 +449,12 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full h-11 text-sm font-extrabold tracking-wide uppercase bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 rounded-xl transition-all duration-200 active:scale-[0.99] mt-2"
+                className="w-full h-11 text-sm font-extrabold tracking-wide uppercase bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-md rounded-xl transition-all duration-200 active:scale-[0.99] mt-2"
                 disabled={isPending}
               >
                 {isPending ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin text-slate-950" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin text-white" />
                     Creating Account...
                   </>
                 ) : (
@@ -467,13 +468,13 @@ export default function LoginPage() {
           {activeTab === "reset" && (
             <form className="space-y-5" onSubmit={handleSubmitReset(onResetSubmit)}>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase text-amber-400 flex items-center gap-1">
+                <span className="text-xs font-bold uppercase text-amber-700 dark:text-amber-400 flex items-center gap-1">
                   <KeyRound className="h-3.5 w-3.5" /> Password Reset Mode
                 </span>
                 <button
                   type="button"
                   onClick={() => setActiveTab("login")}
-                  className="text-xs text-slate-400 hover:text-slate-200 underline"
+                  className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 underline"
                 >
                   Back to Sign In
                 </button>
@@ -482,25 +483,25 @@ export default function LoginPage() {
               <div>
                 <label
                   htmlFor="reset-email"
-                  className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5"
+                  className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
                 >
                   Account Email
                 </label>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-500/70">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-600 dark:text-amber-400">
                     <Mail className="h-4 w-4" />
                   </div>
                   <Input
                     id="reset-email"
                     type="email"
                     placeholder="name@example.com"
-                    className="pl-10 h-11 bg-slate-950/60 border-slate-800 focus:border-amber-500 focus:ring-amber-500/20 text-slate-100 placeholder:text-slate-600 rounded-xl"
+                    className="pl-10 h-11"
                     disabled={isPending}
                     {...registerReset("email")}
                   />
                 </div>
                 {resetErrors.email && (
-                  <p className="mt-1.5 text-xs text-rose-400 font-medium">
+                  <p className="mt-1.5 text-xs text-rose-600 dark:text-rose-400 font-medium">
                     {resetErrors.email.message}
                   </p>
                 )}
@@ -509,32 +510,32 @@ export default function LoginPage() {
               <div>
                 <label
                   htmlFor="reset-newPassword"
-                  className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5"
+                  className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
                 >
                   New Password
                 </label>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-500/70">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-600 dark:text-amber-400">
                     <KeyRound className="h-4 w-4" />
                   </div>
                   <Input
                     id="reset-newPassword"
                     type={showResetNew ? "text" : "password"}
                     placeholder="Enter new password"
-                    className="pl-10 pr-10 h-11 bg-slate-950/60 border-slate-800 focus:border-amber-500 focus:ring-amber-500/20 text-slate-100 placeholder:text-slate-600 rounded-xl"
+                    className="pl-10 pr-10 h-11"
                     disabled={isPending}
                     {...registerReset("newPassword")}
                   />
                   <button
                     type="button"
                     onClick={() => setShowResetNew(!showResetNew)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-500 hover:text-slate-300"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                   >
                     {showResetNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
                 {resetErrors.newPassword && (
-                  <p className="mt-1.5 text-xs text-rose-400 font-medium">
+                  <p className="mt-1.5 text-xs text-rose-600 dark:text-rose-400 font-medium">
                     {resetErrors.newPassword.message}
                   </p>
                 )}
@@ -543,32 +544,32 @@ export default function LoginPage() {
               <div>
                 <label
                   htmlFor="reset-confirmPassword"
-                  className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5"
+                  className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
                 >
                   Confirm New Password
                 </label>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-500/70">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-600 dark:text-amber-400">
                     <CheckCircle2 className="h-4 w-4" />
                   </div>
                   <Input
                     id="reset-confirmPassword"
                     type={showResetConfirm ? "text" : "password"}
                     placeholder="Re-enter new password"
-                    className="pl-10 pr-10 h-11 bg-slate-950/60 border-slate-800 focus:border-amber-500 focus:ring-amber-500/20 text-slate-100 placeholder:text-slate-600 rounded-xl"
+                    className="pl-10 pr-10 h-11"
                     disabled={isPending}
                     {...registerReset("confirmPassword")}
                   />
                   <button
                     type="button"
                     onClick={() => setShowResetConfirm(!showResetConfirm)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-500 hover:text-slate-300"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                   >
                     {showResetConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
                 {resetErrors.confirmPassword && (
-                  <p className="mt-1.5 text-xs text-rose-400 font-medium">
+                  <p className="mt-1.5 text-xs text-rose-600 dark:text-rose-400 font-medium">
                     {resetErrors.confirmPassword.message}
                   </p>
                 )}
@@ -576,12 +577,12 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full h-11 text-sm font-extrabold tracking-wide uppercase bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 rounded-xl transition-all duration-200 active:scale-[0.99]"
+                className="w-full h-11 text-sm font-extrabold tracking-wide uppercase bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-md rounded-xl transition-all duration-200 active:scale-[0.99]"
                 disabled={isPending}
               >
                 {isPending ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin text-slate-950" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin text-white" />
                     Updating Password...
                   </>
                 ) : (
