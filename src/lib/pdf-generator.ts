@@ -163,6 +163,142 @@ async function loadLogoBase64(): Promise<string | null> {
 }
 
 // ══════════════════════════════════════════════════════════════════
+// UNICODE & GUJARATI HIGH-RESOLUTION CANVAS RENDERER FOR PDF
+// ══════════════════════════════════════════════════════════════════
+function renderUnicodeTextToImage(
+  text: string,
+  fontSizePx: number = 32,
+  colorHex: string = "#000000",
+  fontWeight: "bold" | "normal" = "normal"
+): { dataUrl: string; widthMm: number; heightMm: number } {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return { dataUrl: "", widthMm: 0, heightMm: 0 };
+  }
+
+  try {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return { dataUrl: "", widthMm: 0, heightMm: 0 };
+
+    const scale = 3; // 3x DPI high definition canvas for super crisp print quality
+    const scaledFontSize = fontSizePx * scale;
+    const fontStyle = `${fontWeight} ${scaledFontSize}px "Segoe UI", "Noto Sans Gujarati", "Gujarati Sangam MN", "Shruti", "Mukta", sans-serif`;
+
+    ctx.font = fontStyle;
+    const metrics = ctx.measureText(text);
+
+    const textWidth = Math.ceil(metrics.width);
+    const textHeight = Math.ceil(scaledFontSize * 1.3);
+
+    canvas.width = Math.max(1, textWidth + 20 * scale);
+    canvas.height = Math.max(1, textHeight + 10 * scale);
+
+    // Re-apply context font after canvas resize
+    ctx.font = fontStyle;
+    ctx.fillStyle = colorHex;
+    ctx.textBaseline = "middle";
+
+    ctx.fillText(text, 10 * scale, canvas.height / 2);
+
+    const dataUrl = canvas.toDataURL("image/png");
+
+    // Convert pixels to PDF mm (1 px = 0.264583 mm, divided by 3 scale factor)
+    const widthMm = (canvas.width / scale) * 0.264583;
+    const heightMm = (canvas.height / scale) * 0.264583;
+
+    return { dataUrl, widthMm, heightMm };
+  } catch {
+    return { dataUrl: "", widthMm: 0, heightMm: 0 };
+  }
+}
+
+function drawSafeText(
+  doc: jsPDF,
+  text: string,
+  x: number,
+  y: number,
+  options?: {
+    fontSize?: number;
+    colorHex?: string;
+    fontWeight?: "bold" | "normal";
+    align?: "left" | "center" | "right";
+  }
+) {
+  const str = text || "";
+  const hasUnicode = /[^\x00-\x7F]/.test(str);
+
+  if (hasUnicode) {
+    const fontSize = options?.fontSize || 9;
+    const colorHex = options?.colorHex || "#000000";
+    const fontWeight = options?.fontWeight || "normal";
+    const align = options?.align || "left";
+
+    const pxSize = Math.max(18, Math.round(fontSize * 3.5));
+    const rendered = renderUnicodeTextToImage(str, pxSize, colorHex, fontWeight);
+
+    if (rendered.dataUrl) {
+      let drawX = x;
+      if (align === "center") {
+        drawX = x - rendered.widthMm / 2;
+      } else if (align === "right") {
+        drawX = x - rendered.widthMm;
+      }
+
+      const drawY = y - rendered.heightMm * 0.72;
+      doc.addImage(rendered.dataUrl, "PNG", drawX, drawY, rendered.widthMm, rendered.heightMm);
+      return;
+    }
+  }
+
+  doc.text(str, x, y, options?.align ? { align: options.align } : undefined);
+}
+
+function handleAutoTableCellUnicode(doc: jsPDF, cellData: any) {
+  if (cellData.section === "body" || cellData.section === "head") {
+    const rawText = cellData.cell.text ? cellData.cell.text.join("\n") : "";
+    if (/[^\x00-\x7F]/.test(rawText)) {
+      const fontSize = cellData.cell.styles.fontSize || 8;
+      const pxSize = Math.max(18, Math.round(fontSize * 3.5));
+      const isBold = cellData.cell.styles.fontStyle === "bold";
+      const colorRGB = cellData.cell.styles.textColor || [0, 0, 0];
+      const colorHex = Array.isArray(colorRGB)
+        ? `#${colorRGB.map((c: number) => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, "0")).join("")}`
+        : "#000000";
+
+      const rendered = renderUnicodeTextToImage(rawText, pxSize, colorHex, isBold ? "bold" : "normal");
+      if (rendered.dataUrl) {
+        const fill = cellData.cell.styles.fillColor;
+        if (fill && Array.isArray(fill)) {
+          doc.setFillColor(fill[0], fill[1], fill[2]);
+          doc.rect(cellData.cell.x, cellData.cell.y, cellData.cell.width, cellData.cell.height, "F");
+        } else {
+          doc.setFillColor(255, 255, 255);
+          doc.rect(cellData.cell.x, cellData.cell.y, cellData.cell.width, cellData.cell.height, "F");
+        }
+
+        const lineW = cellData.cell.styles.lineWidth;
+        if (lineW) {
+          const lineC = cellData.cell.styles.lineColor || [160, 140, 100];
+          doc.setDrawColor(lineC[0], lineC[1], lineC[2]);
+          doc.setLineWidth(lineW);
+          doc.rect(cellData.cell.x, cellData.cell.y, cellData.cell.width, cellData.cell.height, "S");
+        }
+
+        let drawX = cellData.cell.x + (cellData.cell.padding("left") || 1.5);
+        if (cellData.cell.styles.halign === "center") {
+          drawX = cellData.cell.x + (cellData.cell.width - rendered.widthMm) / 2;
+        } else if (cellData.cell.styles.halign === "right") {
+          drawX = cellData.cell.x + cellData.cell.width - rendered.widthMm - (cellData.cell.padding("right") || 1.5);
+        }
+
+        const drawY = cellData.cell.y + (cellData.cell.height - rendered.heightMm) / 2;
+        doc.addImage(rendered.dataUrl, "PNG", drawX, drawY, rendered.widthMm, rendered.heightMm);
+      }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
 // MAIN PDF GENERATOR — Traditional Indian GST Tax Invoice Format
 // Clean, professional layout with gold/amber branding
 // ══════════════════════════════════════════════════════════════════
@@ -240,10 +376,12 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   }
 
   // Shop Name — centered gold header
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(19);
-  doc.setTextColor(...GOLD_DARK);
-  doc.text(data.shopName.toUpperCase(), pw / 2, y + 10, { align: "center" });
+  drawSafeText(doc, data.shopName, pw / 2, y + 10, {
+    fontSize: 19,
+    fontWeight: "bold",
+    colorHex: "#825f14",
+    align: "center",
+  });
 
   // Address
   doc.setFont("helvetica", "normal");
@@ -271,10 +409,11 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.setTextColor(...GOLD_DARK);
   doc.text("Party Details :", L + 3, y + 5);
 
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...BLACK);
-  doc.text(data.customerName.toUpperCase(), L + 3, y + 10);
+  drawSafeText(doc, data.customerName, L + 3, y + 10, {
+    fontSize: 9,
+    fontWeight: "bold",
+    colorHex: "#000000",
+  });
 
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
@@ -343,7 +482,7 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   const tableStartY = y + 0.5;
 
   const tableRows = data.items.map((item, i) => {
-    let nameText = item.name.toUpperCase();
+    let nameText = /[^\x00-\x7F]/.test(item.name) ? item.name : item.name.toUpperCase();
     const extras: string[] = [];
     if (item.hallmarkCharge && item.hallmarkCharge > 0)
       extras.push(`HM: ${fmtINR(item.hallmarkCharge)}`);
@@ -414,6 +553,9 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
     margin: { left: L, right: 10 },
     tableLineColor: [BORDER[0], BORDER[1], BORDER[2]],
     tableLineWidth: 0.3,
+    didDrawCell: (cellData: any) => {
+      handleAutoTableCellUnicode(doc, cellData);
+    },
     didParseCell: (cellData: any) => {
       if (cellData.section === "body") {
         cellData.cell.styles.minCellHeight = 7;
@@ -1130,7 +1272,7 @@ export async function generateSalesStatementPDF(data: SalesStatementPDFData) {
       month: "short",
       year: "numeric",
     }),
-    s.customerName.toUpperCase(),
+    /[^\x00-\x7F]/.test(s.customerName) ? s.customerName : s.customerName.toUpperCase(),
     s.customerPhone || "N/A",
     `${s.itemsCount} pc(s)`,
     `${s.paymentStatus} (${s.paymentMethod || "Cash"})`,
@@ -1175,6 +1317,9 @@ export async function generateSalesStatementPDF(data: SalesStatementPDFData) {
       7: { cellWidth: 26, halign: "right" },
     },
     margin: { left: L, right: 10 },
+    didDrawCell: (cellData: any) => {
+      handleAutoTableCellUnicode(doc, cellData);
+    },
   });
 
   y = (doc as any).lastAutoTable.finalY + 4;

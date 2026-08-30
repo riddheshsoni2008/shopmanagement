@@ -57,8 +57,13 @@ export async function createSale(input: SaleInput): Promise<ActionResult<{ saleI
           );
         }
 
-        // Deduct inventory stock
+        // Deduct inventory stock quantity & total weight
         product.quantity -= itemInput.qty;
+        const totalSoldWeight = itemInput.qty * itemInput.weight;
+        product.weightPerPiece = Math.max(
+          0,
+          Number((product.weightPerPiece - totalSoldWeight).toFixed(4))
+        );
         await product.save({ session });
 
         // Calculate item line total
@@ -204,6 +209,7 @@ export async function getSales(
         jadatarCharge: i.jadatarCharge || 0,
         rhodiumCharge: i.rhodiumCharge || 0,
         nangCharge: i.nangCharge || 0,
+        meenoCharge: i.meenoCharge || 0,
         lineTotal: i.lineTotal,
       })),
       soldBy: s.soldBy ? { name: s.soldBy.name, email: s.soldBy.email } : { name: "Staff" },
@@ -258,6 +264,7 @@ export async function getSaleById(id: string): Promise<ActionResult<any>> {
         jadatarCharge: i.jadatarCharge || 0,
         rhodiumCharge: i.rhodiumCharge || 0,
         nangCharge: i.nangCharge || 0,
+        meenoCharge: i.meenoCharge || 0,
         lineTotal: i.lineTotal,
       })),
       soldBy: sale.soldBy ? { name: (sale.soldBy as any).name, email: (sale.soldBy as any).email } : { name: "Staff" },
