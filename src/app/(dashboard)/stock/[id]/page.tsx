@@ -80,7 +80,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
               <div className="space-y-1">
                 <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                  <Scale className="h-3.5 w-3.5" /> Weight / Piece
+                  <Scale className="h-3.5 w-3.5" /> Total Stock Weight
                 </span>
                 <p className="text-base font-mono font-semibold text-slate-900 dark:text-slate-200">
                   {product.weightPerPiece} grams

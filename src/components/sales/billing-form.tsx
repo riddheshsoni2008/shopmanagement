@@ -83,6 +83,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
           jadatarCharge: 0,
           rhodiumCharge: 0,
           nangCharge: 0,
+          meenoCharge: 0,
           lineTotal: 10 * (safeRates.goldRate22k + 150),
         },
       ],
@@ -109,7 +110,8 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     const j = Math.max(0, Number(item.jadatarCharge) || 0);
     const r = Math.max(0, Number(item.rhodiumCharge) || 0);
     const n = Math.max(0, Number(item.nangCharge) || 0);
-    const total = q * (w * (rate + m) + h + j + r + n);
+    const me = Math.max(0, Number(item.meenoCharge) || 0);
+    const total = q * (w * (rate + m) + h + j + r + n + me);
     setValue(`items.${index}.lineTotal`, Math.max(0, total));
   };
 
@@ -142,7 +144,8 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     const jadatar = watchItems?.[index]?.jadatarCharge || 0;
     const rhodium = watchItems?.[index]?.rhodiumCharge || 0;
     const nang = watchItems?.[index]?.nangCharge || 0;
-    const lineTotal = qty * (weight * (ratePerGram + making) + hallmark + jadatar + rhodium + nang);
+    const meeno = watchItems?.[index]?.meenoCharge || 0;
+    const lineTotal = qty * (weight * (ratePerGram + making) + hallmark + jadatar + rhodium + nang + meeno);
 
     setValue(`items.${index}.productId`, selectedProduct._id);
     setValue(`items.${index}.name`, selectedProduct.name);
@@ -164,7 +167,8 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     const j = Math.max(0, Number(item.jadatarCharge) || 0);
     const r = Math.max(0, Number(item.rhodiumCharge) || 0);
     const n = Math.max(0, Number(item.nangCharge) || 0);
-    const total = q * (w * (p + m) + h + j + r + n);
+    const me = Math.max(0, Number(item.meenoCharge) || 0);
+    const total = q * (w * (p + m) + h + j + r + n + me);
     setValue(`items.${index}.lineTotal`, Math.max(0, total));
   };
 
@@ -418,7 +422,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                         {/* Weight */}
                         <div>
                           <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                            Weight (g) *
+                            Total Weight (g) *
                           </label>
                           <Input
                             type="number"
@@ -505,9 +509,9 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                       {/* Extra Customization Charges Row */}
                       <div className="border-t border-amber-200/60 dark:border-slate-800 pt-3">
                         <span className="text-[11px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider block mb-2">
-                          Extra Charges (Hallmark, Jadatar, Rodium, Nang)
+                          Extra Charges (Hallmark, Jadatar, Rodium, Nang, Meeno)
                         </span>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                           {/* Hallmark */}
                           <div>
                             <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">
@@ -577,6 +581,25 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                               placeholder="0"
                               className="mt-1"
                               {...register(`items.${index}.nangCharge`, {
+                                valueAsNumber: true,
+                                onChange: () => updateLineTotal(index),
+                              })}
+                              disabled={isSubmitting}
+                            />
+                          </div>
+
+                          {/* Meeno */}
+                          <div>
+                            <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                              Meeno (₹)
+                            </label>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              placeholder="0"
+                              className="mt-1"
+                              {...register(`items.${index}.meenoCharge`, {
                                 valueAsNumber: true,
                                 onChange: () => updateLineTotal(index),
                               })}

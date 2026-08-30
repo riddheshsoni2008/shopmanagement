@@ -24,6 +24,7 @@ interface InvoiceModalProps {
       jadatarCharge?: number;
       rhodiumCharge?: number;
       nangCharge?: number;
+      meenoCharge?: number;
       lineTotal: number;
     }>;
     discount: number;
@@ -68,6 +69,7 @@ export function InvoiceModal({
         jadatarCharge: i.jadatarCharge || 0,
         rhodiumCharge: i.rhodiumCharge || 0,
         nangCharge: i.nangCharge || 0,
+        meenoCharge: i.meenoCharge || 0,
         lineTotal: i.lineTotal,
       })),
       discount: sale.discount,
@@ -87,6 +89,7 @@ export function InvoiceModal({
       item.jadatarCharge ? `Jadatar: ${formatCurrency(item.jadatarCharge)}` : null,
       item.rhodiumCharge ? `Rodium: ${formatCurrency(item.rhodiumCharge)}` : null,
       item.nangCharge ? `Nang: ${formatCurrency(item.nangCharge)}` : null,
+      item.meenoCharge ? `Meeno: ${formatCurrency(item.meenoCharge)}` : null,
     ].filter(Boolean);
   };
 

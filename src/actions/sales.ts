@@ -70,9 +70,10 @@ export async function createSale(input: SaleInput): Promise<ActionResult<{ saleI
         const jadatarCost = itemInput.jadatarCharge || 0;
         const rhodiumCost = itemInput.rhodiumCharge || 0;
         const nangCost = itemInput.nangCharge || 0;
+        const meenoCost = itemInput.meenoCharge || 0;
 
         const lineTotal =
-          metalCost + makingCost + hallmarkCost + jadatarCost + rhodiumCost + nangCost;
+          metalCost + makingCost + hallmarkCost + jadatarCost + rhodiumCost + nangCost + meenoCost;
 
         subtotal += lineTotal;
 
@@ -87,6 +88,7 @@ export async function createSale(input: SaleInput): Promise<ActionResult<{ saleI
           jadatarCharge: jadatarCost,
           rhodiumCharge: rhodiumCost,
           nangCharge: nangCost,
+          meenoCharge: meenoCost,
           lineTotal,
         });
       }

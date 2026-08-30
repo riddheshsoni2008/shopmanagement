@@ -216,7 +216,7 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Weight / Piece (Grams) *
+              Total Weight (Grams) *
             </label>
             <Input
               type="number"

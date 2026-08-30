@@ -11,6 +11,7 @@ export interface ISaleItem {
   jadatarCharge: number;
   rhodiumCharge: number;
   nangCharge: number;
+  meenoCharge: number;
   lineTotal: number;
 }
 
@@ -39,6 +40,7 @@ const SaleItemSchema = new Schema<ISaleItem>({
   jadatarCharge: { type: Number, required: true, default: 0 },
   rhodiumCharge: { type: Number, required: true, default: 0 },
   nangCharge: { type: Number, required: true, default: 0 },
+  meenoCharge: { type: Number, required: true, default: 0 },
   lineTotal: { type: Number, required: true, min: 0 },
 });
 

@@ -11,6 +11,7 @@ export const saleItemSchema = z.object({
   jadatarCharge: z.coerce.number().min(0, "Jadatar charge cannot be negative").default(0),
   rhodiumCharge: z.coerce.number().min(0, "Rhodium charge cannot be negative").default(0),
   nangCharge: z.coerce.number().min(0, "Nang charge cannot be negative").default(0),
+  meenoCharge: z.coerce.number().min(0, "Meeno charge cannot be negative").default(0),
   lineTotal: z.coerce.number().min(0, "Line total cannot be negative"),
 });
 

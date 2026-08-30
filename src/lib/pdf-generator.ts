@@ -11,6 +11,7 @@ export interface InvoiceItem {
   jadatarCharge?: number;
   rhodiumCharge?: number;
   nangCharge?: number;
+  meenoCharge?: number;
   lineTotal: number;
 }
 
@@ -352,6 +353,8 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
       extras.push(`Rodium: ${fmtINR(item.rhodiumCharge)}`);
     if (item.nangCharge && item.nangCharge > 0)
       extras.push(`Nang: ${fmtINR(item.nangCharge)}`);
+    if (item.meenoCharge && item.meenoCharge > 0)
+      extras.push(`Meeno: ${fmtINR(item.meenoCharge)}`);
 
     if (extras.length > 0) {
       nameText += `\n(${extras.join(" | ")})`;
@@ -441,7 +444,8 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
       (item.hallmarkCharge || 0) +
       (item.jadatarCharge || 0) +
       (item.rhodiumCharge || 0) +
-      (item.nangCharge || 0),
+      (item.nangCharge || 0) +
+      (item.meenoCharge || 0),
     0,
   );
 

@@ -250,7 +250,7 @@ export function ProductTable({ initialData, userRole }: ProductTableProps) {
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className="text-[11px] text-slate-500 dark:text-slate-400">Wt/Piece</span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400">Total Weight</span>
                       <p className="text-sm font-mono font-semibold text-slate-700 dark:text-slate-300">
                         {product.weightPerPiece} g
                       </p>
@@ -305,7 +305,7 @@ export function ProductTable({ initialData, userRole }: ProductTableProps) {
                   <TableHead>Product Name</TableHead>
                   <TableHead>Metal / Purity</TableHead>
                   <TableHead>Category</TableHead>
-                  <TableHead>Wt / Piece</TableHead>
+                  <TableHead>Total Weight (g)</TableHead>
                   <TableHead>Stock Level</TableHead>
                   <TableHead>Selling Price</TableHead>
                   {isAdmin && <TableHead>Cost Price</TableHead>}
