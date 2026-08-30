@@ -132,6 +132,149 @@ async function loadLogoBase64(): Promise<string | null> {
 }
 
 // ══════════════════════════════════════════════════════════════════
+// UNICODE / GUJARATI / MULTI-LANGUAGE PDF CANVAS ENGINE
+// Dynamically renders Gujarati, Hindi, or any non-Latin text to 3x Retina PNG
+// ══════════════════════════════════════════════════════════════════
+function renderUnicodeTextToImage(
+  text: string,
+  fontSizePx: number = 24,
+  colorHex: string = "#000000",
+  fontWeight: string = "bold"
+): { dataUrl: string; widthMm: number; heightMm: number } {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return { dataUrl: "", widthMm: 0, heightMm: 0 };
+  }
+
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return { dataUrl: "", widthMm: 0, heightMm: 0 };
+
+  const font = `${fontWeight} ${fontSizePx}px "Segoe UI", "Noto Sans Gujarati", "Gujarati Sangam MN", "Shruti", "Mukta", sans-serif`;
+  ctx.font = font;
+
+  const lines = text.split("\n");
+  let maxLineWidth = 0;
+  lines.forEach((line) => {
+    const w = ctx.measureText(line).width;
+    if (w > maxLineWidth) maxLineWidth = w;
+  });
+
+  const lineCount = lines.length;
+  const lineGap = fontSizePx * 0.25;
+  const totalHeight = lineCount * fontSizePx + (lineCount - 1) * lineGap + 8;
+  const totalWidth = maxLineWidth + 12;
+
+  const scale = 3; // 3x crisp DPI
+  canvas.width = Math.ceil(totalWidth * scale);
+  canvas.height = Math.ceil(totalHeight * scale);
+
+  ctx.scale(scale, scale);
+  ctx.font = font;
+  ctx.textBaseline = "top";
+  ctx.fillStyle = colorHex;
+
+  lines.forEach((line, idx) => {
+    const yPos = 4 + idx * (fontSizePx + lineGap);
+    ctx.fillText(line, 4, yPos);
+  });
+
+  const widthMm = totalWidth * 0.264583;
+  const heightMm = totalHeight * 0.264583;
+
+  return {
+    dataUrl: canvas.toDataURL("image/png"),
+    widthMm,
+    heightMm,
+  };
+}
+
+function drawSafeText(
+  doc: jsPDF,
+  text: string,
+  x: number,
+  y: number,
+  options?: {
+    fontSize?: number;
+    colorHex?: string;
+    fontWeight?: "bold" | "normal";
+    align?: "left" | "center" | "right";
+  }
+) {
+  const str = text || "";
+  const hasUnicode = /[^\x00-\x7F]/.test(str);
+
+  if (hasUnicode) {
+    const fontSize = options?.fontSize || 9;
+    const colorHex = options?.colorHex || "#000000";
+    const fontWeight = options?.fontWeight || "normal";
+    const align = options?.align || "left";
+
+    const pxSize = Math.max(18, Math.round(fontSize * 3.5));
+    const rendered = renderUnicodeTextToImage(str, pxSize, colorHex, fontWeight);
+
+    if (rendered.dataUrl) {
+      let drawX = x;
+      if (align === "center") {
+        drawX = x - rendered.widthMm / 2;
+      } else if (align === "right") {
+        drawX = x - rendered.widthMm;
+      }
+
+      const drawY = y - rendered.heightMm * 0.65;
+      doc.addImage(rendered.dataUrl, "PNG", drawX, drawY, rendered.widthMm, rendered.heightMm);
+      return;
+    }
+  }
+
+  doc.text(str, x, y, options?.align ? { align: options.align } : undefined);
+}
+
+function handleAutoTableCellUnicode(doc: jsPDF, cellData: any) {
+  if (cellData.section === "body" || cellData.section === "head") {
+    const rawText = cellData.cell.text ? cellData.cell.text.join("\n") : "";
+    if (/[^\x00-\x7F]/.test(rawText)) {
+      const fontSize = cellData.cell.styles.fontSize || 8;
+      const pxSize = Math.max(18, Math.round(fontSize * 3.5));
+      const isBold = cellData.cell.styles.fontStyle === "bold";
+      const colorRGB = cellData.cell.styles.textColor || [0, 0, 0];
+      const colorHex = Array.isArray(colorRGB)
+        ? `#${colorRGB.map((c: number) => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, "0")).join("")}`
+        : "#000000";
+
+      const rendered = renderUnicodeTextToImage(rawText, pxSize, colorHex, isBold ? "bold" : "normal");
+      if (rendered.dataUrl) {
+        const fill = cellData.cell.styles.fillColor;
+        if (fill && Array.isArray(fill)) {
+          doc.setFillColor(fill[0], fill[1], fill[2]);
+          doc.rect(cellData.cell.x, cellData.cell.y, cellData.cell.width, cellData.cell.height, "F");
+        } else {
+          doc.setFillColor(255, 255, 255);
+          doc.rect(cellData.cell.x, cellData.cell.y, cellData.cell.width, cellData.cell.height, "F");
+        }
+
+        const lineW = cellData.cell.styles.lineWidth;
+        if (lineW) {
+          const lineC = cellData.cell.styles.lineColor || [160, 140, 100];
+          doc.setDrawColor(lineC[0], lineC[1], lineC[2]);
+          doc.setLineWidth(lineW);
+          doc.rect(cellData.cell.x, cellData.cell.y, cellData.cell.width, cellData.cell.height, "S");
+        }
+
+        let drawX = cellData.cell.x + (cellData.cell.padding("left") || 1.5);
+        if (cellData.cell.styles.halign === "center") {
+          drawX = cellData.cell.x + (cellData.cell.width - rendered.widthMm) / 2;
+        } else if (cellData.cell.styles.halign === "right") {
+          drawX = cellData.cell.x + cellData.cell.width - rendered.widthMm - (cellData.cell.padding("right") || 1.5);
+        }
+
+        const drawY = cellData.cell.y + (cellData.cell.height - rendered.heightMm) / 2;
+        doc.addImage(rendered.dataUrl, "PNG", drawX, drawY, rendered.widthMm, rendered.heightMm);
+      }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
 // MAIN PDF GENERATOR — Traditional Indian GST Tax Invoice Format
 // Clean, professional layout with gold/amber branding
 // ══════════════════════════════════════════════════════════════════
@@ -208,11 +351,16 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
     }
   }
 
-  // Shop Name — centered gold header
+  // Shop Name — centered gold header (with Unicode/Gujarati support)
   doc.setFont("helvetica", "bold");
   doc.setFontSize(19);
   doc.setTextColor(...GOLD_DARK);
-  doc.text(data.shopName.toUpperCase(), pw / 2, y + 10, { align: "center" });
+  drawSafeText(doc, data.shopName, pw / 2, y + 10, {
+    fontSize: 19,
+    fontWeight: "bold",
+    colorHex: "#825f14",
+    align: "center",
+  });
 
   // Address
   doc.setFont("helvetica", "normal");
@@ -243,7 +391,11 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...BLACK);
-  doc.text(data.customerName.toUpperCase(), L + 3, y + 10);
+  drawSafeText(doc, data.customerName, L + 3, y + 10, {
+    fontSize: 9,
+    fontWeight: "bold",
+    colorHex: "#000000",
+  });
 
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
@@ -568,13 +720,12 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.line(L + 3, footerStartY + 5.5, L + 40, footerStartY + 5.5);
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(6.5);
+  doc.setFontSize(6.2);
   doc.setTextColor(...MID);
   doc.text("E. & O.E.", L + 3, footerStartY + 10);
-  doc.text("1. Goods once sold will not be taken back.", L + 3, footerStartY + 14);
-  doc.text("2. Interest @ 18% p.a. will be charged if the payment", L + 3, footerStartY + 18);
-  doc.text("   is not made within the stipulated time.", L + 3, footerStartY + 22);
-  doc.text("3. Subject to 'Gujarat' Jurisdiction only.", L + 3, footerStartY + 26);
+  doc.text("1. No guarantee or warranty on breakage of jewelry items.", L + 3, footerStartY + 14);
+  doc.text("2. Goods once sold will not be returned or taken back.", L + 3, footerStartY + 18);
+  doc.text("3. Subject to 'Botad' Jurisdiction only.", L + 3, footerStartY + 22);
 
   // RIGHT: Signatures
   doc.setFont("helvetica", "bold");

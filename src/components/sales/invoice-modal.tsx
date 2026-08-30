@@ -259,6 +259,17 @@ export function InvoiceModal({
               </div>
             </div>
           </div>
+
+          {/* Terms & Conditions Footer */}
+          <div className="border-t border-amber-200/80 dark:border-slate-800 pt-3 text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 space-y-1">
+            <p className="font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider text-[10px]">Terms & Conditions</p>
+            <p>E. & O.E.</p>
+            <ol className="list-decimal list-inside space-y-0.5 font-medium">
+              <li>No guarantee or warranty on breakage of jewelry items.</li>
+              <li>Goods once sold will not be returned or taken back.</li>
+              <li>Subject to &apos;Botad&apos; Jurisdiction only.</li>
+            </ol>
+          </div>
         </div>
 
         {/* Action Controls */}
