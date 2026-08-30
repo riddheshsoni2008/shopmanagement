@@ -151,9 +151,9 @@ export function InvoiceModal({ isOpen, onClose, sale, shopName = "Zeal Jewellers
                 <TableRow key={idx}>
                   <TableCell className="text-xs font-mono text-slate-500">{idx + 1}</TableCell>
                   <TableCell className="font-semibold text-slate-200">
-                    <div>{item.name}</div>
+                    <div className="capitalize">{item.name}</div>
                     {((item.hallmarkCharge || 0) > 0 || (item.jadatarCharge || 0) > 0 || (item.rhodiumCharge || 0) > 0 || (item.nangCharge || 0) > 0) && (
-                      <div className="text-[10px] text-amber-400 font-normal">
+                      <div className="text-[10px] text-amber-400/90 font-normal mt-0.5 whitespace-nowrap">
                         {[
                           item.hallmarkCharge ? `HM: ${formatCurrency(item.hallmarkCharge)}` : null,
                           item.jadatarCharge ? `Jadatar: ${formatCurrency(item.jadatarCharge)}` : null,
@@ -161,7 +161,7 @@ export function InvoiceModal({ isOpen, onClose, sale, shopName = "Zeal Jewellers
                           item.nangCharge ? `Nang: ${formatCurrency(item.nangCharge)}` : null,
                         ]
                           .filter(Boolean)
-                          .join(" • ")}
+                          .join(" | ")}
                       </div>
                     )}
                   </TableCell>
@@ -170,7 +170,7 @@ export function InvoiceModal({ isOpen, onClose, sale, shopName = "Zeal Jewellers
                   <TableCell className="text-right font-mono text-xs">{formatCurrency(item.pricePerGram)}</TableCell>
                   <TableCell className="text-right font-mono text-xs">
                     <div>{formatCurrency(item.makingCharge)}/g</div>
-                    <div className="text-[10px] text-slate-400 font-normal">
+                    <div className="text-[10px] text-slate-400 font-normal whitespace-nowrap">
                       Total: {formatCurrency((item.qty || 1) * (item.weight || 0) * (item.makingCharge || 0))}
                     </div>
                   </TableCell>
