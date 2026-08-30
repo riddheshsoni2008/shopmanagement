@@ -11,7 +11,7 @@ import mongoose from "mongoose";
 import { getTenantId } from "@/lib/tenant";
 
 export async function createSale(input: SaleInput): Promise<ActionResult<{ saleId: string }>> {
-  let session = null;
+  let session: mongoose.ClientSession | null = null;
   try {
     const authSession = await auth();
     const tenantId = await getTenantId();
