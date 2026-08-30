@@ -138,10 +138,21 @@ export async function createSale(input: SaleInput): Promise<ActionResult<{ saleI
 }
 
 export async function getSales(
-  page: number = 1,
-  limit: number = 10,
-  search?: string
+  pageOrOptions?: number | { page?: number; limit?: number; search?: string },
+  limitParam: number = 10,
+  searchParam?: string
 ): Promise<ActionResult<any>> {
+  let page = 1;
+  let limit = limitParam;
+  let search = searchParam;
+
+  if (typeof pageOrOptions === "object" && pageOrOptions !== null) {
+    page = pageOrOptions.page ?? 1;
+    limit = pageOrOptions.limit ?? 10;
+    search = pageOrOptions.search ?? searchParam;
+  } else if (typeof pageOrOptions === "number") {
+    page = pageOrOptions;
+  }
   try {
     const tenantId = await getTenantId();
     if (!tenantId) {
