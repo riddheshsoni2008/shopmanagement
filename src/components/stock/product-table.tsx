@@ -101,11 +101,11 @@ export function ProductTable({ initialData, userRole }: ProductTableProps) {
   return (
     <div className="space-y-6">
       {/* Search & Filter Header Bar */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between rounded-2xl border border-slate-800 bg-slate-900/90 p-4 backdrop-blur-md">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between rounded-2xl border border-amber-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-4 shadow-sm backdrop-blur-md transition-colors duration-200">
         <div className="flex flex-1 flex-wrap items-center gap-3">
           {/* Search Box */}
           <div className="relative min-w-[200px] flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
               placeholder="Search product name..."
               value={search}
@@ -174,7 +174,7 @@ export function ProductTable({ initialData, userRole }: ProductTableProps) {
             setEditingProduct(null);
             setDialogOpen(true);
           }}
-          className="font-bold shadow-lg shadow-amber-500/20"
+          className="font-bold shadow-md"
         >
           <Plus className="mr-1.5 h-4 w-4" /> Add New Item
         </Button>
@@ -182,12 +182,12 @@ export function ProductTable({ initialData, userRole }: ProductTableProps) {
 
       {/* Stock Catalog Table */}
       {paginated.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 py-16 text-center">
-          <div className="rounded-full bg-amber-500/10 p-4 text-amber-400 mb-3">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-amber-200 dark:border-slate-800 bg-amber-50/40 dark:bg-slate-900/40 py-16 text-center">
+          <div className="rounded-full bg-amber-100 dark:bg-amber-500/10 p-4 text-amber-600 dark:text-amber-400 mb-3">
             <Gem className="h-8 w-8" />
           </div>
-          <h3 className="text-lg font-bold text-slate-200">No Inventory Items Found</h3>
-          <p className="text-sm text-slate-400 max-w-sm mt-1">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-slate-200">No Inventory Items Found</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mt-1">
             Try adjusting your search keywords, metal, or category filters.
           </p>
           <Button
@@ -223,10 +223,10 @@ export function ProductTable({ initialData, userRole }: ProductTableProps) {
 
               return (
                 <TableRow key={product._id}>
-                  <TableCell className="font-semibold text-slate-100">
+                  <TableCell className="font-semibold text-slate-900 dark:text-slate-100">
                     <Link
                       href={`/stock/${product._id}`}
-                      className="hover:text-amber-400 hover:underline flex items-center gap-2"
+                      className="hover:text-amber-600 dark:hover:text-amber-400 hover:underline flex items-center gap-2"
                     >
                       {product.name}
                     </Link>
@@ -237,17 +237,17 @@ export function ProductTable({ initialData, userRole }: ProductTableProps) {
                       <Badge variant={getMetalBadgeVariant(product.metal) as any}>
                         {product.metal}
                       </Badge>
-                      <span className="text-xs font-mono text-slate-400">
+                      <span className="text-xs font-mono text-slate-600 dark:text-slate-400">
                         {product.purity}
                       </span>
                     </div>
                   </TableCell>
 
-                  <TableCell className="text-slate-300">
+                  <TableCell className="text-slate-700 dark:text-slate-300">
                     {product.category}
                   </TableCell>
 
-                  <TableCell className="font-mono text-xs text-slate-300">
+                  <TableCell className="font-mono text-xs text-slate-700 dark:text-slate-300">
                     {product.weightPerPiece} g
                   </TableCell>
 
@@ -257,12 +257,12 @@ export function ProductTable({ initialData, userRole }: ProductTableProps) {
                     </Badge>
                   </TableCell>
 
-                  <TableCell className="font-bold text-amber-400">
+                  <TableCell className="font-bold text-amber-700 dark:text-amber-400">
                     {formatCurrency(product.sellingPrice)}
                   </TableCell>
 
                   {isAdmin && (
-                    <TableCell className="font-mono text-xs text-slate-400">
+                    <TableCell className="font-mono text-xs text-slate-500 dark:text-slate-400">
                       {formatCurrency(product.purchasePrice)}
                     </TableCell>
                   )}
@@ -276,7 +276,7 @@ export function ProductTable({ initialData, userRole }: ProductTableProps) {
                           title="View Details"
                           className="h-8 w-8"
                         >
-                          <Eye className="h-4 w-4 text-slate-400 hover:text-amber-400" />
+                          <Eye className="h-4 w-4 text-slate-500 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400" />
                         </Button>
                       </Link>
 
@@ -287,7 +287,7 @@ export function ProductTable({ initialData, userRole }: ProductTableProps) {
                         title="Edit Item"
                         className="h-8 w-8"
                       >
-                        <Edit2 className="h-4 w-4 text-slate-400 hover:text-amber-400" />
+                        <Edit2 className="h-4 w-4 text-slate-500 dark:text-slate-400 hover:text-amber-600 dark:hover:text-amber-400" />
                       </Button>
 
                       {isAdmin && (
@@ -298,7 +298,7 @@ export function ProductTable({ initialData, userRole }: ProductTableProps) {
                           title="Delete Item"
                           className="h-8 w-8 hover:bg-rose-500/10"
                         >
-                          <Trash2 className="h-4 w-4 text-rose-400 hover:text-rose-300" />
+                          <Trash2 className="h-4 w-4 text-rose-500 dark:text-rose-400 hover:text-rose-600 dark:hover:text-rose-300" />
                         </Button>
                       )}
                     </div>
@@ -312,10 +312,10 @@ export function ProductTable({ initialData, userRole }: ProductTableProps) {
 
       {/* Pagination Footer */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-4 border-t border-slate-800">
-          <p className="text-xs text-slate-400">
-            Showing Page <strong className="text-slate-200">{currentPage}</strong> of{" "}
-            <strong className="text-slate-200">{totalPages}</strong> ({filtered.length} total items)
+        <div className="flex items-center justify-between pt-4 border-t border-amber-100 dark:border-slate-800">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Showing Page <strong className="text-slate-900 dark:text-slate-200">{currentPage}</strong> of{" "}
+            <strong className="text-slate-900 dark:text-slate-200">{totalPages}</strong> ({filtered.length} total items)
           </p>
 
           <div className="flex items-center gap-2">

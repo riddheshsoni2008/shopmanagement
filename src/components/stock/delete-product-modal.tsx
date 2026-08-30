@@ -53,11 +53,11 @@ export function DeleteProductModal({
       maxWidth="md"
     >
       <div className="space-y-4">
-        <div className="flex items-center gap-3 rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-rose-300">
-          <AlertTriangle className="h-6 w-6 shrink-0" />
+        <div className="flex items-center gap-3 rounded-xl border border-rose-300 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-500/10 p-4 text-rose-700 dark:text-rose-300">
+          <AlertTriangle className="h-6 w-6 shrink-0 text-rose-600 dark:text-rose-400" />
           <p className="text-sm">
             Are you sure you want to permanently delete{" "}
-            <strong className="text-slate-100 font-bold">&quot;{product.name}&quot;</strong>? This action cannot be undone.
+            <strong className="text-slate-900 dark:text-slate-100 font-bold">&quot;{product.name}&quot;</strong>? This action cannot be undone.
           </p>
         </div>
 

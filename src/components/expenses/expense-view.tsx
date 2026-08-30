@@ -74,20 +74,20 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
     <div className="space-y-8">
       {/* Category Breakdown Cards Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-rose-500/30 bg-rose-950/10">
+        <Card className="border-rose-300 dark:border-rose-500/30 bg-rose-50/70 dark:bg-rose-950/10">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-300">
+            <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Total Logged Expenses
             </CardTitle>
-            <div className="rounded-lg bg-rose-500/20 p-2 text-rose-400">
+            <div className="rounded-lg bg-rose-100 dark:bg-rose-500/20 p-2 text-rose-700 dark:text-rose-400">
               <DollarSign className="h-5 w-5" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-rose-400">
+            <div className="text-2xl font-bold text-rose-700 dark:text-rose-400">
               {formatCurrency(initialData.totalExpenses)}
             </div>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               {initialData.expenses.length} recorded entry/entries
             </p>
           </CardContent>
@@ -96,23 +96,23 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
         {Object.entries(initialData.categoryTotals).slice(0, 3).map(([cat, total]) => (
           <Card key={cat}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-slate-300">
+              <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
                 {cat} Total
               </CardTitle>
-              <Tag className="h-4 w-4 text-slate-500" />
+              <Tag className="h-4 w-4 text-slate-400 dark:text-slate-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-xl font-bold text-slate-100">
+              <div className="text-xl font-bold text-slate-900 dark:text-slate-100">
                 {formatCurrency(total)}
               </div>
-              <p className="mt-1 text-xs text-slate-400">Category spending</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Category spending</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
       {/* Control Header & Filters */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between rounded-2xl border border-slate-800 bg-slate-900/90 p-4 backdrop-blur-md">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between rounded-2xl border border-amber-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-4 shadow-sm backdrop-blur-md transition-colors duration-200">
         <div className="flex flex-1 flex-wrap items-center gap-3">
           <div className="w-44">
             <Select
@@ -129,7 +129,7 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
           </div>
 
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-slate-400 font-semibold">From:</span>
+            <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold">From:</span>
             <Input
               type="date"
               value={startDate}
@@ -139,7 +139,7 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
           </div>
 
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-slate-400 font-semibold">To:</span>
+            <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold">To:</span>
             <Input
               type="date"
               value={endDate}
@@ -156,10 +156,10 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
 
       {/* Expense List Table */}
       {filteredExpenses.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 py-16 text-center">
-          <DollarSign className="h-10 w-10 text-slate-600 mb-2" />
-          <h3 className="text-lg font-bold text-slate-200">No Expense Entries</h3>
-          <p className="text-sm text-slate-400 max-w-sm mt-1">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-amber-200 dark:border-slate-800 bg-amber-50/40 dark:bg-slate-900/40 py-16 text-center">
+          <DollarSign className="h-10 w-10 text-slate-400 dark:text-slate-600 mb-2" />
+          <h3 className="text-lg font-bold text-slate-900 dark:text-slate-200">No Expense Entries</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mt-1">
             No operating expenses match your selected filters.
           </p>
         </div>
@@ -182,19 +182,19 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
                   <Badge variant="outline">{expense.category}</Badge>
                 </TableCell>
 
-                <TableCell className="text-slate-300 font-medium">
+                <TableCell className="text-slate-800 dark:text-slate-300 font-medium">
                   {expense.note || "No note recorded"}
                 </TableCell>
 
-                <TableCell className="font-bold text-rose-400">
+                <TableCell className="font-bold text-rose-600 dark:text-rose-400">
                   {formatCurrency(expense.amount)}
                 </TableCell>
 
-                <TableCell className="text-xs text-slate-400">
+                <TableCell className="text-xs text-slate-500 dark:text-slate-400">
                   {formatDate(expense.date)}
                 </TableCell>
 
-                <TableCell className="text-xs text-slate-300">
+                <TableCell className="text-xs text-slate-700 dark:text-slate-300">
                   {expense.addedBy?.name || "Admin"}
                 </TableCell>
 
@@ -205,7 +205,7 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
                     onClick={() => handleDelete(expense._id, expense.category, expense.amount)}
                     className="h-8 w-8 hover:bg-rose-500/10"
                   >
-                    <Trash2 className="h-4 w-4 text-rose-400" />
+                    <Trash2 className="h-4 w-4 text-rose-500 dark:text-rose-400" />
                   </Button>
                 </TableCell>
               </TableRow>

@@ -121,7 +121,7 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
     }
   };
 
-  return ( 
+  return (
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
@@ -132,23 +132,23 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Item Name */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300">
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
             Product Title / Name *
           </label>
           <Input
-            placeholder="e.g. Royal Royal 22K Gold Antique Necklace"
+            placeholder="e.g. Royal 22K Gold Antique Necklace"
             {...register("name")}
             disabled={isSubmitting}
           />
           {errors.name && (
-            <p className="mt-1 text-xs text-rose-400">{errors.name.message}</p>
+            <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">{errors.name.message}</p>
           )}
         </div>
 
         {/* Category & Metal Type */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-300">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Jewelry Category *
             </label>
             <Select {...register("category")} disabled={isSubmitting}>
@@ -159,14 +159,14 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
               ))}
             </Select>
             {errors.category && (
-              <p className="mt-1 text-xs text-rose-400">
+              <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">
                 {errors.category.message}
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Metal Type *
             </label>
             <Select {...register("metal")} disabled={isSubmitting}>
@@ -177,7 +177,7 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
               ))}
             </Select>
             {errors.metal && (
-              <p className="mt-1 text-xs text-rose-400 font-medium">
+              <p className="mt-1 text-xs text-rose-500 dark:text-rose-400 font-medium">
                 {errors.metal.message}
               </p>
             )}
@@ -187,7 +187,7 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
         {/* Purity & Size */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-300">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Purity (e.g. 22K, 18K, 925) *
             </label>
             <Input
@@ -196,12 +196,12 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
               disabled={isSubmitting}
             />
             {errors.purity && (
-              <p className="mt-1 text-xs text-rose-400">{errors.purity.message}</p>
+              <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">{errors.purity.message}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Size / Dimensions (Optional)
             </label>
             <Input
@@ -215,7 +215,7 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
         {/* Weight & Stock Quantity */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-300">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Weight / Piece (Grams) *
             </label>
             <Input
@@ -225,14 +225,14 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
               disabled={isSubmitting}
             />
             {errors.weightPerPiece && (
-              <p className="mt-1 text-xs text-rose-400">
+              <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">
                 {errors.weightPerPiece.message}
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Initial Quantity in Stock *
             </label>
             <Input
@@ -241,14 +241,14 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
               disabled={isSubmitting}
             />
             {errors.quantity && (
-              <p className="mt-1 text-xs text-rose-400">
+              <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">
                 {errors.quantity.message}
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Low Stock Alert Min *
             </label>
             <Input
@@ -257,7 +257,7 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
               disabled={isSubmitting}
             />
             {errors.lowStockThreshold && (
-              <p className="mt-1 text-xs text-rose-400">
+              <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">
                 {errors.lowStockThreshold.message}
               </p>
             )}
@@ -267,7 +267,7 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
         {/* Purchase & Selling Price */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-300">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Cost / Purchase Price (₹) *
             </label>
             <Input
@@ -277,14 +277,14 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
               disabled={isSubmitting}
             />
             {errors.purchasePrice && (
-              <p className="mt-1 text-xs text-rose-400">
+              <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">
                 {errors.purchasePrice.message}
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Retail Selling Price (₹) *
             </label>
             <Input
@@ -294,7 +294,7 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
               disabled={isSubmitting}
             />
             {errors.sellingPrice && (
-              <p className="mt-1 text-xs text-rose-400">
+              <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">
                 {errors.sellingPrice.message}
               </p>
             )}
@@ -303,7 +303,7 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
 
         {/* Image URL */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300">
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
             Image URL String (Optional)
           </label>
           <Input
@@ -312,12 +312,12 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
             disabled={isSubmitting}
           />
           {errors.imageUrl && (
-            <p className="mt-1 text-xs text-rose-400">{errors.imageUrl.message}</p>
+            <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">{errors.imageUrl.message}</p>
           )}
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+        <div className="flex justify-end gap-3 pt-4 border-t border-amber-100 dark:border-slate-800">
           <Button
             type="button"
             variant="ghost"

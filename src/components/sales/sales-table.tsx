@@ -78,11 +78,11 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
   return (
     <div className="space-y-6">
       {/* Search & Date Range Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between rounded-2xl border border-slate-800 bg-slate-900/90 p-4 backdrop-blur-md">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between rounded-2xl border border-amber-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-4 shadow-sm backdrop-blur-md transition-colors duration-200">
         <div className="flex flex-1 flex-wrap items-center gap-3">
           {/* Search Input */}
           <div className="relative min-w-[220px] flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
               placeholder="Search by customer name or phone..."
               value={search}
@@ -96,7 +96,7 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
 
           {/* Start Date */}
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-slate-400 font-semibold">From:</span>
+            <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold">From:</span>
             <Input
               type="date"
               value={startDate}
@@ -110,7 +110,7 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
 
           {/* End Date */}
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-slate-400 font-semibold">To:</span>
+            <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold">To:</span>
             <Input
               type="date"
               value={endDate}
@@ -132,7 +132,7 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
                 setEndDate("");
                 setCurrentPage(1);
               }}
-              className="text-xs text-amber-400"
+              className="text-xs text-amber-700 dark:text-amber-400"
             >
               Reset Filters
             </Button>
@@ -142,10 +142,10 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
 
       {/* Sales History Table */}
       {paginated.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-800 bg-slate-900/40 py-16 text-center">
-          <Receipt className="h-10 w-10 text-slate-600 mb-2" />
-          <h3 className="text-lg font-bold text-slate-200">No Sales Invoices Found</h3>
-          <p className="text-sm text-slate-400 max-w-sm mt-1">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-amber-200 dark:border-slate-800 bg-amber-50/40 dark:bg-slate-900/40 py-16 text-center">
+          <Receipt className="h-10 w-10 text-slate-400 dark:text-slate-600 mb-2" />
+          <h3 className="text-lg font-bold text-slate-900 dark:text-slate-200">No Sales Invoices Found</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mt-1">
             No transaction records match your search criteria or date filters.
           </p>
         </div>
@@ -167,16 +167,16 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
           <TableBody>
             {paginated.map((sale) => (
               <TableRow key={sale._id}>
-                <TableCell className="font-mono text-xs font-bold text-slate-300">
+                <TableCell className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300">
                   #{sale._id.slice(-8).toUpperCase()}
                 </TableCell>
 
-                <TableCell className="font-semibold text-slate-100 flex items-center gap-1.5">
-                  <User className="h-3.5 w-3.5 text-slate-500" />
+                <TableCell className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                  <User className="h-3.5 w-3.5 text-slate-400" />
                   {sale.customerName}
                 </TableCell>
 
-                <TableCell className="font-mono text-xs text-slate-400">
+                <TableCell className="font-mono text-xs text-slate-500 dark:text-slate-400">
                   {sale.customerPhone}
                 </TableCell>
 
@@ -184,25 +184,25 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
                   <Badge variant="outline">{sale.itemsCount} pc(s)</Badge>
                 </TableCell>
 
-                <TableCell className="font-bold text-amber-400">
+                <TableCell className="font-bold text-amber-700 dark:text-amber-400">
                   {formatCurrency(sale.totalAmount)}
                 </TableCell>
 
                 <TableCell>
                   {sale.paymentStatus === "PENDING" ? (
-                    <Badge className="bg-amber-500/20 text-amber-400 border border-amber-500/30">PENDING</Badge>
+                    <Badge className="bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-400 border border-amber-300 dark:border-amber-500/30">PENDING</Badge>
                   ) : sale.paymentStatus === "PARTIAL" ? (
-                    <Badge className="bg-orange-500/20 text-orange-400 border border-orange-500/30">PARTIAL</Badge>
+                    <Badge className="bg-orange-100 dark:bg-orange-500/20 text-orange-800 dark:text-orange-400 border border-orange-300 dark:border-orange-500/30">PARTIAL</Badge>
                   ) : (
-                    <Badge className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">PAID</Badge>
+                    <Badge className="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30">PAID</Badge>
                   )}
                 </TableCell>
 
-                <TableCell className="text-xs text-slate-400" suppressHydrationWarning>
+                <TableCell className="text-xs text-slate-500 dark:text-slate-400" suppressHydrationWarning>
                   {formatDateTime(sale.createdAt)}
                 </TableCell>
 
-                <TableCell className="text-xs text-slate-300">
+                <TableCell className="text-xs text-slate-700 dark:text-slate-300">
                   {sale.soldBy?.name || "Staff"}
                 </TableCell>
 
@@ -211,7 +211,7 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleViewInvoice(sale)}
-                    className="text-xs font-semibold text-amber-400 hover:text-amber-300"
+                    className="text-xs font-semibold text-amber-700 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-300"
                   >
                     <Eye className="mr-1.5 h-3.5 w-3.5" /> View Receipt
                   </Button>
@@ -224,10 +224,10 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
 
       {/* Pagination Footer */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-4 border-t border-slate-800">
-          <p className="text-xs text-slate-400">
-            Showing Page <strong className="text-slate-200">{currentPage}</strong> of{" "}
-            <strong className="text-slate-200">{totalPages}</strong> ({filtered.length} total sales)
+        <div className="flex items-center justify-between pt-4 border-t border-amber-100 dark:border-slate-800">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Showing Page <strong className="text-slate-900 dark:text-slate-200">{currentPage}</strong> of{" "}
+            <strong className="text-slate-900 dark:text-slate-200">{totalPages}</strong> ({filtered.length} total sales)
           </p>
 
           <div className="flex items-center gap-2">

@@ -67,11 +67,11 @@ export function ReportsView({ initialData }: ReportsViewProps) {
   return (
     <div className="space-y-8">
       {/* Date Filter Controls */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between rounded-2xl border border-slate-800 bg-slate-900/90 p-4 backdrop-blur-md">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between rounded-2xl border border-amber-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-4 shadow-sm backdrop-blur-md transition-colors duration-200">
         <div className="flex flex-1 flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-amber-400" />
-            <span className="text-xs font-semibold text-slate-300">From Date:</span>
+            <Calendar className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">From Date:</span>
             <Input
               type="date"
               value={startDate}
@@ -81,7 +81,7 @@ export function ReportsView({ initialData }: ReportsViewProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-300">To Date:</span>
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">To Date:</span>
             <Input
               type="date"
               value={endDate}
@@ -105,91 +105,91 @@ export function ReportsView({ initialData }: ReportsViewProps) {
           </Button>
         </div>
 
-        <div className="text-xs text-slate-400">
-          Showing range: <strong className="text-slate-200">{formatDate(data.startDate)}</strong> to{" "}
-          <strong className="text-slate-200">{formatDate(data.endDate)}</strong>
+        <div className="text-xs text-slate-500 dark:text-slate-400">
+          Showing range: <strong className="text-slate-900 dark:text-slate-200">{formatDate(data.startDate)}</strong> to{" "}
+          <strong className="text-slate-900 dark:text-slate-200">{formatDate(data.endDate)}</strong>
         </div>
       </div>
 
       {/* Financial Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Total Revenue */}
-        <Card className="border-amber-500/30 bg-amber-500/5">
+        <Card className="border-amber-300 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/5">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-300">
+            <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Total Revenue
             </CardTitle>
-            <div className="rounded-lg bg-amber-500/20 p-2 text-amber-400">
+            <div className="rounded-lg bg-amber-100 dark:bg-amber-500/20 p-2 text-amber-700 dark:text-amber-400">
               <TrendingUp className="h-5 w-5" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-400">
+            <div className="text-2xl font-bold text-amber-700 dark:text-amber-400">
               {formatCurrency(data.totalRevenue)}
             </div>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               {data.totalSalesCount} total bill(s) issued
             </p>
           </CardContent>
         </Card>
 
         {/* Total Expenses */}
-        <Card>
+        <Card className="border-rose-300 dark:border-rose-500/30 bg-rose-50/70 dark:bg-rose-950/10">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-300">
+            <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Total Expenses
             </CardTitle>
-            <div className="rounded-lg bg-rose-500/20 p-2 text-rose-400">
+            <div className="rounded-lg bg-rose-100 dark:bg-rose-500/20 p-2 text-rose-700 dark:text-rose-400">
               <DollarSign className="h-5 w-5" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-rose-400">
+            <div className="text-2xl font-bold text-rose-700 dark:text-rose-400">
               {formatCurrency(data.totalExpenses)}
             </div>
-            <p className="mt-1 text-xs text-slate-400">Operating overheads</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Operating overheads</p>
           </CardContent>
         </Card>
 
         {/* Net Profit */}
-        <Card className={data.netProfit >= 0 ? "border-emerald-500/30 bg-emerald-500/5" : "border-rose-500/30"}>
+        <Card className={data.netProfit >= 0 ? "border-emerald-300 dark:border-emerald-500/30 bg-emerald-50/70 dark:bg-emerald-500/5" : "border-rose-300 dark:border-rose-500/30 bg-rose-50/70 dark:bg-rose-950/10"}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-300">
+            <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Net Profit
             </CardTitle>
-            <div className="rounded-lg bg-emerald-500/20 p-2 text-emerald-400">
+            <div className="rounded-lg bg-emerald-100 dark:bg-emerald-500/20 p-2 text-emerald-700 dark:text-emerald-400">
               <ArrowUpRight className="h-5 w-5" />
             </div>
           </CardHeader>
           <CardContent>
             <div
               className={`text-2xl font-bold ${
-                data.netProfit >= 0 ? "text-emerald-400" : "text-rose-400"
+                data.netProfit >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"
               }`}
             >
               {formatCurrency(data.netProfit)}
             </div>
-            <p className="mt-1 text-xs text-slate-400">Revenue minus expenses</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Revenue minus expenses</p>
           </CardContent>
         </Card>
 
         {/* Average Bill Value */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-300">
+            <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Average Order Value
             </CardTitle>
-            <div className="rounded-lg bg-blue-500/20 p-2 text-blue-400">
+            <div className="rounded-lg bg-sky-100 dark:bg-blue-500/20 p-2 text-sky-700 dark:text-blue-400">
               <BarChart3 className="h-5 w-5" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-100">
+            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
               {formatCurrency(
                 data.totalSalesCount > 0 ? data.totalRevenue / data.totalSalesCount : 0
               )}
             </div>
-            <p className="mt-1 text-xs text-slate-400">Per customer transaction</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Per customer transaction</p>
           </CardContent>
         </Card>
       </div>
@@ -200,13 +200,13 @@ export function ReportsView({ initialData }: ReportsViewProps) {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-amber-400" /> Revenue & Sales Trend
+              <TrendingUp className="h-5 w-5 text-amber-600 dark:text-amber-400" /> Revenue & Sales Trend
             </CardTitle>
             <CardDescription>Daily sales performance timeline</CardDescription>
           </CardHeader>
           <CardContent>
             {data.salesTrend.length === 0 ? (
-              <div className="py-12 text-center text-sm text-slate-400">
+              <div className="py-12 text-center text-sm text-slate-500 dark:text-slate-400">
                 No revenue data recorded for this date range.
               </div>
             ) : (
@@ -219,22 +219,23 @@ export function ReportsView({ initialData }: ReportsViewProps) {
                         <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                    <XAxis dataKey="date" stroke="#64748b" fontSize={11} />
-                    <YAxis stroke="#64748b" fontSize={11} />
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                    <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} />
+                    <YAxis stroke="#94a3b8" fontSize={11} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: "#0f172a",
-                        borderColor: "#334155",
+                        backgroundColor: "var(--card-bg, #ffffff)",
+                        borderColor: "var(--card-border, #fcd34d)",
                         borderRadius: "8px",
-                        color: "#f8fafc",
+                        color: "var(--card-fg, #0f172a)",
+                        boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
                       }}
                       formatter={(val: any) => [formatCurrency(Number(val)), "Revenue"]}
                     />
                     <Area
                       type="monotone"
                       dataKey="revenue"
-                      stroke="#f59e0b"
+                      stroke="#d97706"
                       strokeWidth={2}
                       fillOpacity={1}
                       fill="url(#colorRevenue)"
@@ -250,13 +251,13 @@ export function ReportsView({ initialData }: ReportsViewProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <PieIcon className="h-5 w-5 text-rose-400" /> Expenses Breakdown
+              <PieIcon className="h-5 w-5 text-rose-600 dark:text-rose-400" /> Expenses Breakdown
             </CardTitle>
             <CardDescription>Operating expense allocation</CardDescription>
           </CardHeader>
           <CardContent>
             {data.expensesByCategory.length === 0 ? (
-              <div className="py-12 text-center text-sm text-slate-400">
+              <div className="py-12 text-center text-sm text-slate-500 dark:text-slate-400">
                 No expenses logged in selected range.
               </div>
             ) : (
@@ -282,10 +283,11 @@ export function ReportsView({ initialData }: ReportsViewProps) {
                     </Pie>
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: "#0f172a",
-                        borderColor: "#334155",
+                        backgroundColor: "var(--card-bg, #ffffff)",
+                        borderColor: "var(--card-border, #fcd34d)",
                         borderRadius: "8px",
-                        color: "#f8fafc",
+                        color: "var(--card-fg, #0f172a)",
+                        boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
                       }}
                       formatter={(val: any) => [formatCurrency(Number(val)), "Amount"]}
                     />
@@ -300,28 +302,29 @@ export function ReportsView({ initialData }: ReportsViewProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-amber-400" /> Top Item Revenue
+              <BarChart3 className="h-5 w-5 text-amber-600 dark:text-amber-400" /> Top Item Revenue
             </CardTitle>
             <CardDescription>Highest grossing jewelry items</CardDescription>
           </CardHeader>
           <CardContent>
             {data.categorySalesDistribution.length === 0 ? (
-              <div className="py-12 text-center text-sm text-slate-400">
+              <div className="py-12 text-center text-sm text-slate-500 dark:text-slate-400">
                 No item sales recorded.
               </div>
             ) : (
               <div className="h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={data.categorySalesDistribution}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                    <XAxis dataKey="category" stroke="#64748b" fontSize={10} />
-                    <YAxis stroke="#64748b" fontSize={11} />
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                    <XAxis dataKey="category" stroke="#94a3b8" fontSize={10} />
+                    <YAxis stroke="#94a3b8" fontSize={11} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: "#0f172a",
-                        borderColor: "#334155",
+                        backgroundColor: "var(--card-bg, #ffffff)",
+                        borderColor: "var(--card-border, #fcd34d)",
                         borderRadius: "8px",
-                        color: "#f8fafc",
+                        color: "var(--card-fg, #0f172a)",
+                        boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
                       }}
                       formatter={(val: any) => [formatCurrency(Number(val)), "Total Revenue"]}
                     />

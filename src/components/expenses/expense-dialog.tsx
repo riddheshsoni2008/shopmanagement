@@ -64,7 +64,7 @@ export function ExpenseDialog({ isOpen, onClose }: ExpenseDialogProps) {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Category */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300">
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
             Expense Category *
           </label>
           <Select {...register("category")} disabled={isSubmitting}>
@@ -75,14 +75,14 @@ export function ExpenseDialog({ isOpen, onClose }: ExpenseDialogProps) {
             ))}
           </Select>
           {errors.category && (
-            <p className="mt-1 text-xs text-rose-400">{errors.category.message}</p>
+            <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">{errors.category.message}</p>
           )}
         </div>
 
         {/* Amount & Date */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-300">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Amount Spent (₹) *
             </label>
             <Input
@@ -93,12 +93,12 @@ export function ExpenseDialog({ isOpen, onClose }: ExpenseDialogProps) {
               disabled={isSubmitting}
             />
             {errors.amount && (
-              <p className="mt-1 text-xs text-rose-400">{errors.amount.message}</p>
+              <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">{errors.amount.message}</p>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Expense Date *
             </label>
             <Input
@@ -111,7 +111,7 @@ export function ExpenseDialog({ isOpen, onClose }: ExpenseDialogProps) {
 
         {/* Note / Description */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300">
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
             Description / Memo (Optional)
           </label>
           <Input
@@ -122,7 +122,7 @@ export function ExpenseDialog({ isOpen, onClose }: ExpenseDialogProps) {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+        <div className="flex justify-end gap-3 pt-4 border-t border-amber-100 dark:border-slate-800">
           <Button
             type="button"
             variant="ghost"

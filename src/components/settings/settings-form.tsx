@@ -81,10 +81,10 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
     <div className="space-y-8">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-3xl">
         {/* Metal Rates Card */}
-        <Card className="border-amber-500/30">
+        <Card className="border-amber-300 dark:border-amber-500/30">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-amber-400" /> Daily Live Metal Rates (Per Gram)
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
+              <TrendingUp className="h-5 w-5 text-amber-600 dark:text-amber-400" /> Daily Live Metal Rates (Per Gram)
             </CardTitle>
             <CardDescription>
               Set the benchmark gold and silver rates used for automatic billing calculations shop-wide.
@@ -95,7 +95,7 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Gold 22K Rate */}
               <div className="space-y-2">
-                <label className="block text-xs font-semibold text-amber-400">
+                <label className="block text-xs font-semibold text-amber-700 dark:text-amber-400">
                   Gold Rate (22K) / Gram (₹) *
                 </label>
                 <div className="relative">
@@ -107,17 +107,17 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
                   />
                 </div>
                 {errors.goldRate22k && (
-                  <p className="text-xs text-rose-400 font-medium">
+                  <p className="text-xs text-rose-500 dark:text-rose-400 font-medium">
                     {errors.goldRate22k.message}
                   </p>
                 )}
                 {/* Auto-calculated 10g rate */}
-                <div className="rounded-lg bg-gradient-to-r from-amber-500/10 to-amber-600/5 border border-amber-500/20 px-3 py-2.5">
+                <div className="rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-amber-400/70 uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="text-[11px] font-medium text-amber-800 dark:text-amber-400/80 uppercase tracking-wider flex items-center gap-1.5">
                       <Calculator className="h-3 w-3" /> 10 Gram Rate
                     </span>
-                    <span className="text-sm font-bold text-amber-300 tabular-nums">
+                    <span className="text-sm font-bold text-amber-800 dark:text-amber-300 tabular-nums">
                       {formatINR(gold22k10g)}
                     </span>
                   </div>
@@ -126,7 +126,7 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
 
               {/* Gold 18K Rate */}
               <div className="space-y-2">
-                <label className="block text-xs font-semibold text-amber-400">
+                <label className="block text-xs font-semibold text-amber-700 dark:text-amber-400">
                   Gold Rate (18K) / Gram (₹) *
                 </label>
                 <div className="relative">
@@ -138,17 +138,17 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
                   />
                 </div>
                 {errors.goldRate18k && (
-                  <p className="text-xs text-rose-400 font-medium">
+                  <p className="text-xs text-rose-500 dark:text-rose-400 font-medium">
                     {errors.goldRate18k.message}
                   </p>
                 )}
                 {/* Auto-calculated 10g rate */}
-                <div className="rounded-lg bg-gradient-to-r from-amber-500/10 to-amber-600/5 border border-amber-500/20 px-3 py-2.5">
+                <div className="rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 px-3 py-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-amber-400/70 uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="text-[11px] font-medium text-amber-800 dark:text-amber-400/80 uppercase tracking-wider flex items-center gap-1.5">
                       <Calculator className="h-3 w-3" /> 10 Gram Rate
                     </span>
-                    <span className="text-sm font-bold text-amber-300 tabular-nums">
+                    <span className="text-sm font-bold text-amber-800 dark:text-amber-300 tabular-nums">
                       {formatINR(gold18k10g)}
                     </span>
                   </div>
@@ -158,7 +158,7 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
 
             {/* Silver Rate */}
             <div className="space-y-2 max-w-sm">
-              <label className="block text-xs font-semibold text-slate-300">
+              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                 Fine Silver Rate / Gram (₹) *
               </label>
               <div className="relative">
@@ -170,17 +170,17 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
                 />
               </div>
               {errors.silverRate && (
-                <p className="text-xs text-rose-400 font-medium">
+                <p className="text-xs text-rose-500 dark:text-rose-400 font-medium">
                   {errors.silverRate.message}
                 </p>
               )}
               {/* Auto-calculated 1kg rate */}
-              <div className="rounded-lg bg-gradient-to-r from-slate-500/10 to-slate-600/5 border border-slate-500/20 px-3 py-2.5">
+              <div className="rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-medium text-slate-400/80 uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                     <Scale className="h-3 w-3" /> 1 KG Rate (1000g)
                   </span>
-                  <span className="text-sm font-bold text-slate-200 tabular-nums">
+                  <span className="text-sm font-bold text-slate-900 dark:text-slate-200 tabular-nums">
                     {formatINR(silver1kg)}
                   </span>
                 </div>
@@ -192,8 +192,8 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
         {/* Shop Branding & Owner Card */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Store className="h-5 w-5 text-amber-400" /> Store Branding & Admin Account Details
+            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-slate-100">
+              <Store className="h-5 w-5 text-amber-600 dark:text-amber-400" /> Store Branding & Admin Account Details
             </CardTitle>
             <CardDescription>
               Legal shop name and admin profile name displayed across the system
@@ -202,7 +202,7 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Official Shop Business Name *
                 </label>
                 <Input
@@ -211,12 +211,12 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
                   disabled={isSubmitting}
                 />
                 {errors.shopName && (
-                  <p className="mt-1 text-xs text-rose-400">{errors.shopName.message}</p>
+                  <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">{errors.shopName.message}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                   Admin / Owner Account Name
                 </label>
                 <Input
@@ -225,18 +225,18 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
                   disabled={isSubmitting}
                 />
                 {errors.ownerName && (
-                  <p className="mt-1 text-xs text-rose-400">{errors.ownerName.message}</p>
+                  <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">{errors.ownerName.message}</p>
                 )}
               </div>
             </div>
 
-            <div className="pt-2 text-xs text-slate-400 flex items-center justify-between border-t border-slate-800">
+            <div className="pt-2 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between border-t border-amber-100 dark:border-slate-800">
               <span suppressHydrationWarning>
-                Last Updated: <strong className="text-slate-200" suppressHydrationWarning>{formatDateTime(initialRates.updatedAt)}</strong>
+                Last Updated: <strong className="text-slate-900 dark:text-slate-200" suppressHydrationWarning>{formatDateTime(initialRates.updatedAt)}</strong>
               </span>
               {initialRates.updatedBy && (
                 <span>
-                  By: <strong className="text-slate-200">{initialRates.updatedBy.name}</strong>
+                  By: <strong className="text-slate-900 dark:text-slate-200">{initialRates.updatedBy.name}</strong>
                 </span>
               )}
             </div>
@@ -246,7 +246,7 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="h-12 px-8 font-bold text-base shadow-xl shadow-amber-500/20"
+          className="h-12 px-8 font-bold text-base shadow-md"
         >
           {isSubmitting ? (
             <>
