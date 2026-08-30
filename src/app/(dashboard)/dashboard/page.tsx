@@ -1,4 +1,4 @@
-import { getDashboardMetrics } from "@/actions/reports";
+import { getDashboardMetrics, DashboardPeriod } from "@/actions/reports";
 import { auth } from "@/lib/auth";
 import Link from "next/link";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
@@ -18,19 +18,33 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { RevenueFilter } from "@/components/dashboard/revenue-filter";
 
 export const revalidate = 0; // SSR live rendering
 
-export default async function DashboardPage() {
+const VALID_PERIODS = ["today", "month", "year"] as const;
+
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const session = await auth();
   const isAdmin = (session?.user as any)?.role === "admin";
 
-  const metricsRes = await getDashboardMetrics();
+  const params = await searchParams;
+  const rawPeriod = typeof params.period === "string" ? params.period : "today";
+  const period: DashboardPeriod = VALID_PERIODS.includes(rawPeriod as any)
+    ? (rawPeriod as DashboardPeriod)
+    : "today";
+
+  const metricsRes = await getDashboardMetrics(period);
   const metrics = metricsRes.success ? metricsRes.data : null;
 
-  const todayRevenue = metrics?.todaySalesTotal || 0;
-  const todayExpenses = metrics?.todayExpensesTotal || 0;
-  const todayNetProfit = todayRevenue - todayExpenses;
+  const periodRevenue = metrics?.periodSalesTotal || 0;
+  const periodExpenses = metrics?.periodExpensesTotal || 0;
+  const periodNetProfit = periodRevenue - periodExpenses;
+  const periodLabel = metrics?.periodLabel || "Today";
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
@@ -59,13 +73,29 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {/* Revenue Period Filter */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-1 rounded-full bg-gradient-to-b from-amber-500 to-amber-600"></div>
+          <div>
+            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">
+              Revenue Overview
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Showing metrics for <span className="font-semibold text-amber-600 dark:text-amber-400">{periodLabel}</span>
+            </p>
+          </div>
+        </div>
+        <RevenueFilter />
+      </div>
+
       {/* Metrics Cards Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        {/* Today's Sales Total (Revenue) */}
+        {/* Period Sales Total (Revenue) */}
         <Card className="border-amber-300 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              Today&apos;s Revenue (Selling)
+              {periodLabel}&apos;s Revenue (Selling)
             </CardTitle>
             <div className="rounded-lg bg-amber-100 dark:bg-amber-500/20 p-2 text-amber-700 dark:text-amber-400">
               <TrendingUp className="h-5 w-5" />
@@ -73,20 +103,20 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-amber-700 dark:text-amber-400">
-              {formatCurrency(todayRevenue)}
+              {formatCurrency(periodRevenue)}
             </div>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              {metrics?.todaySalesCount || 0} completed transaction(s)
+              {metrics?.periodSalesCount || 0} completed transaction(s)
             </p>
           </CardContent>
         </Card>
 
-        {/* Today's Expenses (Admin Only) */}
+        {/* Period Expenses (Admin Only) */}
         {isAdmin ? (
           <Card className="border-rose-300 dark:border-rose-500/20 bg-rose-50/70 dark:bg-rose-950/10">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Today&apos;s Expenses
+                {periodLabel}&apos;s Expenses
               </CardTitle>
               <div className="rounded-lg bg-rose-100 dark:bg-rose-500/20 p-2 text-rose-700 dark:text-rose-400">
                 <DollarSign className="h-5 w-5" />
@@ -94,7 +124,7 @@ export default async function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-rose-700 dark:text-rose-400">
-                {formatCurrency(todayExpenses)}
+                {formatCurrency(periodExpenses)}
               </div>
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Logged operating expenses</p>
             </CardContent>
@@ -118,22 +148,22 @@ export default async function DashboardPage() {
           </Card>
         )}
 
-        {/* Today's Net Profit (Selling Revenue - Expenses) */}
+        {/* Period Net Profit (Selling Revenue - Expenses) */}
         {isAdmin && (
           <Card
             className={
-              todayNetProfit >= 0
+              periodNetProfit >= 0
                 ? "border-emerald-300 dark:border-emerald-500/40 bg-emerald-50/70 dark:bg-emerald-500/10"
                 : "border-rose-300 dark:border-rose-500/40 bg-rose-50/70 dark:bg-rose-950/10"
             }
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Today&apos;s Net Profit
+                {periodLabel}&apos;s Net Profit
               </CardTitle>
               <div
                 className={`rounded-lg p-2 ${
-                  todayNetProfit >= 0
+                  periodNetProfit >= 0
                     ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400"
                     : "bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400"
                 }`}
@@ -144,21 +174,21 @@ export default async function DashboardPage() {
             <CardContent>
               <div
                 className={`text-2xl font-bold ${
-                  todayNetProfit >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"
+                  periodNetProfit >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"
                 }`}
               >
-                {formatCurrency(todayNetProfit)}
+                {formatCurrency(periodNetProfit)}
               </div>
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Selling − Expenses</p>
             </CardContent>
           </Card>
         )}
 
-        {/* Today's Sales Count */}
+        {/* Period Sales Count */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              Today&apos;s Bills
+              {periodLabel}&apos;s Bills
             </CardTitle>
             <div className="rounded-lg bg-sky-100 dark:bg-blue-500/20 p-2 text-sky-700 dark:text-blue-400">
               <ShoppingCart className="h-5 w-5" />
@@ -166,9 +196,9 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
-              {metrics?.todaySalesCount || 0}
+              {metrics?.periodSalesCount || 0}
             </div>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Bills issued today</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Bills issued {periodLabel.toLowerCase() === "today" ? "today" : `in ${periodLabel}`}</p>
           </CardContent>
         </Card>
 

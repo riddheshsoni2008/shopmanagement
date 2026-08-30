@@ -7,10 +7,13 @@ import { Expense } from "@/models/Expense";
 import { Product } from "@/models/Product";
 import { ActionResult } from "@/actions/auth";
 
+export type DashboardPeriod = "today" | "month" | "year";
+
 export interface DashboardMetrics {
-  todaySalesTotal: number;
-  todaySalesCount: number;
-  todayExpensesTotal: number;
+  periodLabel: string;
+  periodSalesTotal: number;
+  periodSalesCount: number;
+  periodExpensesTotal: number;
   totalProductsCount: number;
   lowStockCount: number;
   recentSales: Array<{
@@ -52,7 +55,35 @@ export interface ReportData {
   }>;
 }
 
-export async function getDashboardMetrics(): Promise<ActionResult<DashboardMetrics>> {
+function getPeriodRange(period: DashboardPeriod): { start: Date; end: Date; label: string } {
+  const now = new Date();
+  const end = new Date();
+  end.setHours(23, 59, 59, 999);
+
+  switch (period) {
+    case "month": {
+      const start = new Date(now.getFullYear(), now.getMonth(), 1);
+      start.setHours(0, 0, 0, 0);
+      const monthName = now.toLocaleString("en-IN", { month: "long", year: "numeric" });
+      return { start, end, label: monthName };
+    }
+    case "year": {
+      const start = new Date(now.getFullYear(), 0, 1);
+      start.setHours(0, 0, 0, 0);
+      return { start, end, label: `Year ${now.getFullYear()}` };
+    }
+    case "today":
+    default: {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      return { start, end, label: "Today" };
+    }
+  }
+}
+
+export async function getDashboardMetrics(
+  period: DashboardPeriod = "today"
+): Promise<ActionResult<DashboardMetrics>> {
   try {
     const session = await auth();
     if (!session?.user) {
@@ -61,17 +92,13 @@ export async function getDashboardMetrics(): Promise<ActionResult<DashboardMetri
 
     await connectDB();
 
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
+    const { start, end, label } = getPeriodRange(period);
 
-    const endOfToday = new Date();
-    endOfToday.setHours(23, 59, 59, 999);
-
-    // Mongoose aggregations for Today's totals
-    const [todaySalesAgg, todayExpensesAgg, totalProductsCount, lowStockProducts, recentSales] =
+    // Mongoose aggregations for period totals
+    const [periodSalesAgg, periodExpensesAgg, totalProductsCount, lowStockProducts, recentSales] =
       await Promise.all([
         Sale.aggregate([
-          { $match: { createdAt: { $gte: startOfToday, $lte: endOfToday } } },
+          { $match: { createdAt: { $gte: start, $lte: end } } },
           {
             $group: {
               _id: null,
@@ -81,7 +108,7 @@ export async function getDashboardMetrics(): Promise<ActionResult<DashboardMetri
           },
         ]),
         Expense.aggregate([
-          { $match: { date: { $gte: startOfToday, $lte: endOfToday } } },
+          { $match: { date: { $gte: start, $lte: end } } },
           {
             $group: {
               _id: null,
@@ -101,9 +128,9 @@ export async function getDashboardMetrics(): Promise<ActionResult<DashboardMetri
           .lean(),
       ]);
 
-    const todaySalesTotal = todaySalesAgg[0]?.totalAmount || 0;
-    const todaySalesCount = todaySalesAgg[0]?.count || 0;
-    const todayExpensesTotal = todayExpensesAgg[0]?.totalAmount || 0;
+    const periodSalesTotal = periodSalesAgg[0]?.totalAmount || 0;
+    const periodSalesCount = periodSalesAgg[0]?.count || 0;
+    const periodExpensesTotal = periodExpensesAgg[0]?.totalAmount || 0;
 
     const formattedRecentSales = recentSales.map((s: any) => ({
       _id: s._id.toString(),
@@ -125,9 +152,10 @@ export async function getDashboardMetrics(): Promise<ActionResult<DashboardMetri
     return {
       success: true,
       data: {
-        todaySalesTotal,
-        todaySalesCount,
-        todayExpensesTotal,
+        periodLabel: label,
+        periodSalesTotal,
+        periodSalesCount,
+        periodExpensesTotal,
         totalProductsCount,
         lowStockCount: formattedLowStock.length,
         recentSales: formattedRecentSales,
