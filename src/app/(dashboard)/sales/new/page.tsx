@@ -11,14 +11,14 @@ export default async function NewSalePage() {
     getRateSettings(),
   ]);
 
-  const products = productsRes.success ? productsRes.data.products : [];
-  const rates = ratesRes.success
+  const products = (productsRes.success && productsRes.data?.products) ? productsRes.data.products : [];
+  const rates = (ratesRes.success && ratesRes.data)
     ? ratesRes.data
     : {
         goldRate22k: 7200,
         goldRate18k: 5900,
         silverRate: 85,
-        shopName: "Aura Luxury Jewelers",
+        shopName: "Zeal Jewellers",
       };
 
   return (

@@ -51,7 +51,7 @@ export async function getProducts(
     await connectDB();
 
     const page = Math.max(1, filter.page || 1);
-    const limit = Math.max(1, Math.min(100, filter.limit || 10));
+    const limit = Math.max(1, Math.min(1000, filter.limit || 10));
     const skip = (page - 1) * limit;
 
     const query: Record<string, unknown> = { userId: tenantId };

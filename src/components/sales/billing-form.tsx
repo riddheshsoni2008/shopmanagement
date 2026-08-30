@@ -47,8 +47,13 @@ interface BillingFormProps {
 export function BillingForm({ products, rates }: BillingFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [completedSale, setCompletedSale] = useState<any | null>(null);
-  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+  const safeRates = {
+    goldRate22k: rates?.goldRate22k || 7200,
+    goldRate18k: rates?.goldRate18k || 5900,
+    silverRate: rates?.silverRate || 85,
+    shopName: rates?.shopName || "Zeal Jewellers",
+  };
+  const safeProducts = products || [];
 
   const {
     register,
@@ -70,13 +75,13 @@ export function BillingForm({ products, rates }: BillingFormProps) {
           name: "",
           qty: 1,
           weight: 10,
-          pricePerGram: rates.goldRate22k,
+          pricePerGram: safeRates.goldRate22k,
           makingCharge: 150,
           hallmarkCharge: 0,
           jadatarCharge: 0,
           rhodiumCharge: 0,
           nangCharge: 0,
-          lineTotal: 10 * (rates.goldRate22k + 150),
+          lineTotal: 10 * (safeRates.goldRate22k + 150),
         },
       ],
     },
@@ -87,13 +92,13 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     name: "items",
   });
 
-  const watchItems = watch("items");
+  const watchItems = watch("items") || [];
   const watchDiscount = watch("discount") || 0;
 
   // Quick rate preset filler function
   const applyRatePreset = (index: number, rate: number) => {
     setValue(`items.${index}.pricePerGram`, rate);
-    const item = watchItems[index];
+    const item = watchItems?.[index];
     if (!item) return;
     const q = Math.max(1, Number(item.qty) || 1);
     const w = Math.max(0, Number(item.weight) || 0);
@@ -108,21 +113,21 @@ export function BillingForm({ products, rates }: BillingFormProps) {
 
   // Auto-fill price per gram based on selected product and current stored rates
   const handleProductSelect = (index: number, selectedId: string) => {
-    const selectedProduct = products.find((p) => p._id === selectedId);
+    const selectedProduct = safeProducts.find((p) => p._id === selectedId);
     if (!selectedProduct) return;
 
     const metalLower = (selectedProduct.metal || "").toLowerCase();
     const purityLower = (selectedProduct.purity || "").toLowerCase();
 
-    let ratePerGram = rates.goldRate22k;
+    let ratePerGram = safeRates.goldRate22k;
 
     if (metalLower.includes("silver") || selectedProduct.category === "Payal") {
-      ratePerGram = rates.silverRate;
+      ratePerGram = safeRates.silverRate;
     } else if (metalLower.includes("gold")) {
       if (purityLower.includes("18")) {
-        ratePerGram = rates.goldRate18k;
+        ratePerGram = safeRates.goldRate18k;
       } else {
-        ratePerGram = rates.goldRate22k;
+        ratePerGram = safeRates.goldRate22k;
       }
     } else if (selectedProduct.sellingPrice > 0 && selectedProduct.weightPerPiece > 0) {
       ratePerGram = selectedProduct.sellingPrice / selectedProduct.weightPerPiece;
@@ -131,10 +136,10 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     const qty = 1;
     const weight = selectedProduct.weightPerPiece || 1;
     const making = 120; // default ₹120 per gram making charge
-    const hallmark = watchItems[index]?.hallmarkCharge || 0;
-    const jadatar = watchItems[index]?.jadatarCharge || 0;
-    const rhodium = watchItems[index]?.rhodiumCharge || 0;
-    const nang = watchItems[index]?.nangCharge || 0;
+    const hallmark = watchItems?.[index]?.hallmarkCharge || 0;
+    const jadatar = watchItems?.[index]?.jadatarCharge || 0;
+    const rhodium = watchItems?.[index]?.rhodiumCharge || 0;
+    const nang = watchItems?.[index]?.nangCharge || 0;
     const lineTotal = qty * (weight * (ratePerGram + making) + hallmark + jadatar + rhodium + nang);
 
     setValue(`items.${index}.productId`, selectedProduct._id);
@@ -147,7 +152,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
   };
 
   const updateLineTotal = (index: number) => {
-    const item = watchItems[index];
+    const item = watchItems?.[index];
     if (!item) return;
     const q = Math.max(1, Number(item.qty) || 1);
     const w = Math.max(0, Number(item.weight) || 0);
@@ -163,8 +168,10 @@ export function BillingForm({ products, rates }: BillingFormProps) {
 
   // Compute live subtotal & grand total
   let subtotal = 0;
-  watchItems.forEach((item) => {
-    subtotal += Number(item.lineTotal) || 0;
+  (watchItems || []).forEach((item) => {
+    if (item) {
+      subtotal += Number(item.lineTotal) || 0;
+    }
   });
   const grandTotal = Math.max(0, subtotal - (Number(watchDiscount) || 0));
 
@@ -313,13 +320,13 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                       name: "",
                       qty: 1,
                       weight: 5,
-                      pricePerGram: rates.goldRate22k,
+                      pricePerGram: safeRates.goldRate22k,
                       makingCharge: 100,
                       hallmarkCharge: 0,
                       jadatarCharge: 0,
                       rhodiumCharge: 0,
                       nangCharge: 0,
-                      lineTotal: 5 * (rates.goldRate22k + 100),
+                      lineTotal: 5 * (safeRates.goldRate22k + 100),
                     })
                   }
                   className="text-xs"
@@ -365,7 +372,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                             className="mt-1"
                           >
                             <option value="">-- Choose Stock Item --</option>
-                            {products.map((p) => (
+                            {safeProducts.map((p) => (
                               <option key={p._id} value={p._id} disabled={p.quantity <= 0}>
                                 {p.name} ({p.metal} {p.purity} • {p.quantity} in stock)
                               </option>
@@ -433,24 +440,24 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                             <div className="flex gap-1 text-[9px] flex-wrap">
                               <button
                                 type="button"
-                                title={`Auto-fill 22K Gold Rate (${formatCurrency(rates.goldRate22k)}/g)`}
-                                onClick={() => applyRatePreset(index, rates.goldRate22k)}
+                                title={`Auto-fill 22K Gold Rate (${formatCurrency(safeRates.goldRate22k)}/g)`}
+                                onClick={() => applyRatePreset(index, safeRates.goldRate22k)}
                                 className="px-1 py-0.5 rounded bg-amber-100 dark:bg-slate-800 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-slate-700 hover:bg-amber-200 dark:hover:bg-slate-700 transition-colors font-medium"
                               >
                                 22K
                               </button>
                               <button
                                 type="button"
-                                title={`Auto-fill 18K Gold Rate (${formatCurrency(rates.goldRate18k)}/g)`}
-                                onClick={() => applyRatePreset(index, rates.goldRate18k)}
+                                title={`Auto-fill 18K Gold Rate (${formatCurrency(safeRates.goldRate18k)}/g)`}
+                                onClick={() => applyRatePreset(index, safeRates.goldRate18k)}
                                 className="px-1 py-0.5 rounded bg-amber-100 dark:bg-slate-800 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-slate-700 hover:bg-amber-200 dark:hover:bg-slate-700 transition-colors font-medium"
                               >
                                 18K
                               </button>
                               <button
                                 type="button"
-                                title={`Auto-fill Silver Rate (${formatCurrency(rates.silverRate)}/g)`}
-                                onClick={() => applyRatePreset(index, rates.silverRate)}
+                                title={`Auto-fill Silver Rate (${formatCurrency(safeRates.silverRate)}/g)`}
+                                onClick={() => applyRatePreset(index, safeRates.silverRate)}
                                 className="px-1 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors font-medium"
                               >
                                 Silver
@@ -476,7 +483,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                               Making / g (₹) *
                             </label>
                             <span className="text-[10px] text-amber-700 dark:text-amber-400 font-mono font-bold">
-                              Total: {formatCurrency((watchItems[index]?.qty || 1) * (watchItems[index]?.weight || 0) * (watchItems[index]?.makingCharge || 0))}
+                              Total: {formatCurrency((watchItems?.[index]?.qty || 1) * (watchItems?.[index]?.weight || 0) * (watchItems?.[index]?.makingCharge || 0))}
                             </span>
                           </div>
                           <Input
@@ -581,7 +588,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                         <div className="text-right">
                           <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Line Total:</span>
                           <strong className="text-sm font-bold text-amber-800 dark:text-amber-400 font-serif">
-                            {formatCurrency(watchItems[index]?.lineTotal || 0)}
+                            {formatCurrency(watchItems?.[index]?.lineTotal || 0)}
                           </strong>
                         </div>
                       </div>
@@ -660,7 +667,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
         isOpen={invoiceModalOpen}
         onClose={() => setInvoiceModalOpen(false)}
         sale={completedSale}
-        shopName={rates.shopName}
+        shopName={safeRates.shopName}
       />
     </div>
   );
