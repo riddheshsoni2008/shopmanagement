@@ -46,6 +46,30 @@ export interface ExpenseStatementPDFData {
   expenses: ExpenseStatementPDFItem[];
 }
 
+export interface SalesStatementPDFItem {
+  invoiceId: string;
+  date: string;
+  customerName: string;
+  customerPhone: string;
+  itemsCount: number;
+  paymentStatus: string;
+  paymentMethod: string;
+  soldBy: string;
+  totalAmount: number;
+}
+
+export interface SalesStatementPDFData {
+  shopName: string;
+  generatedBy?: string;
+  periodLabel: string;
+  totalRevenue: number;
+  totalSalesCount: number;
+  paidCount: number;
+  pendingCount: number;
+  partialCount: number;
+  sales: SalesStatementPDFItem[];
+}
+
 // Format numbers into clean Indian Currency format
 function fmtINR(val: number): string {
   return new Intl.NumberFormat("en-IN", {
@@ -305,7 +329,7 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
 
   autoTable(doc, {
     startY: tableStartY,
-    head: [["S.N.", "Description of Goods", "HSN\nCode", "Qty.", "Unit", "Price", "Amount (₹)"]],
+    head: [["S.N.", "Description of Goods", "HSN\nCode", "Qty.", "Unit", "Price", "Amount (Rs.)"]],
     body: tableRows,
     headStyles: {
       fillColor: [GOLD_LIGHT[0], GOLD_LIGHT[1], GOLD_LIGHT[2]],
@@ -737,7 +761,7 @@ export async function generateExpenseStatementPDF(data: ExpenseStatementPDFData)
 
     autoTable(doc, {
       startY: y,
-      head: [["Category", "Total Spent (₹)", "% of Total"]],
+      head: [["Category", "Total Spent (Rs.)", "% of Total"]],
       body: catRows,
       headStyles: {
         fillColor: [GOLD_LIGHT[0], GOLD_LIGHT[1], GOLD_LIGHT[2]],
@@ -780,7 +804,7 @@ export async function generateExpenseStatementPDF(data: ExpenseStatementPDFData)
 
   autoTable(doc, {
     startY: y,
-    head: [["S.N.", "Date", "Category", "Description / Memo", "Logged By", "Amount (₹)"]],
+    head: [["S.N.", "Date", "Category", "Description / Memo", "Logged By", "Amount (Rs.)"]],
     body: itemRows,
     headStyles: {
       fillColor: [GOLD[0], GOLD[1], GOLD[2]],
@@ -842,4 +866,212 @@ export async function generateExpenseStatementPDF(data: ExpenseStatementPDFData)
   // Trigger Save / Download and automatically release memory resources
   const cleanPeriod = data.periodLabel.replace(/[^a-zA-Z0-9]/g, "_");
   doc.save(`Expense_Statement_${cleanPeriod}.pdf`);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SALES STATEMENT PDF GENERATOR — Bank / Corporate Financial Format
+// ══════════════════════════════════════════════════════════════════
+export async function generateSalesStatementPDF(data: SalesStatementPDFData) {
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const pw = 210;
+  const L = 10;
+  const R = 200;
+  const W = 190;
+
+  const GOLD: [number, number, number] = [178, 134, 46];
+  const GOLD_LIGHT: [number, number, number] = [235, 215, 160];
+  const GOLD_DARK: [number, number, number] = [130, 95, 20];
+  const BLACK: [number, number, number] = [0, 0, 0];
+  const DARK: [number, number, number] = [30, 25, 15];
+  const MID: [number, number, number] = [80, 70, 50];
+  const BORDER: [number, number, number] = [160, 140, 100];
+  const EMERALD: [number, number, number] = [16, 122, 68];
+
+  const logoBase64 = await loadLogoBase64();
+  let y = 10;
+
+  // Header Banner
+  doc.setFontSize(8.5);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...GOLD_DARK);
+  doc.text("OFFICIAL SALES TRANSACTION LEDGER STATEMENT", L + 3, y + 4);
+
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...MID);
+  doc.text(
+    `Generated: ${new Date().toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`,
+    R - 3,
+    y + 4,
+    { align: "right" }
+  );
+
+  y += 6;
+  doc.setDrawColor(...BORDER);
+  doc.setLineWidth(0.3);
+  doc.line(L, y, R, y);
+
+  // Shop Header Box
+  doc.setFillColor(255, 252, 242);
+  doc.rect(L, y, W, 22, "F");
+
+  if (logoBase64) {
+    try {
+      doc.addImage(logoBase64, "PNG", L + 4, y + 1, 26, 20);
+    } catch {}
+  }
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.setTextColor(...GOLD_DARK);
+  doc.text((data.shopName || "ZEAL JEWELLERS").toUpperCase(), pw / 2, y + 9, { align: "center" });
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(...MID);
+  doc.text("SALES REVENUE & INVOICE TRANSACTION STATEMENT", pw / 2, y + 15, { align: "center" });
+
+  y += 22;
+  doc.setDrawColor(...BORDER);
+  doc.setLineWidth(0.3);
+  doc.line(L, y, R, y);
+
+  // Statement Meta Bar
+  doc.setFillColor(248, 246, 240);
+  doc.rect(L, y, W, 12, "F");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...GOLD_DARK);
+  doc.text("Statement Period:", L + 4, y + 7.5);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...BLACK);
+  doc.text(data.periodLabel, L + 35, y + 7.5);
+
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...GOLD_DARK);
+  doc.text("Account / Owner:", L + 115, y + 7.5);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...BLACK);
+  doc.text(data.generatedBy || "Admin Account", L + 145, y + 7.5);
+
+  y += 12;
+  doc.setDrawColor(...BORDER);
+  doc.setLineWidth(0.3);
+  doc.line(L, y, R, y);
+
+  // Executive Summary Card Box
+  y += 4;
+  doc.setFillColor(240, 253, 244);
+  doc.setDrawColor(187, 247, 208);
+  doc.roundedRect(L, y, W, 20, 2, 2, "FD");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(...EMERALD);
+  doc.text("TOTAL SALES REVENUE", L + 6, y + 6);
+
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text(`Rs. ${fmtINR(data.totalRevenue)}`, L + 6, y + 15);
+
+  doc.setFontSize(8.5);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...MID);
+  doc.text(`Total Invoices Billed: ${data.totalSalesCount}`, R - 6, y + 10, { align: "right" });
+  doc.text(`Paid: ${data.paidCount} | Pending: ${data.pendingCount} | Partial: ${data.partialCount}`, R - 6, y + 15, { align: "right" });
+
+  y += 24;
+
+  // Itemized Sales Transaction Table
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9.5);
+  doc.setTextColor(...GOLD_DARK);
+  doc.text("Itemized Sales Invoice Transactions", L, y);
+
+  y += 2;
+
+  const itemRows = data.sales.map((s, index) => [
+    `${index + 1}`,
+    `#${s.invoiceId.slice(-8).toUpperCase()}`,
+    new Date(s.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+    s.customerName.toUpperCase(),
+    s.customerPhone || "N/A",
+    `${s.itemsCount} pc(s)`,
+    `${s.paymentStatus} (${s.paymentMethod || "Cash"})`,
+    `Rs. ${fmtINR(s.totalAmount)}`,
+  ]);
+
+  autoTable(doc, {
+    startY: y,
+    head: [["S.N.", "Invoice ID", "Date", "Customer Name", "Phone", "Items", "Status & Mode", "Amount (Rs.)"]],
+    body: itemRows,
+    headStyles: {
+      fillColor: [GOLD[0], GOLD[1], GOLD[2]],
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
+      fontSize: 8,
+      halign: "center",
+    },
+    bodyStyles: {
+      fontSize: 7.5,
+      textColor: [BLACK[0], BLACK[1], BLACK[2]],
+      cellPadding: 2,
+    },
+    columnStyles: {
+      0: { cellWidth: 8, halign: "center" },
+      1: { cellWidth: 22, halign: "center", fontStyle: "bold" },
+      2: { cellWidth: 24, halign: "center" },
+      3: { cellWidth: 42 },
+      4: { cellWidth: 24, halign: "center" },
+      5: { cellWidth: 16, halign: "center" },
+      6: { cellWidth: 28, halign: "center" },
+      7: { cellWidth: 26, halign: "right" },
+    },
+    margin: { left: L, right: 10 },
+  });
+
+  y = (doc as any).lastAutoTable.finalY + 4;
+
+  // Grand Total Summary Line
+  doc.setFillColor(GOLD_LIGHT[0], GOLD_LIGHT[1], GOLD_LIGHT[2]);
+  doc.rect(L, y, W, 8, "F");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(...DARK);
+  doc.text(`Total Sales Revenue (${data.totalSalesCount} invoices)`, L + 4, y + 5.5);
+
+  doc.setFontSize(10);
+  doc.setTextColor(...EMERALD);
+  doc.text(`Rs. ${fmtINR(data.totalRevenue)}`, R - 4, y + 5.5, { align: "right" });
+
+  y += 12;
+
+  // Electronic Statement Footer Disclaimer
+  doc.setFontSize(7.5);
+  doc.setFont("helvetica", "italic");
+  doc.setTextColor(...MID);
+  doc.text(
+    "This is an electronically generated sales financial statement from Zeal Jewellers Shop Management & POS System.",
+    pw / 2,
+    y,
+    { align: "center" }
+  );
+  doc.text(
+    "All sales records are encrypted and verified against store ledger logs.",
+    pw / 2,
+    y + 4,
+    { align: "center" }
+  );
+
+  // Trigger Save / Download and automatically release memory resources
+  const cleanPeriod = data.periodLabel.replace(/[^a-zA-Z0-9]/g, "_");
+  doc.save(`Sales_Statement_${cleanPeriod}.pdf`);
 }

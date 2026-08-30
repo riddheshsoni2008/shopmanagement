@@ -6,11 +6,10 @@ import {
   Receipt,
   Search,
   Eye,
-  Calendar,
   ChevronLeft,
   ChevronRight,
   User,
-  Phone,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { InvoiceModal } from "@/components/sales/invoice-modal";
+import { SalesStatementModal } from "@/components/sales/sales-statement-modal";
 
 interface SalesTableProps {
   initialData: {
@@ -38,6 +38,7 @@ interface SalesTableProps {
 export function SalesTable({ initialData, shopName }: SalesTableProps) {
   const [selectedSale, setSelectedSale] = useState<any | null>(null);
   const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+  const [salesStatementModalOpen, setSalesStatementModalOpen] = useState(false);
 
   const [search, setSearch] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -149,6 +150,16 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
               </Button>
             )}
           </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-end pt-2 border-t border-amber-100 dark:border-slate-800">
+          <Button
+            variant="outline"
+            onClick={() => setSalesStatementModalOpen(true)}
+            className="font-semibold w-full sm:w-auto border-amber-300 dark:border-slate-700 hover:bg-amber-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200"
+          >
+            <Download className="mr-1.5 h-4 w-4 text-emerald-600 dark:text-emerald-400" /> Export Sales Statement PDF
+          </Button>
         </div>
       </div>
 
@@ -322,6 +333,13 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
         onClose={() => setInvoiceModalOpen(false)}
         sale={selectedSale}
         shopName={shopName}
+      />
+
+      {/* Sales Statement PDF Modal */}
+      <SalesStatementModal
+        isOpen={salesStatementModalOpen}
+        onClose={() => setSalesStatementModalOpen(false)}
+        sales={initialData.sales}
       />
     </div>
   );
