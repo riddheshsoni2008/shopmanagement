@@ -47,6 +47,8 @@ interface BillingFormProps {
 export function BillingForm({ products, rates }: BillingFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [completedSale, setCompletedSale] = useState<any | null>(null);
+  const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
   const safeRates = {
     goldRate22k: rates?.goldRate22k || 7200,
     goldRate18k: rates?.goldRate18k || 5900,
@@ -184,7 +186,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
         
         // Format object for instant invoice modal display
         setCompletedSale({
-          _id: res.data,
+          _id: typeof res.data === "string" ? res.data : (res.data?.saleId || ""),
           customerName: values.customerName,
           customerPhone: values.customerPhone,
           items: values.items,
