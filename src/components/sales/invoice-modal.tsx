@@ -142,7 +142,7 @@ export function InvoiceModal({ isOpen, onClose, sale, shopName = "Zeal Jewellers
                 <TableHead className="text-center">Qty</TableHead>
                 <TableHead className="text-right">Weight</TableHead>
                 <TableHead className="text-right">Rate / g</TableHead>
-                <TableHead className="text-right">Making</TableHead>
+                <TableHead className="text-right">Making / g</TableHead>
                 <TableHead className="text-right">Line Total</TableHead>
               </TableRow>
             </TableHeader>
@@ -168,7 +168,12 @@ export function InvoiceModal({ isOpen, onClose, sale, shopName = "Zeal Jewellers
                   <TableCell className="text-center font-mono text-xs">{item.qty}</TableCell>
                   <TableCell className="text-right font-mono text-xs">{item.weight} g</TableCell>
                   <TableCell className="text-right font-mono text-xs">{formatCurrency(item.pricePerGram)}</TableCell>
-                  <TableCell className="text-right font-mono text-xs">{formatCurrency(item.makingCharge)}</TableCell>
+                  <TableCell className="text-right font-mono text-xs">
+                    <div>{formatCurrency(item.makingCharge)}/g</div>
+                    <div className="text-[10px] text-slate-400 font-normal">
+                      Total: {formatCurrency((item.qty || 1) * (item.weight || 0) * (item.makingCharge || 0))}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-right font-bold text-slate-100">{formatCurrency(item.lineTotal)}</TableCell>
                 </TableRow>
               ))}

@@ -329,7 +329,7 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   data.items.forEach((item) => (subtotal += item.lineTotal));
   let totalWeight = 0;
   data.items.forEach((item) => (totalWeight += item.weight));
-  const totalMaking = data.items.reduce((sum, item) => sum + item.makingCharge, 0);
+  const totalMaking = data.items.reduce((sum, item) => sum + (item.qty * item.weight * item.makingCharge), 0);
   const totalExtra = data.items.reduce(
     (sum, item) =>
       sum +

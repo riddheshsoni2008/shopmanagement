@@ -61,7 +61,7 @@ export async function createSale(input: SaleInput): Promise<ActionResult<string>
       const jadatar = item.jadatarCharge || 0;
       const rhodium = item.rhodiumCharge || 0;
       const nang = item.nangCharge || 0;
-      const lineTotal = item.qty * (item.weight * item.pricePerGram + item.makingCharge + hallmark + jadatar + rhodium + nang);
+      const lineTotal = item.qty * (item.weight * (item.pricePerGram + item.makingCharge) + hallmark + jadatar + rhodium + nang);
       subtotal += lineTotal;
       return {
         product: new mongoose.Types.ObjectId(item.productId),

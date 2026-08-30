@@ -71,12 +71,12 @@ export function BillingForm({ products, rates }: BillingFormProps) {
           qty: 1,
           weight: 10,
           pricePerGram: rates.goldRate22k,
-          makingCharge: 1500,
+          makingCharge: 150,
           hallmarkCharge: 0,
           jadatarCharge: 0,
           rhodiumCharge: 0,
           nangCharge: 0,
-          lineTotal: rates.goldRate22k * 10 + 1500,
+          lineTotal: 10 * (rates.goldRate22k + 150),
         },
       ],
     },
@@ -102,7 +102,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     const j = Math.max(0, Number(item.jadatarCharge) || 0);
     const r = Math.max(0, Number(item.rhodiumCharge) || 0);
     const n = Math.max(0, Number(item.nangCharge) || 0);
-    const total = q * (w * rate + m + h + j + r + n);
+    const total = q * (w * (rate + m) + h + j + r + n);
     setValue(`items.${index}.lineTotal`, Math.max(0, total));
   };
 
@@ -130,12 +130,12 @@ export function BillingForm({ products, rates }: BillingFormProps) {
 
     const qty = 1;
     const weight = selectedProduct.weightPerPiece || 1;
-    const making = 1200;
+    const making = 120; // default ₹120 per gram making charge
     const hallmark = watchItems[index]?.hallmarkCharge || 0;
     const jadatar = watchItems[index]?.jadatarCharge || 0;
     const rhodium = watchItems[index]?.rhodiumCharge || 0;
     const nang = watchItems[index]?.nangCharge || 0;
-    const lineTotal = qty * (weight * ratePerGram + making + hallmark + jadatar + rhodium + nang);
+    const lineTotal = qty * (weight * (ratePerGram + making) + hallmark + jadatar + rhodium + nang);
 
     setValue(`items.${index}.productId`, selectedProduct._id);
     setValue(`items.${index}.name`, selectedProduct.name);
@@ -156,7 +156,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     const j = Math.max(0, Number(item.jadatarCharge) || 0);
     const r = Math.max(0, Number(item.rhodiumCharge) || 0);
     const n = Math.max(0, Number(item.nangCharge) || 0);
-    const total = q * (w * p + m + h + j + r + n);
+    const total = q * (w * (p + m) + h + j + r + n);
     setValue(`items.${index}.lineTotal`, Math.max(0, total));
   };
 
@@ -313,12 +313,12 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                       qty: 1,
                       weight: 5,
                       pricePerGram: rates.goldRate22k,
-                      makingCharge: 1000,
+                      makingCharge: 100,
                       hallmarkCharge: 0,
                       jadatarCharge: 0,
                       rhodiumCharge: 0,
                       nangCharge: 0,
-                      lineTotal: rates.goldRate22k * 5 + 1000,
+                      lineTotal: 5 * (rates.goldRate22k + 100),
                     })
                   }
                   className="text-xs"
@@ -464,15 +464,21 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                           />
                         </div>
 
-                        {/* Making Charge */}
+                        {/* Making Charge per gram */}
                         <div>
-                          <label className="block text-[11px] font-semibold text-slate-400">
-                            Making (₹)
-                          </label>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="block text-[11px] font-semibold text-slate-400">
+                              Making / g (₹) *
+                            </label>
+                            <span className="text-[10px] text-amber-400 font-mono font-bold">
+                              Total: {formatCurrency((watchItems[index]?.qty || 1) * (watchItems[index]?.weight || 0) * (watchItems[index]?.makingCharge || 0))}
+                            </span>
+                          </div>
                           <Input
                             type="number"
                             min="0"
                             step="0.01"
+                            placeholder="e.g. 100"
                             {...register(`items.${index}.makingCharge`, {
                               valueAsNumber: true,
                               onChange: () => updateLineTotal(index),
