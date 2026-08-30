@@ -4,48 +4,48 @@
 
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 224 71% 4%;
+    --background: 40 30% 98%;
+    --foreground: 30 25% 15%;
     --card: 0 0% 100%;
-    --card-foreground: 224 71% 4%;
+    --card-foreground: 30 25% 15%;
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71% 4%;
-    --primary: 43 96% 45%;
+    --popover-foreground: 30 25% 15%;
+    --primary: 38 92% 44%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 40 30% 94%;
-    --secondary-foreground: 43 96% 25%;
-    --muted: 220 14% 93%;
-    --muted-foreground: 220 9% 46%;
-    --accent: 40 40% 90%;
-    --accent-foreground: 43 96% 20%;
+    --secondary: 40 40% 94%;
+    --secondary-foreground: 38 92% 25%;
+    --muted: 40 20% 94%;
+    --muted-foreground: 30 15% 45%;
+    --accent: 40 60% 92%;
+    --accent-foreground: 38 92% 20%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 43 96% 45%;
+    --border: 40 30% 88%;
+    --input: 40 30% 88%;
+    --ring: 38 92% 44%;
     --radius: 0.75rem;
   }
 
   .dark {
-    --background: 224 71% 4%;
-    --foreground: 210 20% 98%;
-    --card: 224 50% 7%;
-    --card-foreground: 210 20% 98%;
-    --popover: 224 50% 7%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 43 96% 50%;
-    --primary-foreground: 224 71% 4%;
-    --secondary: 224 30% 12%;
-    --secondary-foreground: 43 96% 70%;
-    --muted: 224 30% 12%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 43 50% 15%;
-    --accent-foreground: 43 96% 75%;
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 210 20% 98%;
-    --border: 224 30% 15%;
-    --input: 224 30% 15%;
-    --ring: 43 96% 50%;
+    --background: 40 30% 98%;
+    --foreground: 30 25% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 30 25% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 30 25% 15%;
+    --primary: 38 92% 44%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 40% 94%;
+    --secondary-foreground: 38 92% 25%;
+    --muted: 40 20% 94%;
+    --muted-foreground: 30 15% 45%;
+    --accent: 40 60% 92%;
+    --accent-foreground: 38 92% 20%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 40 30% 88%;
+    --input: 40 30% 88%;
+    --ring: 38 92% 44%;
   }
 }
 
@@ -60,27 +60,27 @@
   }
 }
 
-/* Custom Luxury UI Utilities */
+/* Custom Luxury Gold & White UI Utilities */
 .gold-gradient-text {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+  background: linear-gradient(135deg, #d97706 0%, #b45309 50%, #92400e 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .gold-gradient-bg {
-  background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
 }
 
 .gold-glass {
-  background: rgba(245, 158, 11, 0.05);
+  background: rgba(254, 243, 199, 0.6);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.25);
 }
 
-.dark-glass {
-  background: rgba(15, 23, 42, 0.75);
+.white-glass {
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.2);
 }
 
 /* Custom Scrollbar */
@@ -94,12 +94,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(245, 158, 11, 0.2);
+  background: rgba(217, 119, 6, 0.25);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(245, 158, 11, 0.4);
+  background: rgba(217, 119, 6, 0.5);
 }
 
 /* Print Styles for Invoice */

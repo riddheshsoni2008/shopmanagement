@@ -297,10 +297,10 @@ export function BillingForm({ products, rates }: BillingFormProps) {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <ShoppingCart className="h-4 w-4 text-amber-400" /> Sale Bill Items
+                  <CardTitle className="text-base flex items-center gap-2 text-amber-800">
+                    <ShoppingCart className="h-4 w-4 text-amber-600" /> Sale Bill Items
                   </CardTitle>
-                  <CardDescription>Select products from stock & customize pricing</CardDescription>
+                  <CardDescription className="text-slate-500">Select products from stock & customize pricing</CardDescription>
                 </div>
                 <Button
                   type="button"
@@ -328,24 +328,24 @@ export function BillingForm({ products, rates }: BillingFormProps) {
               </CardHeader>
               <CardContent className="space-y-4">
                 {fields.length === 0 ? (
-                  <p className="text-center py-6 text-sm text-slate-400">
+                  <p className="text-center py-6 text-sm text-slate-500">
                     No items added yet. Click &quot;Add Another Item&quot; to pick products.
                   </p>
                 ) : (
                   fields.map((field, index) => (
                     <div
                       key={field.id}
-                      className="rounded-xl border border-slate-800 bg-slate-950/60 p-4 space-y-4 relative"
+                      className="rounded-xl border border-amber-200 bg-amber-50/30 p-4 space-y-4 relative shadow-2xs"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-amber-400">
+                        <span className="text-xs font-bold text-amber-800">
                           Item #{index + 1}
                         </span>
                         {fields.length > 1 && (
                           <button
                             type="button"
                             onClick={() => remove(index)}
-                            className="text-slate-500 hover:text-rose-400 p-1"
+                            className="text-slate-400 hover:text-rose-600 p-1 transition-colors"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
@@ -355,7 +355,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {/* Select Product */}
                         <div>
-                          <label className="block text-xs font-semibold text-slate-300">
+                          <label className="block text-xs font-semibold text-slate-700">
                             Select Inventory Product *
                           </label>
                           <Select
@@ -373,7 +373,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
 
                         {/* Custom Item Name */}
                         <div>
-                          <label className="block text-xs font-semibold text-slate-300">
+                          <label className="block text-xs font-semibold text-slate-700">
                             Line Item Name *
                           </label>
                           <Input
@@ -387,7 +387,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                         {/* Qty */}
                         <div>
-                          <label className="block text-[11px] font-semibold text-slate-400">
+                          <label className="block text-[11px] font-semibold text-slate-600">
                             Qty *
                           </label>
                           <Input
@@ -404,7 +404,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
 
                         {/* Weight */}
                         <div>
-                          <label className="block text-[11px] font-semibold text-slate-400">
+                          <label className="block text-[11px] font-semibold text-slate-600">
                             Weight (g) *
                           </label>
                           <Input
@@ -422,7 +422,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                         {/* Rate per gram */}
                         <div>
                           <div className="flex items-center justify-between mb-1">
-                            <label className="block text-[11px] font-semibold text-slate-400">
+                            <label className="block text-[11px] font-semibold text-slate-600">
                               Rate / Gram (₹) *
                             </label>
                             <div className="flex gap-1 text-[9px]">
@@ -430,7 +430,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                                 type="button"
                                 title={`Auto-fill 22K Gold Rate (${formatCurrency(rates.goldRate22k)}/g)`}
                                 onClick={() => applyRatePreset(index, rates.goldRate22k)}
-                                className="px-1 py-0.5 rounded bg-amber-500/20 text-amber-300 hover:bg-amber-500/40 transition-colors font-medium"
+                                className="px-1 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 transition-colors font-medium"
                               >
                                 22K
                               </button>
@@ -438,7 +438,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                                 type="button"
                                 title={`Auto-fill 18K Gold Rate (${formatCurrency(rates.goldRate18k)}/g)`}
                                 onClick={() => applyRatePreset(index, rates.goldRate18k)}
-                                className="px-1 py-0.5 rounded bg-amber-500/20 text-amber-300 hover:bg-amber-500/40 transition-colors font-medium"
+                                className="px-1 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 transition-colors font-medium"
                               >
                                 18K
                               </button>
@@ -446,7 +446,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                                 type="button"
                                 title={`Auto-fill Silver Rate (${formatCurrency(rates.silverRate)}/g)`}
                                 onClick={() => applyRatePreset(index, rates.silverRate)}
-                                className="px-1 py-0.5 rounded bg-slate-700 text-slate-200 hover:bg-slate-600 transition-colors font-medium"
+                                className="px-1 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 transition-colors font-medium"
                               >
                                 Silver
                               </button>
@@ -467,10 +467,10 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                         {/* Making Charge per gram */}
                         <div>
                           <div className="flex items-center justify-between mb-1">
-                            <label className="block text-[11px] font-semibold text-slate-400">
+                            <label className="block text-[11px] font-semibold text-slate-600">
                               Making / g (₹) *
                             </label>
-                            <span className="text-[10px] text-amber-400 font-mono font-bold">
+                            <span className="text-[10px] text-amber-700 font-mono font-bold">
                               Total: {formatCurrency((watchItems[index]?.qty || 1) * (watchItems[index]?.weight || 0) * (watchItems[index]?.makingCharge || 0))}
                             </span>
                           </div>
@@ -489,14 +489,14 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                       </div>
 
                       {/* Extra Customization Charges Row */}
-                      <div className="border-t border-slate-800/80 pt-3">
-                        <span className="text-[11px] font-bold text-amber-400/90 uppercase tracking-wider block mb-2">
+                      <div className="border-t border-amber-200/60 pt-3">
+                        <span className="text-[11px] font-bold text-amber-800 uppercase tracking-wider block mb-2">
                           Extra Charges (Hallmark, Jadatar, Rodium, Nang)
                         </span>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                           {/* Hallmark */}
                           <div>
-                            <label className="block text-[11px] font-semibold text-slate-400">
+                            <label className="block text-[11px] font-semibold text-slate-600">
                               Hall Mark (₹)
                             </label>
                             <Input
@@ -514,7 +514,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
 
                           {/* Jadatar */}
                           <div>
-                            <label className="block text-[11px] font-semibold text-slate-400">
+                            <label className="block text-[11px] font-semibold text-slate-600">
                               Jadatar (₹)
                             </label>
                             <Input
@@ -532,7 +532,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
 
                           {/* Rodium */}
                           <div>
-                            <label className="block text-[11px] font-semibold text-slate-400">
+                            <label className="block text-[11px] font-semibold text-slate-600">
                               Rodium (₹)
                             </label>
                             <Input
@@ -550,7 +550,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
 
                           {/* Nang */}
                           <div>
-                            <label className="block text-[11px] font-semibold text-slate-400">
+                            <label className="block text-[11px] font-semibold text-slate-600">
                               Nang / Stone (₹)
                             </label>
                             <Input
@@ -570,8 +570,8 @@ export function BillingForm({ products, rates }: BillingFormProps) {
 
                       <div className="flex justify-end pt-1">
                         <div className="text-right">
-                          <span className="text-[11px] text-slate-400 block">Line Total:</span>
-                          <strong className="text-sm font-bold text-amber-400 font-serif">
+                          <span className="text-[11px] text-slate-500 block">Line Total:</span>
+                          <strong className="text-sm font-bold text-amber-800 font-serif">
                             {formatCurrency(watchItems[index]?.lineTotal || 0)}
                           </strong>
                         </div>
@@ -580,7 +580,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                   ))
                 )}
                 {errors.items && (
-                  <p className="text-xs text-rose-400">{errors.items.message}</p>
+                  <p className="text-xs text-rose-600">{errors.items.message}</p>
                 )}
               </CardContent>
             </Card>
@@ -588,22 +588,22 @@ export function BillingForm({ products, rates }: BillingFormProps) {
 
           {/* Right Column: Checkout Summary Box */}
           <div className="space-y-6">
-            <Card className="border-amber-500/40 bg-slate-900/95 sticky top-24">
+            <Card className="border-amber-300 bg-white sticky top-24 shadow-md">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calculator className="h-5 w-5 text-amber-400" /> Bill Summary
+                <CardTitle className="flex items-center gap-2 text-amber-800">
+                  <Calculator className="h-5 w-5 text-amber-600" /> Bill Summary
                 </CardTitle>
-                <CardDescription>Total settlement calculation</CardDescription>
+                <CardDescription className="text-slate-500">Total settlement calculation</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2 border-b border-slate-800 pb-4 text-sm">
-                  <div className="flex justify-between text-slate-400">
+                <div className="space-y-2 border-b border-amber-100 pb-4 text-sm">
+                  <div className="flex justify-between text-slate-600">
                     <span>Items Subtotal:</span>
-                    <span className="font-mono text-slate-200">{formatCurrency(subtotal)}</span>
+                    <span className="font-mono text-slate-900 font-semibold">{formatCurrency(subtotal)}</span>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-400 mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">
                       Flat Discount Amount (₹)
                     </label>
                     <Input
@@ -615,11 +615,11 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                   </div>
                 </div>
 
-                <div className="rounded-xl bg-amber-500/10 p-4 border border-amber-500/30">
-                  <span className="text-xs text-amber-400 font-semibold block">
+                <div className="rounded-xl bg-amber-50 p-4 border border-amber-300">
+                  <span className="text-xs text-amber-800 font-semibold block">
                     GRAND TOTAL PAYABLE
                   </span>
-                  <div className="text-3xl font-bold font-serif text-amber-300 mt-1">
+                  <div className="text-3xl font-bold font-serif text-amber-900 mt-1">
                     {formatCurrency(grandTotal)}
                   </div>
                 </div>
@@ -627,7 +627,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                 <Button
                   type="submit"
                   disabled={isSubmitting || fields.length === 0}
-                  className="w-full h-12 text-base font-bold shadow-xl shadow-amber-500/20"
+                  className="w-full h-12 text-base font-bold shadow-lg"
                 >
                   {isSubmitting ? (
                     <>

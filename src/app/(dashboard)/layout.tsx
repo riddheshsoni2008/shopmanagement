@@ -20,7 +20,7 @@ export default async function DashboardLayout({
   const rates = rateResult.success ? rateResult.data : null;
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-amber-500 selection:text-slate-950">
+    <div className="flex min-h-screen bg-[#faf8f5] text-slate-900 antialiased selection:bg-amber-500 selection:text-white">
       <ToastProvider />
       {/* Sidebar for Desktop */}
       <Sidebar user={session.user} shopName={rates?.shopName} />

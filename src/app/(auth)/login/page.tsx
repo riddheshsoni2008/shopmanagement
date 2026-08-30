@@ -162,11 +162,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col justify-center bg-gradient-to-b from-slate-950 via-[#120a18] to-slate-950 px-4 py-8 sm:px-6 lg:px-8 relative overflow-hidden selection:bg-amber-500 selection:text-slate-950">
+    <div className="flex min-h-screen flex-col justify-center bg-gradient-to-b from-[#faf8f5] via-[#f5efe4] to-[#faf8f5] px-4 py-8 sm:px-6 lg:px-8 relative overflow-hidden selection:bg-amber-500 selection:text-white">
       {/* Luxury Ambient Glow Background */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-amber-500/[0.07] rounded-full blur-[150px] pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-900/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute top-1/3 left-0 w-[400px] h-[400px] bg-amber-600/[0.04] rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-amber-400/[0.12] rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-amber-300/[0.1] rounded-full blur-[140px] pointer-events-none" />
 
       {/* Logo & Brand Header */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center mb-6">
@@ -174,14 +173,14 @@ export default function LoginPage() {
           <img
             src="/logo.png"
             alt="Zeal Jewellers"
-            className="h-28 sm:h-36 w-auto object-contain drop-shadow-[0_8px_30px_rgba(217,119,6,0.25)] transition-transform duration-500 hover:scale-[1.03]"
+            className="h-28 sm:h-36 w-auto object-contain drop-shadow-md transition-transform duration-500 hover:scale-[1.03]"
           />
         </div>
 
         {/* Decorative Divider */}
         <div className="flex items-center justify-center gap-3 mt-4">
           <div className="h-px w-12 bg-gradient-to-r from-transparent to-amber-500/40" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-400/70">
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-800">
             Shop Management & POS
           </span>
           <div className="h-px w-12 bg-gradient-to-l from-transparent to-amber-500/40" />
@@ -190,17 +189,17 @@ export default function LoginPage() {
 
       {/* Main Card */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
-        <div className="rounded-2xl border border-amber-500/15 bg-slate-900/80 p-6 sm:p-8 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] backdrop-blur-xl transition-all duration-300">
+        <div className="rounded-2xl border border-amber-200 bg-white p-6 sm:p-8 shadow-xl backdrop-blur-xl transition-all duration-300">
           
           {/* Top Tab Bar Switcher */}
-          <div className="grid grid-cols-2 gap-1 rounded-2xl bg-slate-950/80 p-1.5 border border-slate-800/80 mb-6">
+          <div className="grid grid-cols-2 gap-1 rounded-2xl bg-amber-50 p-1.5 border border-amber-200 mb-6">
             <button
               type="button"
               onClick={() => setActiveTab("login")}
               className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all duration-200 ${
                 activeTab === "login"
-                  ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/20"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
+                  ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md"
+                  : "text-slate-600 hover:text-amber-900 hover:bg-amber-100/50"
               }`}
             >
               <LogIn className="h-3.5 w-3.5" /> Sign In
@@ -210,8 +209,8 @@ export default function LoginPage() {
               onClick={() => setActiveTab("register")}
               className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all duration-200 ${
                 activeTab === "register"
-                  ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md shadow-amber-500/20"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50"
+                  ? "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md"
+                  : "text-slate-600 hover:text-amber-900 hover:bg-amber-100/50"
               }`}
             >
               <UserPlus className="h-3.5 w-3.5" /> Create Account
@@ -224,25 +223,25 @@ export default function LoginPage() {
               <div>
                 <label
                   htmlFor="login-email"
-                  className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5"
+                  className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5"
                 >
                   Account Email
                 </label>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-500/70">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-600">
                     <Mail className="h-4 w-4" />
                   </div>
                   <Input
                     id="login-email"
                     type="email"
                     placeholder="name@example.com"
-                    className="pl-10 h-11 bg-slate-950/60 border-slate-800 focus:border-amber-500 focus:ring-amber-500/20 text-slate-100 placeholder:text-slate-600 rounded-xl"
+                    className="pl-10 h-11 bg-white border-amber-200 focus:border-amber-500 focus:ring-amber-500/20 text-slate-900 placeholder:text-slate-400 rounded-xl"
                     disabled={isPending}
                     {...registerLogin("email")}
                   />
                 </div>
                 {loginErrors.email && (
-                  <p className="mt-1.5 text-xs text-rose-400 font-medium">
+                  <p className="mt-1.5 text-xs text-rose-600 font-medium">
                     {loginErrors.email.message}
                   </p>
                 )}
@@ -252,40 +251,40 @@ export default function LoginPage() {
                 <div className="flex items-center justify-between mb-1.5">
                   <label
                     htmlFor="login-password"
-                    className="block text-xs font-bold uppercase tracking-wider text-slate-300"
+                    className="block text-xs font-bold uppercase tracking-wider text-slate-700"
                   >
                     Password
                   </label>
                   <button
                     type="button"
                     onClick={() => setActiveTab("reset")}
-                    className="text-xs font-semibold text-amber-400 hover:text-amber-300 hover:underline transition-colors"
+                    className="text-xs font-semibold text-amber-700 hover:text-amber-800 hover:underline transition-colors"
                   >
                     Set / Reset Password?
                   </button>
                 </div>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-500/70">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-600">
                     <Lock className="h-4 w-4" />
                   </div>
                   <Input
                     id="login-password"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
-                    className="pl-10 pr-10 h-11 bg-slate-950/60 border-slate-800 focus:border-amber-500 focus:ring-amber-500/20 text-slate-100 placeholder:text-slate-600 rounded-xl"
+                    className="pl-10 pr-10 h-11 bg-white border-amber-200 focus:border-amber-500 focus:ring-amber-500/20 text-slate-900 placeholder:text-slate-400 rounded-xl"
                     disabled={isPending}
                     {...registerLogin("password")}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-500 hover:text-slate-300 transition-colors"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600 transition-colors"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
                 {loginErrors.password && (
-                  <p className="mt-1.5 text-xs text-rose-400 font-medium">
+                  <p className="mt-1.5 text-xs text-rose-600 font-medium">
                     {loginErrors.password.message}
                   </p>
                 )}
@@ -293,12 +292,12 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full h-11 text-sm font-extrabold tracking-wide uppercase bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 rounded-xl transition-all duration-200 active:scale-[0.99]"
+                className="w-full h-11 text-sm font-extrabold tracking-wide uppercase bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-md rounded-xl transition-all duration-200 active:scale-[0.99]"
                 disabled={isPending}
               >
                 {isPending ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin text-slate-950" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin text-white" />
                     Authenticating...
                   </>
                 ) : (
