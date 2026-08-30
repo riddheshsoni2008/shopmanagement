@@ -90,21 +90,42 @@ export function BillingForm({ products, rates }: BillingFormProps) {
   const watchItems = watch("items");
   const watchDiscount = watch("discount") || 0;
 
+  // Quick rate preset filler function
+  const applyRatePreset = (index: number, rate: number) => {
+    setValue(`items.${index}.pricePerGram`, rate);
+    const item = watchItems[index];
+    if (!item) return;
+    const q = Math.max(1, Number(item.qty) || 1);
+    const w = Math.max(0, Number(item.weight) || 0);
+    const m = Math.max(0, Number(item.makingCharge) || 0);
+    const h = Math.max(0, Number(item.hallmarkCharge) || 0);
+    const j = Math.max(0, Number(item.jadatarCharge) || 0);
+    const r = Math.max(0, Number(item.rhodiumCharge) || 0);
+    const n = Math.max(0, Number(item.nangCharge) || 0);
+    const total = q * (w * rate + m + h + j + r + n);
+    setValue(`items.${index}.lineTotal`, Math.max(0, total));
+  };
+
   // Auto-fill price per gram based on selected product and current stored rates
   const handleProductSelect = (index: number, selectedId: string) => {
     const selectedProduct = products.find((p) => p._id === selectedId);
     if (!selectedProduct) return;
 
-    let ratePerGram = selectedProduct.sellingPrice / (selectedProduct.weightPerPiece || 1);
+    const metalLower = (selectedProduct.metal || "").toLowerCase();
+    const purityLower = (selectedProduct.purity || "").toLowerCase();
 
-    if (selectedProduct.metal === "Gold") {
-      if (selectedProduct.purity.includes("18")) {
+    let ratePerGram = rates.goldRate22k;
+
+    if (metalLower.includes("silver") || selectedProduct.category === "Payal") {
+      ratePerGram = rates.silverRate;
+    } else if (metalLower.includes("gold")) {
+      if (purityLower.includes("18")) {
         ratePerGram = rates.goldRate18k;
       } else {
         ratePerGram = rates.goldRate22k;
       }
-    } else if (selectedProduct.metal === "Silver") {
-      ratePerGram = rates.silverRate;
+    } else if (selectedProduct.sellingPrice > 0 && selectedProduct.weightPerPiece > 0) {
+      ratePerGram = selectedProduct.sellingPrice / selectedProduct.weightPerPiece;
     }
 
     const qty = 1;
@@ -400,9 +421,37 @@ export function BillingForm({ products, rates }: BillingFormProps) {
 
                         {/* Rate per gram */}
                         <div>
-                          <label className="block text-[11px] font-semibold text-slate-400">
-                            Rate / Gram (₹) *
-                          </label>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="block text-[11px] font-semibold text-slate-400">
+                              Rate / Gram (₹) *
+                            </label>
+                            <div className="flex gap-1 text-[9px]">
+                              <button
+                                type="button"
+                                title={`Auto-fill 22K Gold Rate (${formatCurrency(rates.goldRate22k)}/g)`}
+                                onClick={() => applyRatePreset(index, rates.goldRate22k)}
+                                className="px-1 py-0.5 rounded bg-amber-500/20 text-amber-300 hover:bg-amber-500/40 transition-colors font-medium"
+                              >
+                                22K
+                              </button>
+                              <button
+                                type="button"
+                                title={`Auto-fill 18K Gold Rate (${formatCurrency(rates.goldRate18k)}/g)`}
+                                onClick={() => applyRatePreset(index, rates.goldRate18k)}
+                                className="px-1 py-0.5 rounded bg-amber-500/20 text-amber-300 hover:bg-amber-500/40 transition-colors font-medium"
+                              >
+                                18K
+                              </button>
+                              <button
+                                type="button"
+                                title={`Auto-fill Silver Rate (${formatCurrency(rates.silverRate)}/g)`}
+                                onClick={() => applyRatePreset(index, rates.silverRate)}
+                                className="px-1 py-0.5 rounded bg-slate-700 text-slate-200 hover:bg-slate-600 transition-colors font-medium"
+                              >
+                                Silver
+                              </button>
+                            </div>
+                          </div>
                           <Input
                             type="number"
                             min="0"
