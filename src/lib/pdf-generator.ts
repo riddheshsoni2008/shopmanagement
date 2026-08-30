@@ -129,10 +129,7 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.setFont("helvetica", "bold");
   doc.setTextColor(purple.dark[0], purple.dark[1], purple.dark[2]);
   doc.text("TAX INVOICE", pageWidth / 2, 41.5, { align: "center" });
-
-  // ══════════════════════════════════════════════════
-  // INVOICE DETAILS ROW
-  // ══════════════════════════════════════════════════
+  
   let y = 58;
 
   // Light purple info strip
