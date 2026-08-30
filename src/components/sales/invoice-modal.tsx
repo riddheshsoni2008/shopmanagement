@@ -53,8 +53,8 @@ export function InvoiceModal({ isOpen, onClose, sale, shopName = "Zeal Jewellers
     window.print();
   };
 
-  const handleDownloadPDF = () => {
-    generateInvoicePDF(pdfData);
+  const handleDownloadPDF = async () => {
+    await generateInvoicePDF(pdfData);
   };
 
   let subtotal = 0;
