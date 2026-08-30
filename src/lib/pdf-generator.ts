@@ -85,8 +85,25 @@ async function loadLogoBase64(): Promise<string | null> {
 // Matching NILESHBHAI.pdf structure with gold/amber logo theme
 // ══════════════════════════════════════════════════════════════════
 export async function generateInvoicePDF(data: InvoicePDFData) {
-  const doc = new jsPDF({ unit: "mm", format: "a4" });
-  const pw = 210; // A4 width
+  // ── Calculate Dynamic Page Height to Eliminate Unused Bottom Space ──
+  let totalExtraCount = 0;
+  data.items.forEach((item) => {
+    if (item.hallmarkCharge && item.hallmarkCharge > 0) totalExtraCount++;
+    if (item.jadatarCharge && item.jadatarCharge > 0) totalExtraCount++;
+    if (item.rhodiumCharge && item.rhodiumCharge > 0) totalExtraCount++;
+    if (item.nangCharge && item.nangCharge > 0) totalExtraCount++;
+  });
+
+  const baseHeight = 156;
+  const itemHeight = data.items.length * 11;
+  const extraLinesHeight = totalExtraCount * 4.5;
+  const discountHeight = data.discount > 0 ? 5 : 0;
+  const computedPageHeight = Math.ceil(baseHeight + itemHeight + extraLinesHeight + discountHeight);
+  // Cap at max 297mm (A4 height) or min 165mm
+  const pdfHeight = Math.min(297, Math.max(165, computedPageHeight));
+
+  const doc = new jsPDF({ unit: "mm", format: [210, pdfHeight] });
+  const pw = 210; // PDF width
   const L = 12; // left margin
   const R = pw - 12; // right boundary
   const W = R - L; // usable width
