@@ -2,189 +2,145 @@
 
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import { Product } from "@/models/Product";
 import { Sale } from "@/models/Sale";
+import { Product } from "@/models/Product";
 import { saleSchema, SaleInput } from "@/lib/validators/sale";
 import { ActionResult } from "@/actions/auth";
 import { revalidatePath } from "next/cache";
 import mongoose from "mongoose";
 import { getTenantId } from "@/lib/tenant";
 
-export interface SaleHistoryFilter {
-  search?: string;
-  startDate?: string;
-  endDate?: string;
-  page?: number;
-  limit?: number;
-}
-
-export async function createSale(input: SaleInput): Promise<ActionResult<string>> {
+export async function createSale(input: SaleInput): Promise<ActionResult<{ saleId: string }>> {
+  let session = null;
   try {
-    const session = await auth();
+    const authSession = await auth();
     const tenantId = await getTenantId();
-    if (!session?.user?.id || !tenantId) {
+    if (!authSession?.user?.id || !tenantId) {
       return { success: false, error: "Unauthorized access" };
     }
-    const userId = session.user.id;
+    const userId = authSession.user.id;
 
     const validated = saleSchema.safeParse(input);
     if (!validated.success) {
       return {
         success: false,
-        error: validated.error.errors[0]?.message || "Invalid sale bill details",
+        error: validated.error.errors[0]?.message || "Invalid sale input payload",
       };
     }
-
-    const { customerName, customerPhone, discount, paymentStatus, paymentMethod, items } = validated.data;
 
     await connectDB();
 
-    // Verify stock availability for all items first
-    for (const item of items) {
-      const product = await Product.findOne({ _id: item.productId, userId: tenantId });
-      if (!product) {
-        return {
-          success: false,
-          error: `Product "${item.name}" was not found in inventory.`,
-        };
-      }
-      if (product.quantity < item.qty) {
-        return {
-          success: false,
-          error: `Insufficient stock for "${product.name}". Available: ${product.quantity}, Requested: ${item.qty}`,
-        };
-      }
-    }
+    // Use MongoDB Client Session for Atomic Transaction
+    const conn = mongoose.connection;
+    session = await conn.startSession();
 
-    // Calculate subtotal & final total server-side for security
-    let subtotal = 0;
-    const processedItems = items.map((item) => {
-      const hallmark = item.hallmarkCharge || 0;
-      const jadatar = item.jadatarCharge || 0;
-      const rhodium = item.rhodiumCharge || 0;
-      const nang = item.nangCharge || 0;
-      const lineTotal = item.qty * (item.weight * (item.pricePerGram + item.makingCharge) + hallmark + jadatar + rhodium + nang);
-      subtotal += lineTotal;
-      return {
-        product: new mongoose.Types.ObjectId(item.productId),
-        name: item.name,
-        qty: item.qty,
-        weight: item.weight,
-        pricePerGram: item.pricePerGram,
-        makingCharge: item.makingCharge,
-        hallmarkCharge: hallmark,
-        jadatarCharge: jadatar,
-        rhodiumCharge: rhodium,
-        nangCharge: nang,
-        lineTotal,
-      };
-    });
+    let newSaleId: string = "";
 
-    const totalAmount = Math.max(0, subtotal - discount);
+    await session.withTransaction(async () => {
+      let subtotal = 0;
+      const populatedItems = [];
 
-    let saleIdStr = "";
+      for (const itemInput of validated.data.items) {
+        // Fetch product and verify stock under active tenant
+        const product = await Product.findOne({
+          _id: itemInput.productId,
+          userId: tenantId,
+        }).session(session);
 
-    // Attempt MongoDB Transaction with Session
-    const dbSession = await mongoose.startSession();
-    try {
-      await dbSession.withTransaction(async () => {
-        // 1. Decrement product stock
-        for (const item of items) {
-          const res = await Product.updateOne(
-            { _id: item.productId, userId: tenantId, quantity: { $gte: item.qty } },
-            { $inc: { quantity: -item.qty } },
-            { session: dbSession }
-          );
-          if (res.modifiedCount === 0) {
-            throw new Error(`Stock updated failed for "${item.name}" due to concurrency.`);
-          }
+        if (!product) {
+          throw new Error(`Product not found: ${itemInput.productId}`);
         }
 
-        // 2. Create Sale document
-        const createdSales = await Sale.create(
-          [
-            {
-              userId: tenantId,
-              items: processedItems,
-              customerName,
-              customerPhone,
-              discount,
-              totalAmount,
-              paymentStatus: paymentStatus || "PAID",
-              paymentMethod: paymentMethod || "Cash",
-              soldBy: new mongoose.Types.ObjectId(userId),
-            },
-          ],
-          { session: dbSession }
-        );
+        if (product.quantity < itemInput.qty) {
+          throw new Error(
+            `Insufficient stock for "${product.name}". Available: ${product.quantity}, Requested: ${itemInput.qty}`
+          );
+        }
 
-        saleIdStr = createdSales[0]._id.toString();
-      });
-    } catch (transactionErr: any) {
-      // Fallback for standalone MongoDB servers where replica set transactions aren't supported
-      if (
-        transactionErr.message?.includes("Transaction numbers are only allowed") ||
-        transactionErr.message?.includes("standalone") ||
-        transactionErr.code === 20
-      ) {
-        // Sequential execution with rollback guard
-        const updatedProductIds: { id: string; qty: number }[] = [];
-        try {
-          for (const item of items) {
-            await Product.findOneAndUpdate(
-              { _id: item.productId, userId: tenantId },
-              { $inc: { quantity: -item.qty } }
-            );
-            updatedProductIds.push({ id: item.productId, qty: item.qty });
-          }
+        // Deduct inventory stock
+        product.quantity -= itemInput.qty;
+        await product.save({ session });
 
-          const createdSale = await Sale.create({
+        // Calculate item line total
+        const weightTotal = itemInput.qty * itemInput.weight;
+        const metalCost = weightTotal * itemInput.pricePerGram;
+        const makingCost = weightTotal * (itemInput.makingCharge || 0);
+
+        const hallmarkCost = itemInput.hallmarkCharge || 0;
+        const jadatarCost = itemInput.jadatarCharge || 0;
+        const rhodiumCost = itemInput.rhodiumCharge || 0;
+        const nangCost = itemInput.nangCharge || 0;
+
+        const lineTotal =
+          metalCost + makingCost + hallmarkCost + jadatarCost + rhodiumCost + nangCost;
+
+        subtotal += lineTotal;
+
+        populatedItems.push({
+          product: product._id,
+          name: product.name,
+          qty: itemInput.qty,
+          weight: itemInput.weight,
+          pricePerGram: itemInput.pricePerGram,
+          makingCharge: itemInput.makingCharge || 0,
+          hallmarkCharge: hallmarkCost,
+          jadatarCharge: jadatarCost,
+          rhodiumCharge: rhodiumCost,
+          nangCharge: nangCost,
+          lineTotal,
+        });
+      }
+
+      const discount = validated.data.discount || 0;
+      const totalAmount = Math.max(0, subtotal - discount);
+
+      // Create sale bill record with tenantId
+      const newSale = await Sale.create(
+        [
+          {
             userId: tenantId,
-            items: processedItems,
-            customerName,
-            customerPhone,
+            customerName: validated.data.customerName,
+            customerPhone: validated.data.customerPhone,
+            items: populatedItems,
             discount,
             totalAmount,
-            paymentStatus: paymentStatus || "PAID",
-            paymentMethod: paymentMethod || "Cash",
+            paymentStatus: validated.data.paymentStatus || "PAID",
+            paymentMethod: validated.data.paymentMethod || "Cash",
             soldBy: new mongoose.Types.ObjectId(userId),
-          });
+          },
+        ],
+        { session }
+      );
 
-          saleIdStr = createdSale._id.toString();
-        } catch (fallbackErr: any) {
-          // Rollback updated stock
-          for (const item of updatedProductIds) {
-            await Product.findOneAndUpdate(
-              { _id: item.id, userId: tenantId },
-              { $inc: { quantity: item.qty } }
-            );
-          }
-          throw fallbackErr;
-        }
-      } else {
-        throw transactionErr;
-      }
-    } finally {
-      await dbSession.endSession();
-    }
+      newSaleId = newSale[0]._id.toString();
+    });
 
-    revalidatePath("/stock");
     revalidatePath("/sales");
+    revalidatePath("/stock");
     revalidatePath("/dashboard");
     revalidatePath("/reports");
 
-    return { success: true, data: saleIdStr };
+    return {
+      success: true,
+      data: { saleId: newSaleId },
+    };
   } catch (error: any) {
-    console.error("Error creating sale:", error);
+    console.error("Transaction Error in createSale:", error);
     return {
       success: false,
-      error: error.message || "Failed to complete sale transaction",
+      error: error.message || "Failed to complete sales transaction bill",
     };
+  } finally {
+    if (session) {
+      await session.endSession();
+    }
   }
 }
 
 export async function getSales(
-  filter: SaleHistoryFilter = {}
+  page: number = 1,
+  limit: number = 10,
+  search?: string
 ): Promise<ActionResult<any>> {
   try {
     const tenantId = await getTenantId();
@@ -194,27 +150,15 @@ export async function getSales(
 
     await connectDB();
 
-    const page = Math.max(1, filter.page || 1);
-    const limit = Math.max(1, Math.min(100, filter.limit || 10));
     const skip = (page - 1) * limit;
-
     const query: Record<string, unknown> = { userId: tenantId };
 
-    if (filter.search && filter.search.trim()) {
-      const searchRegex = { $regex: filter.search.trim(), $options: "i" };
-      query.$or = [{ customerName: searchRegex }, { customerPhone: searchRegex }];
-    }
-
-    if (filter.startDate || filter.endDate) {
-      query.createdAt = {};
-      if (filter.startDate) {
-        (query.createdAt as any).$gte = new Date(filter.startDate);
-      }
-      if (filter.endDate) {
-        const end = new Date(filter.endDate);
-        end.setHours(23, 59, 59, 999);
-        (query.createdAt as any).$lte = end;
-      }
+    if (search && search.trim()) {
+      const q = search.trim();
+      query.$or = [
+        { customerName: { $regex: q, $options: "i" } },
+        { customerPhone: { $regex: q, $options: "i" } },
+      ];
     }
 
     const [sales, total] = await Promise.all([
@@ -310,5 +254,40 @@ export async function getSaleById(id: string): Promise<ActionResult<any>> {
     return { success: true, data: formatted };
   } catch (error) {
     return { success: false, error: "Failed to fetch invoice details" };
+  }
+}
+
+export async function bulkDeleteSales(ids: string[]): Promise<ActionResult<{ deletedCount: number }>> {
+  try {
+    const session = await auth();
+    const tenantId = await getTenantId();
+    if (!session?.user || !tenantId) {
+      return { success: false, error: "Unauthorized access" };
+    }
+
+    const role = (session.user as any).role;
+    if (role !== "admin") {
+      return { success: false, error: "Only admins can delete sales records" };
+    }
+
+    if (!ids || ids.length === 0) {
+      return { success: true, data: { deletedCount: 0 } };
+    }
+
+    await connectDB();
+
+    const result = await Sale.deleteMany({
+      _id: { $in: ids },
+      userId: tenantId,
+    });
+
+    revalidatePath("/sales");
+    revalidatePath("/dashboard");
+    revalidatePath("/reports");
+
+    return { success: true, data: { deletedCount: result.deletedCount || 0 } };
+  } catch (error) {
+    console.error("Error bulk deleting sales records:", error);
+    return { success: false, error: "Failed to delete sales records" };
   }
 }

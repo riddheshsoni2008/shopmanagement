@@ -9,6 +9,8 @@ import {
   SalesStatementPDFItem,
 } from "@/lib/pdf-generator";
 import { getRateSettings } from "@/actions/settings";
+import { bulkDeleteSales } from "@/actions/sales";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 interface SalesStatementModalProps {
@@ -22,9 +24,11 @@ export function SalesStatementModal({
   onClose,
   sales,
 }: SalesStatementModalProps) {
+  const router = useRouter();
   const [periodPreset, setPeriodPreset] = useState<"weekly" | "monthly" | "yearly" | "custom">("monthly");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
+  const [autoDeleteAfterDownload, setAutoDeleteAfterDownload] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
 
   if (!isOpen) return null;
@@ -131,7 +135,23 @@ export function SalesStatementModal({
         sales: formattedPDFItems,
       });
 
-      toast.success("Sales statement PDF downloaded! Temporary file auto-cleared.", { id: "sales-pdf-toast" });
+      // Auto-Delete downloaded sales data from database if option enabled
+      if (autoDeleteAfterDownload) {
+        const saleIds = periodSales.map((s) => s._id);
+        const delRes = await bulkDeleteSales(saleIds);
+        if (delRes.success) {
+          toast.success(
+            `Statement downloaded & ${delRes.data?.deletedCount || periodSales.length} sales invoice(s) auto-cleared from DB!`,
+            { id: "sales-pdf-toast" }
+          );
+        } else {
+          toast.success("Statement downloaded successfully!", { id: "sales-pdf-toast" });
+        }
+        router.refresh();
+      } else {
+        toast.success("Sales statement PDF downloaded successfully!", { id: "sales-pdf-toast" });
+      }
+
       onClose();
     } catch (err: any) {
       console.error("Sales statement PDF error:", err);
@@ -261,11 +281,18 @@ export function SalesStatementModal({
             </div>
           )}
 
-          <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-start gap-2.5">
-            <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-            <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">
-              Statements are generated client-side and saved directly to your device. Temporary download blobs are automatically cleaned up immediately.
-            </p>
+          {/* Auto-delete Toggle Option */}
+          <div className="p-3 bg-rose-50/60 dark:bg-rose-950/20 rounded-xl border border-rose-200 dark:border-rose-900/30 flex items-start gap-2.5">
+            <input
+              type="checkbox"
+              id="autoDeleteSalesCheckbox"
+              checked={autoDeleteAfterDownload}
+              onChange={(e) => setAutoDeleteAfterDownload(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-rose-300 text-rose-600 focus:ring-rose-500 accent-rose-600 cursor-pointer shrink-0"
+            />
+            <label htmlFor="autoDeleteSalesCheckbox" className="text-[11px] font-semibold text-rose-900 dark:text-rose-300 leading-snug cursor-pointer">
+              Automatically delete downloaded sales records from database after successful export
+            </label>
           </div>
         </div>
 

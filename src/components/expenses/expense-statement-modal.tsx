@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Calendar, FileText, CheckCircle2 } from "lucide-react";
+import { Download, Calendar, FileText, CheckCircle2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,6 +9,8 @@ import {
   ExpenseStatementPDFItem,
 } from "@/lib/pdf-generator";
 import { getRateSettings } from "@/actions/settings";
+import { bulkDeleteExpenses } from "@/actions/expenses";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 interface ExpenseStatementModalProps {
@@ -22,9 +24,11 @@ export function ExpenseStatementModal({
   onClose,
   expenses,
 }: ExpenseStatementModalProps) {
+  const router = useRouter();
   const [periodPreset, setPeriodPreset] = useState<"weekly" | "monthly" | "yearly" | "custom">("monthly");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
+  const [autoDeleteAfterDownload, setAutoDeleteAfterDownload] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
 
   if (!isOpen) return null;
@@ -120,7 +124,23 @@ export function ExpenseStatementModal({
         expenses: formattedPDFItems,
       });
 
-      toast.success("Statement PDF downloaded! Temporary file auto-cleared.", { id: "pdf-toast" });
+      // Auto-Delete downloaded data from database if option enabled
+      if (autoDeleteAfterDownload) {
+        const expenseIds = periodExpenses.map((e) => e._id);
+        const delRes = await bulkDeleteExpenses(expenseIds);
+        if (delRes.success) {
+          toast.success(
+            `Statement downloaded & ${delRes.data?.deletedCount || periodExpenses.length} expense record(s) auto-cleared from DB!`,
+            { id: "pdf-toast" }
+          );
+        } else {
+          toast.success("Statement downloaded successfully!", { id: "pdf-toast" });
+        }
+        router.refresh();
+      } else {
+        toast.success("Statement PDF downloaded successfully!", { id: "pdf-toast" });
+      }
+
       onClose();
     } catch (err: any) {
       console.error("Statement PDF error:", err);
@@ -250,11 +270,18 @@ export function ExpenseStatementModal({
             </div>
           )}
 
-          <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-start gap-2.5">
-            <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
-            <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">
-              Statements are generated client-side and saved directly to your device. Temporary download blobs are automatically cleaned up immediately.
-            </p>
+          {/* Auto-delete Toggle Option */}
+          <div className="p-3 bg-rose-50/60 dark:bg-rose-950/20 rounded-xl border border-rose-200 dark:border-rose-900/30 flex items-start gap-2.5">
+            <input
+              type="checkbox"
+              id="autoDeleteExpenseCheckbox"
+              checked={autoDeleteAfterDownload}
+              onChange={(e) => setAutoDeleteAfterDownload(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-rose-300 text-rose-600 focus:ring-rose-500 accent-rose-600 cursor-pointer shrink-0"
+            />
+            <label htmlFor="autoDeleteExpenseCheckbox" className="text-[11px] font-semibold text-rose-900 dark:text-rose-300 leading-snug cursor-pointer">
+              Automatically delete downloaded expense records from database after successful export
+            </label>
           </div>
         </div>
 

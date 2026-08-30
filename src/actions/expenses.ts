@@ -159,3 +159,38 @@ export async function deleteExpense(id: string): Promise<ActionResult<string>> {
     return { success: false, error: "Failed to delete expense entry" };
   }
 }
+
+export async function bulkDeleteExpenses(ids: string[]): Promise<ActionResult<{ deletedCount: number }>> {
+  try {
+    const session = await auth();
+    const tenantId = await getTenantId();
+    if (!session?.user || !tenantId) {
+      return { success: false, error: "Unauthorized access" };
+    }
+
+    const role = (session.user as any).role;
+    if (role !== "admin") {
+      return { success: false, error: "Only admins can delete expense entries" };
+    }
+
+    if (!ids || ids.length === 0) {
+      return { success: true, data: { deletedCount: 0 } };
+    }
+
+    await connectDB();
+
+    const result = await Expense.deleteMany({
+      _id: { $in: ids },
+      userId: tenantId,
+    });
+
+    revalidatePath("/expenses");
+    revalidatePath("/dashboard");
+    revalidatePath("/reports");
+
+    return { success: true, data: { deletedCount: result.deletedCount || 0 } };
+  } catch (error) {
+    console.error("Error bulk deleting expenses:", error);
+    return { success: false, error: "Failed to delete expense entries" };
+  }
+}

@@ -10,6 +10,7 @@ import {
   ChevronRight,
   User,
   Download,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,9 @@ import {
 } from "@/components/ui/table";
 import { InvoiceModal } from "@/components/sales/invoice-modal";
 import { SalesStatementModal } from "@/components/sales/sales-statement-modal";
+import { bulkDeleteSales } from "@/actions/sales";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface SalesTableProps {
   initialData: {
@@ -36,9 +40,11 @@ interface SalesTableProps {
 }
 
 export function SalesTable({ initialData, shopName }: SalesTableProps) {
+  const router = useRouter();
   const [selectedSale, setSelectedSale] = useState<any | null>(null);
   const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
   const [salesStatementModalOpen, setSalesStatementModalOpen] = useState(false);
+  const [selectedSaleIds, setSelectedSaleIds] = useState<string[]>([]);
 
   const [search, setSearch] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -70,6 +76,42 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  const isAllSelected =
+    filtered.length > 0 && selectedSaleIds.length === filtered.length;
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedSaleIds(filtered.map((s) => s._id));
+    } else {
+      setSelectedSaleIds([]);
+    }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedSaleIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedSaleIds.length === 0) return;
+    if (!confirm(`Are you sure you want to delete ${selectedSaleIds.length} selected sales record(s)?`)) {
+      return;
+    }
+    try {
+      const res = await bulkDeleteSales(selectedSaleIds);
+      if (res.success) {
+        toast.success(`Successfully deleted ${res.data?.deletedCount || selectedSaleIds.length} sales invoice(s).`);
+        setSelectedSaleIds([]);
+        router.refresh();
+      } else {
+        toast.error(res.error || "Failed to delete sales records");
+      }
+    } catch (err) {
+      toast.error("Failed to delete selected sales records.");
+    }
+  };
 
   const handleViewInvoice = (sale: any) => {
     setSelectedSale(sale);
@@ -152,7 +194,31 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center justify-end pt-2 border-t border-amber-100 dark:border-slate-800">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-2 border-t border-amber-100 dark:border-slate-800">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <input
+              type="checkbox"
+              id="selectAllSalesHeader"
+              checked={isAllSelected}
+              onChange={(e) => handleSelectAll(e.target.checked)}
+              className="h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500 accent-amber-600 cursor-pointer"
+            />
+            <label htmlFor="selectAllSalesHeader" className="text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
+              Select All ({filtered.length})
+            </label>
+
+            {selectedSaleIds.length > 0 && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleBulkDelete}
+                className="font-bold text-xs ml-2 bg-rose-600 hover:bg-rose-700 text-white"
+              >
+                <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Delete Selected ({selectedSaleIds.length})
+              </Button>
+            )}
+          </div>
+
           <Button
             variant="outline"
             onClick={() => setSalesStatementModalOpen(true)}
@@ -176,56 +242,71 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
         <>
           {/* Mobile Card Layout */}
           <div className="space-y-3 md:hidden">
-            {paginated.map((sale) => (
-              <div
-                key={sale._id}
-                className="rounded-xl border border-amber-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-4 space-y-3 shadow-sm"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="font-semibold text-slate-900 dark:text-slate-100 truncate flex items-center gap-1.5">
-                      <User className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-                      {sale.customerName}
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">
-                      {sale.customerPhone}
-                    </p>
+            {paginated.map((sale) => {
+              const isSelected = selectedSaleIds.includes(sale._id);
+              return (
+                <div
+                  key={sale._id}
+                  className={`rounded-xl border p-4 space-y-3 shadow-sm transition-colors ${
+                    isSelected
+                      ? "border-amber-500 bg-amber-50/50 dark:bg-amber-950/20"
+                      : "border-amber-200 dark:border-slate-800 bg-white dark:bg-slate-900/90"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleToggleSelect(sale._id)}
+                        className="h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500 accent-amber-600 cursor-pointer shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <p className="font-semibold text-slate-900 dark:text-slate-100 truncate flex items-center gap-1.5">
+                          <User className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                          {sale.customerName}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">
+                          {sale.customerPhone}
+                        </p>
+                      </div>
+                    </div>
+                    {getStatusBadge(sale.paymentStatus)}
                   </div>
-                  {getStatusBadge(sale.paymentStatus)}
-                </div>
 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">Amount</span>
-                    <p className="text-lg font-bold text-amber-700 dark:text-amber-400">
-                      {formatCurrency(sale.totalAmount)}
-                    </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xs text-slate-500 dark:text-slate-400">Amount</span>
+                      <p className="text-lg font-bold text-amber-700 dark:text-amber-400">
+                        {formatCurrency(sale.totalAmount)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <Badge variant="outline" className="mb-1">{sale.itemsCount} pc(s)</Badge>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400" suppressHydrationWarning>
+                        {formatDateTime(sale.createdAt)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <Badge variant="outline" className="mb-1">{sale.itemsCount} pc(s)</Badge>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400" suppressHydrationWarning>
-                      {formatDateTime(sale.createdAt)}
-                    </p>
-                  </div>
-                </div>
 
-                <div className="flex items-center justify-between border-t border-amber-100 dark:border-slate-800 pt-2">
-                  <span className="text-xs text-slate-500 dark:text-slate-400">
-                    By: <strong className="text-slate-700 dark:text-slate-300">{sale.soldBy?.name || "Staff"}</strong>
-                    &nbsp;•&nbsp;
-                    <span className="font-mono">#{sale._id.slice(-8).toUpperCase()}</span>
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleViewInvoice(sale)}
-                    className="text-xs font-semibold text-amber-700 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-300 -mr-2"
-                  >
-                    <Eye className="mr-1 h-3.5 w-3.5" /> Invoice
-                  </Button>
+                  <div className="flex items-center justify-between border-t border-amber-100 dark:border-slate-800 pt-2">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      By: <strong className="text-slate-700 dark:text-slate-300">{sale.soldBy?.name || "Staff"}</strong>
+                      &nbsp;•&nbsp;
+                      <span className="font-mono">#{sale._id.slice(-8).toUpperCase()}</span>
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleViewInvoice(sale)}
+                      className="text-xs font-semibold text-amber-700 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-300 -mr-2"
+                    >
+                      <Eye className="mr-1 h-3.5 w-3.5" /> Invoice
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Desktop Table Layout */}
@@ -233,6 +314,14 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10">
+                    <input
+                      type="checkbox"
+                      checked={isAllSelected}
+                      onChange={(e) => handleSelectAll(e.target.checked)}
+                      className="h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500 accent-amber-600 cursor-pointer"
+                    />
+                  </TableHead>
                   <TableHead>Invoice ID</TableHead>
                   <TableHead>Customer</TableHead>
                   <TableHead>Phone</TableHead>
@@ -245,53 +334,65 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginated.map((sale) => (
-                  <TableRow key={sale._id}>
-                    <TableCell className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300">
-                      #{sale._id.slice(-8).toUpperCase()}
-                    </TableCell>
+                {paginated.map((sale) => {
+                  const isSelected = selectedSaleIds.includes(sale._id);
+                  return (
+                    <TableRow key={sale._id} className={isSelected ? "bg-amber-50/60 dark:bg-amber-950/20" : ""}>
+                      <TableCell>
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleToggleSelect(sale._id)}
+                          className="h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500 accent-amber-600 cursor-pointer"
+                        />
+                      </TableCell>
 
-                    <TableCell className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
-                      <User className="h-3.5 w-3.5 text-slate-400" />
-                      {sale.customerName}
-                    </TableCell>
+                      <TableCell className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300">
+                        #{sale._id.slice(-8).toUpperCase()}
+                      </TableCell>
 
-                    <TableCell className="font-mono text-xs text-slate-500 dark:text-slate-400">
-                      {sale.customerPhone}
-                    </TableCell>
+                      <TableCell className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                        <User className="h-3.5 w-3.5 text-slate-400" />
+                        {sale.customerName}
+                      </TableCell>
 
-                    <TableCell>
-                      <Badge variant="outline">{sale.itemsCount} pc(s)</Badge>
-                    </TableCell>
+                      <TableCell className="font-mono text-xs text-slate-500 dark:text-slate-400">
+                        {sale.customerPhone}
+                      </TableCell>
 
-                    <TableCell className="font-bold text-amber-700 dark:text-amber-400">
-                      {formatCurrency(sale.totalAmount)}
-                    </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{sale.itemsCount} pc(s)</Badge>
+                      </TableCell>
 
-                    <TableCell>
-                      {getStatusBadge(sale.paymentStatus)}
-                    </TableCell>
+                      <TableCell className="font-bold text-amber-700 dark:text-amber-400">
+                        {formatCurrency(sale.totalAmount)}
+                      </TableCell>
 
-                    <TableCell className="text-xs text-slate-500 dark:text-slate-400" suppressHydrationWarning>
-                      {formatDateTime(sale.createdAt)}
-                    </TableCell>
+                      <TableCell>
+                        {getStatusBadge(sale.paymentStatus)}
+                      </TableCell>
 
-                    <TableCell className="text-xs text-slate-700 dark:text-slate-300">
-                      {sale.soldBy?.name || "Staff"}
-                    </TableCell>
+                      <TableCell className="text-xs text-slate-500 dark:text-slate-400" suppressHydrationWarning>
+                        {formatDateTime(sale.createdAt)}
+                      </TableCell>
 
-                    <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleViewInvoice(sale)}
-                        className="text-xs font-semibold text-amber-700 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-300"
-                      >
-                        <Eye className="mr-1.5 h-3.5 w-3.5" /> View Receipt
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      <TableCell className="text-xs text-slate-700 dark:text-slate-300">
+                        {sale.soldBy?.name || "Staff"}
+                      </TableCell>
+
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewInvoice(sale)}
+                          className="text-xs font-semibold text-amber-700 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-300"
+                        >
+                          <Eye className="mr-1.5 h-3.5 w-3.5" /> View Receipt
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
