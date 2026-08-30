@@ -66,7 +66,7 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
       const res = await updateRateSettings(values);
       if (res.success) {
         toast.success("Live rates & shop settings updated successfully!");
-        window.location.reload();
+        router.refresh();
       } else {
         toast.error(res.error);
       }
