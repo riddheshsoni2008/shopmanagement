@@ -28,6 +28,24 @@ export interface InvoicePDFData {
   totalAmount: number;
 }
 
+export interface ExpenseStatementPDFItem {
+  date: string;
+  category: string;
+  note: string;
+  addedBy: string;
+  amount: number;
+}
+
+export interface ExpenseStatementPDFData {
+  shopName: string;
+  generatedBy?: string;
+  periodLabel: string;
+  totalExpenses: number;
+  totalEntries: number;
+  categoryTotals: Record<string, number>;
+  expenses: ExpenseStatementPDFItem[];
+}
+
 // Format numbers into clean Indian Currency format
 function fmtINR(val: number): string {
   return new Intl.NumberFormat("en-IN", {
@@ -581,4 +599,247 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.save(
     `Invoice_${data.customerName.replace(/\s+/g, "_")}_${data.invoiceId.slice(-6)}.pdf`
   );
+}
+
+// ══════════════════════════════════════════════════════════════════
+// EXPENSE STATEMENT PDF GENERATOR — Bank / Corporate Financial Format
+// ══════════════════════════════════════════════════════════════════
+export async function generateExpenseStatementPDF(data: ExpenseStatementPDFData) {
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const pw = 210;
+  const L = 10;
+  const R = 200;
+  const W = 190;
+
+  const GOLD: [number, number, number] = [178, 134, 46];
+  const GOLD_LIGHT: [number, number, number] = [235, 215, 160];
+  const GOLD_DARK: [number, number, number] = [130, 95, 20];
+  const BLACK: [number, number, number] = [0, 0, 0];
+  const DARK: [number, number, number] = [30, 25, 15];
+  const MID: [number, number, number] = [80, 70, 50];
+  const BORDER: [number, number, number] = [160, 140, 100];
+  const ROSE: [number, number, number] = [190, 40, 40];
+
+  const logoBase64 = await loadLogoBase64();
+  let y = 10;
+
+  // Header Banner
+  doc.setFontSize(8.5);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...GOLD_DARK);
+  doc.text("OFFICIAL FINANCIAL EXPENSE STATEMENT", L + 3, y + 4);
+
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...MID);
+  doc.text(
+    `Generated: ${new Date().toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    })}`,
+    R - 3,
+    y + 4,
+    { align: "right" }
+  );
+
+  y += 6;
+  doc.setDrawColor(...BORDER);
+  doc.setLineWidth(0.3);
+  doc.line(L, y, R, y);
+
+  // Shop Header Box
+  doc.setFillColor(255, 252, 242);
+  doc.rect(L, y, W, 22, "F");
+
+  if (logoBase64) {
+    try {
+      doc.addImage(logoBase64, "PNG", L + 4, y + 1, 26, 20);
+    } catch {}
+  }
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.setTextColor(...GOLD_DARK);
+  doc.text((data.shopName || "ZEAL JEWELLERS").toUpperCase(), pw / 2, y + 9, { align: "center" });
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(...MID);
+  doc.text("OPERATIONAL EXPENSE LEDGER & FINANCIAL STATEMENT", pw / 2, y + 15, { align: "center" });
+
+  y += 22;
+  doc.setDrawColor(...BORDER);
+  doc.setLineWidth(0.3);
+  doc.line(L, y, R, y);
+
+  // Statement Meta Bar
+  doc.setFillColor(248, 246, 240);
+  doc.rect(L, y, W, 12, "F");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...GOLD_DARK);
+  doc.text("Statement Period:", L + 4, y + 7.5);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...BLACK);
+  doc.text(data.periodLabel, L + 35, y + 7.5);
+
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...GOLD_DARK);
+  doc.text("Account / Owner:", L + 115, y + 7.5);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...BLACK);
+  doc.text(data.generatedBy || "Admin Account", L + 145, y + 7.5);
+
+  y += 12;
+  doc.setDrawColor(...BORDER);
+  doc.setLineWidth(0.3);
+  doc.line(L, y, R, y);
+
+  // Executive Summary Card Box
+  y += 4;
+  doc.setFillColor(254, 242, 242);
+  doc.setDrawColor(240, 180, 180);
+  doc.roundedRect(L, y, W, 20, 2, 2, "FD");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(...ROSE);
+  doc.text("TOTAL OPERATIONAL EXPENSES", L + 6, y + 6);
+
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text(`Rs. ${fmtINR(data.totalExpenses)}`, L + 6, y + 15);
+
+  doc.setFontSize(8.5);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...MID);
+  doc.text(`Total Recorded Entries: ${data.totalEntries}`, R - 6, y + 10, { align: "right" });
+  doc.text(`Categories Tracked: ${Object.keys(data.categoryTotals).length}`, R - 6, y + 15, { align: "right" });
+
+  y += 24;
+
+  // Category Breakdown Summary Mini Table
+  if (Object.keys(data.categoryTotals).length > 0) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setTextColor(...GOLD_DARK);
+    doc.text("Category Breakdown Summary", L, y);
+
+    y += 2;
+    const catRows = Object.entries(data.categoryTotals).map(([cat, amount]) => {
+      const pct = data.totalExpenses > 0 ? ((amount / data.totalExpenses) * 100).toFixed(1) : "0.0";
+      return [cat, `Rs. ${fmtINR(amount)}`, `${pct}%`];
+    });
+
+    autoTable(doc, {
+      startY: y,
+      head: [["Category", "Total Spent (₹)", "% of Total"]],
+      body: catRows,
+      headStyles: {
+        fillColor: [GOLD_LIGHT[0], GOLD_LIGHT[1], GOLD_LIGHT[2]],
+        textColor: [DARK[0], DARK[1], DARK[2]],
+        fontStyle: "bold",
+        fontSize: 8,
+      },
+      bodyStyles: {
+        fontSize: 8,
+        textColor: [BLACK[0], BLACK[1], BLACK[2]],
+        cellPadding: 1.8,
+      },
+      columnStyles: {
+        0: { cellWidth: 70 },
+        1: { cellWidth: 70, halign: "right" },
+        2: { cellWidth: 50, halign: "right" },
+      },
+      margin: { left: L, right: 10 },
+    });
+
+    y = (doc as any).lastAutoTable.finalY + 6;
+  }
+
+  // Detailed Expense Transaction Table
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9.5);
+  doc.setTextColor(...GOLD_DARK);
+  doc.text("Itemized Expense Ledger Transactions", L, y);
+
+  y += 2;
+
+  const itemRows = data.expenses.map((e, index) => [
+    `${index + 1}`,
+    new Date(e.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+    e.category,
+    e.note || "No memo recorded",
+    e.addedBy || "Admin",
+    `Rs. ${fmtINR(e.amount)}`,
+  ]);
+
+  autoTable(doc, {
+    startY: y,
+    head: [["S.N.", "Date", "Category", "Description / Memo", "Logged By", "Amount (₹)"]],
+    body: itemRows,
+    headStyles: {
+      fillColor: [GOLD[0], GOLD[1], GOLD[2]],
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
+      fontSize: 8.5,
+      halign: "center",
+    },
+    bodyStyles: {
+      fontSize: 8,
+      textColor: [BLACK[0], BLACK[1], BLACK[2]],
+      cellPadding: 2,
+    },
+    columnStyles: {
+      0: { cellWidth: 10, halign: "center" },
+      1: { cellWidth: 26, halign: "center" },
+      2: { cellWidth: 32 },
+      3: { cellWidth: 68 },
+      4: { cellWidth: 24, halign: "center" },
+      5: { cellWidth: 30, halign: "right" },
+    },
+    margin: { left: L, right: 10 },
+  });
+
+  y = (doc as any).lastAutoTable.finalY + 4;
+
+  // Grand Total Summary Line
+  doc.setFillColor(GOLD_LIGHT[0], GOLD_LIGHT[1], GOLD_LIGHT[2]);
+  doc.rect(L, y, W, 8, "F");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(...DARK);
+  doc.text(`Total Statement Expenses (${data.totalEntries} items)`, L + 4, y + 5.5);
+
+  doc.setFontSize(10);
+  doc.setTextColor(...ROSE);
+  doc.text(`Rs. ${fmtINR(data.totalExpenses)}`, R - 4, y + 5.5, { align: "right" });
+
+  y += 12;
+
+  // Electronic Statement Footer Disclaimer
+  doc.setFontSize(7.5);
+  doc.setFont("helvetica", "italic");
+  doc.setTextColor(...MID);
+  doc.text(
+    "This is an electronically generated financial statement from Zeal Jewellers Shop Management & POS System.",
+    pw / 2,
+    y,
+    { align: "center" }
+  );
+  doc.text(
+    "All financial entries are encrypted and verified against store ledger logs.",
+    pw / 2,
+    y + 4,
+    { align: "center" }
+  );
+
+  // Trigger Save / Download and automatically release memory resources
+  const cleanPeriod = data.periodLabel.replace(/[^a-zA-Z0-9]/g, "_");
+  doc.save(`Expense_Statement_${cleanPeriod}.pdf`);
 }

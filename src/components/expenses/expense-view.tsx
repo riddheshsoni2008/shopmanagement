@@ -8,12 +8,12 @@ import {
   Trash2,
   Calendar,
   Tag,
-  Filter,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -24,6 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ExpenseDialog } from "@/components/expenses/expense-dialog";
+import { ExpenseStatementModal } from "@/components/expenses/expense-statement-modal";
 import { deleteExpense } from "@/actions/expenses";
 import { toast } from "sonner";
 import { expenseCategories } from "@/lib/validators/expense";
@@ -38,6 +39,7 @@ interface ExpenseViewProps {
 
 export function ExpenseView({ initialData }: ExpenseViewProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [statementModalOpen, setStatementModalOpen] = useState(false);
 
   const [categoryFilter, setCategoryFilter] = useState("ALL");
   const [startDate, setStartDate] = useState("");
@@ -150,7 +152,15 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
           </div>
         </div>
 
-        <div className="sm:self-end">
+        <div className="flex flex-col sm:flex-row items-center justify-end gap-2.5 pt-2 border-t border-amber-100 dark:border-slate-800">
+          <Button
+            variant="outline"
+            onClick={() => setStatementModalOpen(true)}
+            className="font-semibold w-full sm:w-auto border-amber-300 dark:border-slate-700 hover:bg-amber-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200"
+          >
+            <Download className="mr-1.5 h-4 w-4 text-amber-600 dark:text-amber-400" /> Export Statement PDF
+          </Button>
+
           <Button onClick={() => setDialogOpen(true)} className="font-bold w-full sm:w-auto">
             <Plus className="mr-1.5 h-4 w-4" /> Log New Expense
           </Button>
@@ -257,10 +267,17 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
         </>
       )}
 
-      {/* Expense Modal */}
+      {/* Expense Dialog */}
       <ExpenseDialog
         isOpen={dialogOpen}
         onClose={() => setDialogOpen(false)}
+      />
+
+      {/* Expense Statement PDF Modal */}
+      <ExpenseStatementModal
+        isOpen={statementModalOpen}
+        onClose={() => setStatementModalOpen(false)}
+        expenses={initialData.expenses}
       />
     </div>
   );
