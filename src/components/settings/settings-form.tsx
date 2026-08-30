@@ -10,7 +10,7 @@ import { formatDateTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { TrendingUp, Store, User as UserIcon, Loader2, Save } from "lucide-react";
+import { TrendingUp, Store, User as UserIcon, Loader2, Save, Scale, Calculator } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface SettingsFormProps {
@@ -29,6 +29,7 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<RateInput>({
     resolver: zodResolver(rateSchema),
@@ -40,6 +41,24 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
       ownerName: currentUser?.name || "",
     },
   });
+
+  // Watch live values for auto-calculation
+  const gold22k = watch("goldRate22k");
+  const gold18k = watch("goldRate18k");
+  const silver = watch("silverRate");
+
+  // Computed rates
+  const gold22k10g = (Number(gold22k) || 0) * 10;
+  const gold18k10g = (Number(gold18k) || 0) * 10;
+  const silver1kg = (Number(silver) || 0) * 1000;
+
+  const formatINR = (value: number) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 2,
+    }).format(value);
+  };
 
   const onSubmit = async (values: RateInput) => {
     setIsSubmitting(true);
@@ -72,13 +91,14 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Gold Rates Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Gold 22K Rate */}
-              <div>
+              <div className="space-y-2">
                 <label className="block text-xs font-semibold text-amber-400">
                   Gold Rate (22K) / Gram (₹) *
                 </label>
-                <div className="mt-1 relative">
+                <div className="relative">
                   <Input
                     type="number"
                     step="0.01"
@@ -87,18 +107,29 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
                   />
                 </div>
                 {errors.goldRate22k && (
-                  <p className="mt-1 text-xs text-rose-400 font-medium">
+                  <p className="text-xs text-rose-400 font-medium">
                     {errors.goldRate22k.message}
                   </p>
                 )}
+                {/* Auto-calculated 10g rate */}
+                <div className="rounded-lg bg-gradient-to-r from-amber-500/10 to-amber-600/5 border border-amber-500/20 px-3 py-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-amber-400/70 uppercase tracking-wider flex items-center gap-1.5">
+                      <Calculator className="h-3 w-3" /> 10 Gram Rate
+                    </span>
+                    <span className="text-sm font-bold text-amber-300 tabular-nums">
+                      {formatINR(gold22k10g)}
+                    </span>
+                  </div>
+                </div>
               </div>
 
               {/* Gold 18K Rate */}
-              <div>
+              <div className="space-y-2">
                 <label className="block text-xs font-semibold text-amber-400">
                   Gold Rate (18K) / Gram (₹) *
                 </label>
-                <div className="mt-1 relative">
+                <div className="relative">
                   <Input
                     type="number"
                     step="0.01"
@@ -107,30 +138,52 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
                   />
                 </div>
                 {errors.goldRate18k && (
-                  <p className="mt-1 text-xs text-rose-400 font-medium">
+                  <p className="text-xs text-rose-400 font-medium">
                     {errors.goldRate18k.message}
                   </p>
                 )}
-              </div>
-
-              {/* Silver Rate */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-300">
-                  Fine Silver Rate / Gram (₹) *
-                </label>
-                <div className="mt-1 relative">
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...register("silverRate")}
-                    disabled={isSubmitting}
-                  />
+                {/* Auto-calculated 10g rate */}
+                <div className="rounded-lg bg-gradient-to-r from-amber-500/10 to-amber-600/5 border border-amber-500/20 px-3 py-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-amber-400/70 uppercase tracking-wider flex items-center gap-1.5">
+                      <Calculator className="h-3 w-3" /> 10 Gram Rate
+                    </span>
+                    <span className="text-sm font-bold text-amber-300 tabular-nums">
+                      {formatINR(gold18k10g)}
+                    </span>
+                  </div>
                 </div>
-                {errors.silverRate && (
-                  <p className="mt-1 text-xs text-rose-400 font-medium">
-                    {errors.silverRate.message}
-                  </p>
-                )}
+              </div>
+            </div>
+
+            {/* Silver Rate */}
+            <div className="space-y-2 max-w-sm">
+              <label className="block text-xs font-semibold text-slate-300">
+                Fine Silver Rate / Gram (₹) *
+              </label>
+              <div className="relative">
+                <Input
+                  type="number"
+                  step="0.01"
+                  {...register("silverRate")}
+                  disabled={isSubmitting}
+                />
+              </div>
+              {errors.silverRate && (
+                <p className="text-xs text-rose-400 font-medium">
+                  {errors.silverRate.message}
+                </p>
+              )}
+              {/* Auto-calculated 1kg rate */}
+              <div className="rounded-lg bg-gradient-to-r from-slate-500/10 to-slate-600/5 border border-slate-500/20 px-3 py-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-medium text-slate-400/80 uppercase tracking-wider flex items-center gap-1.5">
+                    <Scale className="h-3 w-3" /> 1 KG Rate (1000g)
+                  </span>
+                  <span className="text-sm font-bold text-slate-200 tabular-nums">
+                    {formatINR(silver1kg)}
+                  </span>
+                </div>
               </div>
             </div>
           </CardContent>
