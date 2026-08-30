@@ -66,9 +66,9 @@ export async function getRateSettings(): Promise<ActionResult<RateSettingsData>>
     lastCacheTime = now;
 
     return { success: true, data: formatted };
-  } catch (error) {
-    console.error("Error fetching rate settings:", error);
-    return { success: false, error: "Failed to fetch rate settings" };
+  } catch (error: any) {
+    console.error("Error fetching rate settings:", error?.message || error);
+    return { success: false, error: `Failed to fetch rate settings: ${error?.message || "Unknown error"}` };
   }
 }
 

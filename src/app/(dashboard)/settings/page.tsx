@@ -17,7 +17,10 @@ export default async function SettingsPage() {
   if (!res.success || !res.data) {
     return (
       <div className="py-12 text-center text-slate-400">
-        Failed to load rate settings.
+        <p className="text-lg font-medium text-rose-400 mb-2">Failed to load rate settings.</p>
+        {!res.success && 'error' in res && (
+          <p className="text-sm text-slate-500">{res.error}</p>
+        )}
       </div>
     );
   }

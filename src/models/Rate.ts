@@ -16,7 +16,7 @@ const RateSchema = new Schema<IRate>(
     goldRate18k: { type: Number, required: true, min: 0, default: 5900 },
     silverRate: { type: Number, required: true, min: 0, default: 85 },
     shopName: { type: String, required: true, default: "Aura Luxury Jewelers" },
-    updatedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    updatedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
   },
   {
     timestamps: true,

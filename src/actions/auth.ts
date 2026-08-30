@@ -120,10 +120,46 @@ export async function registerUser(
       data: "Account created successfully! You can now sign in.",
     };
   } catch (error: any) {
-    console.error("Register user error:", error);
+    console.error("Register user error:", error?.message || error);
+    console.error("Full error details:", JSON.stringify(error, Object.getOwnPropertyNames(error || {}), 2));
+    
+    // Provide specific error messages based on the type of failure
+    const errMsg = error?.message || "";
+    
+    if (errMsg.includes("ENOTFOUND") || errMsg.includes("querySrv")) {
+      return {
+        success: false,
+        error: "Cannot reach the database server. Please check your internet connection.",
+      };
+    }
+    if (errMsg.includes("Authentication failed") || errMsg.includes("auth")) {
+      return {
+        success: false,
+        error: "Database authentication failed. Please contact admin.",
+      };
+    }
+    if (errMsg.includes("timed out") || errMsg.includes("serverSelectionTimeout")) {
+      return {
+        success: false,
+        error: "Database connection timed out. Your IP may not be whitelisted in MongoDB Atlas.",
+      };
+    }
+    if (errMsg.includes("ECONNREFUSED")) {
+      return {
+        success: false,
+        error: "Database connection refused. Server may be down.",
+      };
+    }
+    if (errMsg.includes("duplicate key") || errMsg.includes("E11000")) {
+      return {
+        success: false,
+        error: "An account with this email already exists.",
+      };
+    }
+    
     return {
       success: false,
-      error: "Unable to connect to server. Please try again in a moment.",
+      error: `Registration failed: ${errMsg || "Unable to connect to server. Please try again in a moment."}`,
     };
   }
 }
