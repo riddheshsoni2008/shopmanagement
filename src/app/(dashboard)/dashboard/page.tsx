@@ -48,27 +48,27 @@ export default async function DashboardPage({
   const periodLabel = metrics?.periodLabel || "Today";
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-300">
       {/* Top Banner Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-amber-200 dark:border-slate-800 pb-6">
         <div>
-          <h1 className="text-2xl font-bold font-serif text-amber-700 dark:text-amber-400 sm:text-3xl">
+          <h1 className="text-xl sm:text-2xl font-bold font-serif text-amber-700 dark:text-amber-400 sm:text-3xl">
             Store Overview & Dashboard
           </h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+          <p className="mt-1 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
             Real-time sales performance, stock levels, and daily shop metrics.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <Link href="/sales/new">
-            <Button className="font-semibold shadow-md">
-              <Plus className="mr-1.5 h-4 w-4" /> Create Sale Bill
+            <Button className="font-semibold shadow-md text-xs sm:text-sm" size="sm">
+              <Plus className="mr-1 sm:mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Create </span>Sale Bill
             </Button>
           </Link>
           <Link href="/stock">
-            <Button variant="outline">
-              <Gem className="mr-1.5 h-4 w-4" /> View Stock
+            <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+              <Gem className="mr-1 sm:mr-1.5 h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">View </span>Stock
             </Button>
           </Link>
         </div>
@@ -93,7 +93,7 @@ export default async function DashboardPage({
       </div>
 
       {/* Metrics Cards Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-5">
         {/* Period Sales Total (Revenue) */}
         <Card className="border-amber-300 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10">
           <CardHeader className="flex flex-row items-center justify-between pb-2">

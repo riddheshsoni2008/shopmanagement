@@ -296,7 +296,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
 
             {/* Bill Items Selection List */}
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
+              <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <CardTitle className="text-base flex items-center gap-2 text-amber-800 dark:text-amber-400">
                     <ShoppingCart className="h-4 w-4 text-amber-600 dark:text-amber-400" /> Sale Bill Items
@@ -426,11 +426,11 @@ export function BillingForm({ products, rates }: BillingFormProps) {
 
                         {/* Rate per gram */}
                         <div>
-                          <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center justify-between mb-1 flex-wrap gap-1">
                             <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">
                               Rate / Gram (₹) *
                             </label>
-                            <div className="flex gap-1 text-[9px]">
+                            <div className="flex gap-1 text-[9px] flex-wrap">
                               <button
                                 type="button"
                                 title={`Auto-fill 22K Gold Rate (${formatCurrency(rates.goldRate22k)}/g)`}
@@ -597,7 +597,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
 
           {/* Right Column: Checkout Summary Box */}
           <div className="space-y-6">
-            <Card className="border-amber-300 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-24 shadow-md">
+            <Card className="border-amber-300 dark:border-slate-800 bg-white dark:bg-slate-900 lg:sticky lg:top-24 shadow-md">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-400">
                   <Calculator className="h-5 w-5 text-amber-600 dark:text-amber-400" /> Bill Summary

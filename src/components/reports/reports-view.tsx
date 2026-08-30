@@ -67,8 +67,8 @@ export function ReportsView({ initialData }: ReportsViewProps) {
   return (
     <div className="space-y-8">
       {/* Date Filter Controls */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between rounded-2xl border border-amber-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-4 shadow-sm backdrop-blur-md transition-colors duration-200">
-        <div className="flex flex-1 flex-wrap items-center gap-3">
+      <div className="flex flex-col gap-3 rounded-2xl border border-amber-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-3 sm:p-4 shadow-sm backdrop-blur-md transition-colors duration-200">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-amber-600 dark:text-amber-400" />
             <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">From Date:</span>
@@ -76,7 +76,7 @@ export function ReportsView({ initialData }: ReportsViewProps) {
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-40 h-10 text-xs"
+              className="w-[130px] sm:w-40 h-10 text-xs"
             />
           </div>
 
@@ -86,7 +86,7 @@ export function ReportsView({ initialData }: ReportsViewProps) {
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-40 h-10 text-xs"
+              className="w-[130px] sm:w-40 h-10 text-xs"
             />
           </div>
 
@@ -105,8 +105,8 @@ export function ReportsView({ initialData }: ReportsViewProps) {
           </Button>
         </div>
 
-        <div className="text-xs text-slate-500 dark:text-slate-400">
-          Showing range: <strong className="text-slate-900 dark:text-slate-200">{formatDate(data.startDate)}</strong> to{" "}
+        <div className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400">
+          Range: <strong className="text-slate-900 dark:text-slate-200">{formatDate(data.startDate)}</strong> to{" "}
           <strong className="text-slate-900 dark:text-slate-200">{formatDate(data.endDate)}</strong>
         </div>
       </div>
@@ -210,7 +210,7 @@ export function ReportsView({ initialData }: ReportsViewProps) {
                 No revenue data recorded for this date range.
               </div>
             ) : (
-              <div className="h-72 w-full">
+              <div className="h-56 sm:h-72 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={data.salesTrend}>
                     <defs>
@@ -261,7 +261,7 @@ export function ReportsView({ initialData }: ReportsViewProps) {
                 No expenses logged in selected range.
               </div>
             ) : (
-              <div className="h-64 w-full">
+              <div className="h-52 sm:h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -312,7 +312,7 @@ export function ReportsView({ initialData }: ReportsViewProps) {
                 No item sales recorded.
               </div>
             ) : (
-              <div className="h-64 w-full">
+              <div className="h-52 sm:h-64 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={data.categorySalesDistribution}>
                     <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
