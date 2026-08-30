@@ -103,13 +103,6 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   // ── Load Logo ──
   const logoBase64 = await loadLogoBase64();
 
-  // ══════════════════════════════════════════
-  // OUTER BORDER — Full page frame
-  // ══════════════════════════════════════════
-  doc.setDrawColor(...BORDER);
-  doc.setLineWidth(0.4);
-  doc.rect(L, 8, W, 277);
-
   let y = 8; // top of outer border
 
   // ══════════════════════════════════════════
@@ -473,70 +466,78 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.line(L, tY, R, tY);
 
   // ══════════════════════════════════════════
-  // FOOTER: Terms + Signatures
+  // FOOTER: Terms + Signatures (Dynamic Height)
   // ══════════════════════════════════════════
   const footerDivider = pw / 2 + 10;
+  const footerStartY = tY;
+  const footerHeight = 35; // compact footer height
+  const footerEndY = footerStartY + footerHeight;
 
   // Vertical line dividing terms and signature section
   doc.setDrawColor(...BORDER);
-  doc.line(footerDivider, tY, footerDivider, 285);
+  doc.setLineWidth(0.3);
+  doc.line(footerDivider, footerStartY, footerDivider, footerEndY);
 
   // LEFT: Terms & Conditions
   doc.setFont("helvetica", "bold");
   doc.setFontSize(6.5);
   doc.setTextColor(...GOLD_DARK);
-  doc.text("Terms & Conditions", L + 3, tY + 5);
+  doc.text("Terms & Conditions", L + 3, footerStartY + 5);
 
   doc.setDrawColor(...BORDER);
   doc.setLineWidth(0.15);
-  doc.line(L + 3, tY + 6, L + 40, tY + 6);
+  doc.line(L + 3, footerStartY + 6, L + 40, footerStartY + 6);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
   doc.setTextColor(...MID);
-  doc.text("E. & O.E.", L + 3, tY + 11);
-  doc.text("1. Goods once sold will not be taken back.", L + 3, tY + 15);
-  doc.text("2. Interest @ 18% p.a. will be charged if the payment", L + 3, tY + 19);
-  doc.text("   is not made within the stipulated time.", L + 3, tY + 23);
-  doc.text("3. Subject to 'Gujarat' Jurisdiction only.", L + 3, tY + 27);
-
-  // Horizontal line between receiver sig and terms area
-  const sigLineY = tY + 16;
-  doc.setDrawColor(...BORDER);
-  doc.setLineWidth(0.15);
+  doc.text("E. & O.E.", L + 3, footerStartY + 11);
+  doc.text("1. Goods once sold will not be taken back.", L + 3, footerStartY + 15);
+  doc.text("2. Interest @ 18% p.a. will be charged if the payment", L + 3, footerStartY + 19);
+  doc.text("   is not made within the stipulated time.", L + 3, footerStartY + 23);
+  doc.text("3. Subject to 'Gujarat' Jurisdiction only.", L + 3, footerStartY + 27);
 
   // RIGHT: Signatures
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(...GOLD_DARK);
-  doc.text(`for ${data.shopName.toUpperCase()}`, R - 3, tY + 5, { align: "right" });
+  doc.text(`for ${data.shopName.toUpperCase()}`, R - 3, footerStartY + 5, { align: "right" });
+
+  // Receiver's Signature
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.setTextColor(...MID);
+  doc.text("Receiver's Signature :", footerDivider + 3, footerStartY + 16);
 
   // Authorised Signatory (bottom right)
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(...BLACK);
-  doc.text("Authorised Signatory", R - 3, tY + 30, { align: "right" });
-
-  // Receiver's Signature (center of right section)
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  doc.setTextColor(...MID);
-  doc.text("Receiver's Signature :", footerDivider + 3, tY + 18);
+  doc.text("Authorised Signatory", R - 3, footerStartY + 29, { align: "right" });
 
   // ══════════════════════════════════════════
-  // BOTTOM GOLD ACCENT BAR
+  // DYNAMIC OUTER BORDER & BOTTOM ACCENTS
   // ══════════════════════════════════════════
+  const topY = 8;
+  const totalBorderHeight = footerEndY - topY;
+
+  // Outer border around content
+  doc.setDrawColor(...BORDER);
+  doc.setLineWidth(0.4);
+  doc.rect(L, topY, W, totalBorderHeight);
+
+  // Gold accent bar right below outer border
   doc.setFillColor(GOLD[0], GOLD[1], GOLD[2]);
-  doc.rect(L, 285, W, 1.5, "F");
+  doc.rect(L, footerEndY, W, 1.5, "F");
 
-  // Thank you line
+  // Thank you line centered below gold bar
   doc.setFontSize(7);
   doc.setFont("helvetica", "italic");
   doc.setTextColor(...MID);
   doc.text(
     `Thank you for choosing ${data.shopName}! Your trust is our treasure.`,
     pw / 2,
-    291,
+    footerEndY + 5.5,
     { align: "center" }
   );
 
