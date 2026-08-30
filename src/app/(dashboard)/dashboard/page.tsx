@@ -1,6 +1,7 @@
 import { getDashboardMetrics, DashboardPeriod } from "@/actions/reports";
 import { auth } from "@/lib/auth";
 import Link from "next/link";
+import { Suspense } from "react";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import {
   DollarSign,
@@ -86,7 +87,9 @@ export default async function DashboardPage({
             </p>
           </div>
         </div>
-        <RevenueFilter />
+        <Suspense fallback={<div className="h-9 w-64 rounded-xl bg-amber-100/50 dark:bg-slate-800 animate-pulse" />}>
+          <RevenueFilter />
+        </Suspense>
       </div>
 
       {/* Metrics Cards Grid */}
