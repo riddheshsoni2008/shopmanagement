@@ -332,6 +332,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                       jadatarCharge: 0,
                       rhodiumCharge: 0,
                       nangCharge: 0,
+                      meenoCharge: 0,
                       lineTotal: 5 * (safeRates.goldRate22k + 100),
                     })
                   }
