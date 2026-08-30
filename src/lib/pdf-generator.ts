@@ -81,18 +81,48 @@ function fmtINR(val: number): string {
 // Number to Words Converter for INR
 function numberToWords(num: number): string {
   const a = [
-    "", "One ", "Two ", "Three ", "Four ", "Five ", "Six ", "Seven ", "Eight ", "Nine ",
-    "Ten ", "Eleven ", "Twelve ", "Thirteen ", "Fourteen ", "Fifteen ", "Sixteen ",
-    "Seventeen ", "Eighteen ", "Nineteen ",
+    "",
+    "One ",
+    "Two ",
+    "Three ",
+    "Four ",
+    "Five ",
+    "Six ",
+    "Seven ",
+    "Eight ",
+    "Nine ",
+    "Ten ",
+    "Eleven ",
+    "Twelve ",
+    "Thirteen ",
+    "Fourteen ",
+    "Fifteen ",
+    "Sixteen ",
+    "Seventeen ",
+    "Eighteen ",
+    "Nineteen ",
   ];
-  const b = ["", "", "Twenty ", "Thirty ", "Forty ", "Fifty ", "Sixty ", "Seventy ", "Eighty ", "Ninety "];
+  const b = [
+    "",
+    "",
+    "Twenty ",
+    "Thirty ",
+    "Forty ",
+    "Fifty ",
+    "Sixty ",
+    "Seventy ",
+    "Eighty ",
+    "Ninety ",
+  ];
 
   function inWords(n: number): string {
     if (n < 20) return a[n];
     if (n < 100) return b[Math.floor(n / 10)] + a[n % 10];
     if (n < 1000) return a[Math.floor(n / 100)] + "Hundred " + inWords(n % 100);
-    if (n < 100000) return inWords(Math.floor(n / 1000)) + "Thousand " + inWords(n % 1000);
-    if (n < 10000000) return inWords(Math.floor(n / 100000)) + "Lakh " + inWords(n % 100000);
+    if (n < 100000)
+      return inWords(Math.floor(n / 1000)) + "Thousand " + inWords(n % 1000);
+    if (n < 10000000)
+      return inWords(Math.floor(n / 100000)) + "Lakh " + inWords(n % 100000);
     return inWords(Math.floor(n / 10000000)) + "Crore " + inWords(n % 10000000);
   }
 
@@ -128,149 +158,6 @@ async function loadLogoBase64(): Promise<string | null> {
     });
   } catch {
     return null;
-  }
-}
-
-// ══════════════════════════════════════════════════════════════════
-// UNICODE / GUJARATI / MULTI-LANGUAGE PDF CANVAS ENGINE
-// Dynamically renders Gujarati, Hindi, or any non-Latin text to 3x Retina PNG
-// ══════════════════════════════════════════════════════════════════
-function renderUnicodeTextToImage(
-  text: string,
-  fontSizePx: number = 24,
-  colorHex: string = "#000000",
-  fontWeight: string = "bold"
-): { dataUrl: string; widthMm: number; heightMm: number } {
-  if (typeof window === "undefined" || typeof document === "undefined") {
-    return { dataUrl: "", widthMm: 0, heightMm: 0 };
-  }
-
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return { dataUrl: "", widthMm: 0, heightMm: 0 };
-
-  const font = `${fontWeight} ${fontSizePx}px "Segoe UI", "Noto Sans Gujarati", "Gujarati Sangam MN", "Shruti", "Mukta", sans-serif`;
-  ctx.font = font;
-
-  const lines = text.split("\n");
-  let maxLineWidth = 0;
-  lines.forEach((line) => {
-    const w = ctx.measureText(line).width;
-    if (w > maxLineWidth) maxLineWidth = w;
-  });
-
-  const lineCount = lines.length;
-  const lineGap = fontSizePx * 0.25;
-  const totalHeight = lineCount * fontSizePx + (lineCount - 1) * lineGap + 8;
-  const totalWidth = maxLineWidth + 12;
-
-  const scale = 3; // 3x crisp DPI
-  canvas.width = Math.ceil(totalWidth * scale);
-  canvas.height = Math.ceil(totalHeight * scale);
-
-  ctx.scale(scale, scale);
-  ctx.font = font;
-  ctx.textBaseline = "top";
-  ctx.fillStyle = colorHex;
-
-  lines.forEach((line, idx) => {
-    const yPos = 4 + idx * (fontSizePx + lineGap);
-    ctx.fillText(line, 4, yPos);
-  });
-
-  const widthMm = totalWidth * 0.264583;
-  const heightMm = totalHeight * 0.264583;
-
-  return {
-    dataUrl: canvas.toDataURL("image/png"),
-    widthMm,
-    heightMm,
-  };
-}
-
-function drawSafeText(
-  doc: jsPDF,
-  text: string,
-  x: number,
-  y: number,
-  options?: {
-    fontSize?: number;
-    colorHex?: string;
-    fontWeight?: "bold" | "normal";
-    align?: "left" | "center" | "right";
-  }
-) {
-  const str = text || "";
-  const hasUnicode = /[^\x00-\x7F]/.test(str);
-
-  if (hasUnicode) {
-    const fontSize = options?.fontSize || 9;
-    const colorHex = options?.colorHex || "#000000";
-    const fontWeight = options?.fontWeight || "normal";
-    const align = options?.align || "left";
-
-    const pxSize = Math.max(18, Math.round(fontSize * 3.5));
-    const rendered = renderUnicodeTextToImage(str, pxSize, colorHex, fontWeight);
-
-    if (rendered.dataUrl) {
-      let drawX = x;
-      if (align === "center") {
-        drawX = x - rendered.widthMm / 2;
-      } else if (align === "right") {
-        drawX = x - rendered.widthMm;
-      }
-
-      const drawY = y - rendered.heightMm * 0.65;
-      doc.addImage(rendered.dataUrl, "PNG", drawX, drawY, rendered.widthMm, rendered.heightMm);
-      return;
-    }
-  }
-
-  doc.text(str, x, y, options?.align ? { align: options.align } : undefined);
-}
-
-function handleAutoTableCellUnicode(doc: jsPDF, cellData: any) {
-  if (cellData.section === "body" || cellData.section === "head") {
-    const rawText = cellData.cell.text ? cellData.cell.text.join("\n") : "";
-    if (/[^\x00-\x7F]/.test(rawText)) {
-      const fontSize = cellData.cell.styles.fontSize || 8;
-      const pxSize = Math.max(18, Math.round(fontSize * 3.5));
-      const isBold = cellData.cell.styles.fontStyle === "bold";
-      const colorRGB = cellData.cell.styles.textColor || [0, 0, 0];
-      const colorHex = Array.isArray(colorRGB)
-        ? `#${colorRGB.map((c: number) => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, "0")).join("")}`
-        : "#000000";
-
-      const rendered = renderUnicodeTextToImage(rawText, pxSize, colorHex, isBold ? "bold" : "normal");
-      if (rendered.dataUrl) {
-        const fill = cellData.cell.styles.fillColor;
-        if (fill && Array.isArray(fill)) {
-          doc.setFillColor(fill[0], fill[1], fill[2]);
-          doc.rect(cellData.cell.x, cellData.cell.y, cellData.cell.width, cellData.cell.height, "F");
-        } else {
-          doc.setFillColor(255, 255, 255);
-          doc.rect(cellData.cell.x, cellData.cell.y, cellData.cell.width, cellData.cell.height, "F");
-        }
-
-        const lineW = cellData.cell.styles.lineWidth;
-        if (lineW) {
-          const lineC = cellData.cell.styles.lineColor || [160, 140, 100];
-          doc.setDrawColor(lineC[0], lineC[1], lineC[2]);
-          doc.setLineWidth(lineW);
-          doc.rect(cellData.cell.x, cellData.cell.y, cellData.cell.width, cellData.cell.height, "S");
-        }
-
-        let drawX = cellData.cell.x + (cellData.cell.padding("left") || 1.5);
-        if (cellData.cell.styles.halign === "center") {
-          drawX = cellData.cell.x + (cellData.cell.width - rendered.widthMm) / 2;
-        } else if (cellData.cell.styles.halign === "right") {
-          drawX = cellData.cell.x + cellData.cell.width - rendered.widthMm - (cellData.cell.padding("right") || 1.5);
-        }
-
-        const drawY = cellData.cell.y + (cellData.cell.height - rendered.heightMm) / 2;
-        doc.addImage(rendered.dataUrl, "PNG", drawX, drawY, rendered.widthMm, rendered.heightMm);
-      }
-    }
   }
 }
 
@@ -351,16 +238,11 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
     }
   }
 
-  // Shop Name — centered gold header (with Unicode/Gujarati support)
+  // Shop Name — centered gold header
   doc.setFont("helvetica", "bold");
   doc.setFontSize(19);
   doc.setTextColor(...GOLD_DARK);
-  drawSafeText(doc, data.shopName, pw / 2, y + 10, {
-    fontSize: 19,
-    fontWeight: "bold",
-    colorHex: "#825f14",
-    align: "center",
-  });
+  doc.text(data.shopName.toUpperCase(), pw / 2, y + 10, { align: "center" });
 
   // Address
   doc.setFont("helvetica", "normal");
@@ -391,11 +273,7 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.setFontSize(9);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...BLACK);
-  drawSafeText(doc, data.customerName, L + 3, y + 10, {
-    fontSize: 9,
-    fontWeight: "bold",
-    colorHex: "#000000",
-  });
+  doc.text(data.customerName.toUpperCase(), L + 3, y + 10);
 
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
@@ -414,7 +292,10 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...MID);
 
-  const invNum = data.invoiceId.length > 8 ? `ZJ/${data.invoiceId.slice(-6).toUpperCase()}` : data.invoiceId;
+  const invNum =
+    data.invoiceId.length > 8
+      ? `ZJ/${data.invoiceId.slice(-6).toUpperCase()}`
+      : data.invoiceId;
   const formattedDate = new Date(data.createdAt).toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
@@ -444,7 +325,11 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.text("Payment", rLabelX, y + 29);
   doc.text(":", rColon, y + 29);
   doc.setFont("helvetica", "bold");
-  doc.text(`${(data.paymentStatus || "PAID").toUpperCase()} / ${data.paymentMethod || "Cash"}`, rValX, y + 29);
+  doc.text(
+    `${(data.paymentStatus || "PAID").toUpperCase()} / ${data.paymentMethod || "Cash"}`,
+    rValX,
+    y + 29,
+  );
 
   y += 32;
   doc.setDrawColor(...BORDER);
@@ -459,11 +344,15 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   const tableRows = data.items.map((item, i) => {
     let nameText = item.name.toUpperCase();
     const extras: string[] = [];
-    if (item.hallmarkCharge && item.hallmarkCharge > 0) extras.push(`HM: ${fmtINR(item.hallmarkCharge)}`);
-    if (item.jadatarCharge && item.jadatarCharge > 0) extras.push(`Jadatar: ${fmtINR(item.jadatarCharge)}`);
-    if (item.rhodiumCharge && item.rhodiumCharge > 0) extras.push(`Rodium: ${fmtINR(item.rhodiumCharge)}`);
-    if (item.nangCharge && item.nangCharge > 0) extras.push(`Nang: ${fmtINR(item.nangCharge)}`);
-    
+    if (item.hallmarkCharge && item.hallmarkCharge > 0)
+      extras.push(`HM: ${fmtINR(item.hallmarkCharge)}`);
+    if (item.jadatarCharge && item.jadatarCharge > 0)
+      extras.push(`Jadatar: ${fmtINR(item.jadatarCharge)}`);
+    if (item.rhodiumCharge && item.rhodiumCharge > 0)
+      extras.push(`Rodium: ${fmtINR(item.rhodiumCharge)}`);
+    if (item.nangCharge && item.nangCharge > 0)
+      extras.push(`Nang: ${fmtINR(item.nangCharge)}`);
+
     if (extras.length > 0) {
       nameText += `\n(${extras.join(" | ")})`;
     }
@@ -481,7 +370,17 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
 
   autoTable(doc, {
     startY: tableStartY,
-    head: [["S.N.", "Description of Goods", "HSN\nCode", "Qty.", "Unit", "Price", "Amount (Rs.)"]],
+    head: [
+      [
+        "S.N.",
+        "Description of Goods",
+        "HSN\nCode",
+        "Qty.",
+        "Unit",
+        "Price",
+        "Amount (Rs.)",
+      ],
+    ],
     body: tableRows,
     headStyles: {
       fillColor: [GOLD_LIGHT[0], GOLD_LIGHT[1], GOLD_LIGHT[2]],
@@ -532,7 +431,10 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   data.items.forEach((item) => (subtotal += item.lineTotal));
   let totalWeight = 0;
   data.items.forEach((item) => (totalWeight += item.weight));
-  const totalMaking = data.items.reduce((sum, item) => sum + (item.qty * item.weight * item.makingCharge), 0);
+  const totalMaking = data.items.reduce(
+    (sum, item) => sum + item.qty * item.weight * item.makingCharge,
+    0,
+  );
   const totalExtra = data.items.reduce(
     (sum, item) =>
       sum +
@@ -540,7 +442,7 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
       (item.jadatarCharge || 0) +
       (item.rhodiumCharge || 0) +
       (item.nangCharge || 0),
-    0
+    0,
   );
 
   const taxableAmount = subtotal;
@@ -580,7 +482,11 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
     doc.setFont("helvetica", "italic");
     doc.setFontSize(7.5);
     doc.setTextColor(...MID);
-    doc.text("Add  :  Extra Charges (HM/Jadatar/Rodium/Nang)", totalLabelX - 35, tY);
+    doc.text(
+      "Add  :  Extra Charges (HM/Jadatar/Rodium/Nang)",
+      totalLabelX - 35,
+      tY,
+    );
     doc.text(fmtINR(totalExtra), amtX, tY, { align: "right" });
   }
 
@@ -631,7 +537,9 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...GOLD_DARK);
-  doc.text(`Rs. ${fmtINR(data.totalAmount)}`, amtX, bannerY + 5.5, { align: "right" });
+  doc.text(`Rs. ${fmtINR(data.totalAmount)}`, amtX, bannerY + 5.5, {
+    align: "right",
+  });
 
   tY += bannerHeight;
   doc.setDrawColor(...BORDER);
@@ -723,15 +631,29 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.setFontSize(6.2);
   doc.setTextColor(...MID);
   doc.text("E. & O.E.", L + 3, footerStartY + 10);
-  doc.text("1. No guarantee or warranty on breakage of jewelry items.", L + 3, footerStartY + 14);
-  doc.text("2. Goods once sold will not be returned or taken back.", L + 3, footerStartY + 18);
-  doc.text("3. Subject to 'Botad' Jurisdiction only.", L + 3, footerStartY + 22);
+  doc.text(
+    "1. No guarantee or warranty on breakage of jewelry items.",
+    L + 3,
+    footerStartY + 14,
+  );
+  doc.text(
+    "2. Goods once sold will not be returned or taken back.",
+    L + 3,
+    footerStartY + 18,
+  );
+  doc.text(
+    "3. Subject to 'Botad' Jurisdiction only.",
+    L + 3,
+    footerStartY + 22,
+  );
 
   // RIGHT: Signatures
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(...GOLD_DARK);
-  doc.text(`for ${data.shopName.toUpperCase()}`, R - 3, footerStartY + 4.5, { align: "right" });
+  doc.text(`for ${data.shopName.toUpperCase()}`, R - 3, footerStartY + 4.5, {
+    align: "right",
+  });
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
@@ -741,7 +663,9 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(...BLACK);
-  doc.text("Authorised Signatory", R - 3, footerStartY + 26, { align: "right" });
+  doc.text("Authorised Signatory", R - 3, footerStartY + 26, {
+    align: "right",
+  });
 
   // ══════════════════════════════════════════
   // OUTER BORDER & BOTTOM ACCENTS
@@ -765,21 +689,23 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
     `Thank you for choosing ${data.shopName}! Your trust is our treasure.`,
     pw / 2,
     footerEndY + 5,
-    { align: "center" }
+    { align: "center" },
   );
 
   // ══════════════════════════════════════════
   // SAVE / DOWNLOAD PDF
   // ══════════════════════════════════════════
   doc.save(
-    `Invoice_${data.customerName.replace(/\s+/g, "_")}_${data.invoiceId.slice(-6)}.pdf`
+    `Invoice_${data.customerName.replace(/\s+/g, "_")}_${data.invoiceId.slice(-6)}.pdf`,
   );
 }
 
 // ══════════════════════════════════════════════════════════════════
 // EXPENSE STATEMENT PDF GENERATOR — Bank / Corporate Financial Format
 // ══════════════════════════════════════════════════════════════════
-export async function generateExpenseStatementPDF(data: ExpenseStatementPDFData) {
+export async function generateExpenseStatementPDF(
+  data: ExpenseStatementPDFData,
+) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const pw = 210;
   const L = 10;
@@ -817,7 +743,7 @@ export async function generateExpenseStatementPDF(data: ExpenseStatementPDFData)
     })}`,
     R - 3,
     y + 4,
-    { align: "right" }
+    { align: "right" },
   );
 
   y += 6;
@@ -838,12 +764,16 @@ export async function generateExpenseStatementPDF(data: ExpenseStatementPDFData)
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.setTextColor(...GOLD_DARK);
-  doc.text((data.shopName || "ZEAL JEWELLERS").toUpperCase(), pw / 2, y + 9, { align: "center" });
+  doc.text((data.shopName || "ZEAL JEWELLERS").toUpperCase(), pw / 2, y + 9, {
+    align: "center",
+  });
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(...MID);
-  doc.text("OPERATIONAL EXPENSE LEDGER & FINANCIAL STATEMENT", pw / 2, y + 15, { align: "center" });
+  doc.text("OPERATIONAL EXPENSE LEDGER & FINANCIAL STATEMENT", pw / 2, y + 15, {
+    align: "center",
+  });
 
   y += 22;
   doc.setDrawColor(...BORDER);
@@ -892,8 +822,15 @@ export async function generateExpenseStatementPDF(data: ExpenseStatementPDFData)
   doc.setFontSize(8.5);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...MID);
-  doc.text(`Total Recorded Entries: ${data.totalEntries}`, R - 6, y + 10, { align: "right" });
-  doc.text(`Categories Tracked: ${Object.keys(data.categoryTotals).length}`, R - 6, y + 15, { align: "right" });
+  doc.text(`Total Recorded Entries: ${data.totalEntries}`, R - 6, y + 10, {
+    align: "right",
+  });
+  doc.text(
+    `Categories Tracked: ${Object.keys(data.categoryTotals).length}`,
+    R - 6,
+    y + 15,
+    { align: "right" },
+  );
 
   y += 24;
 
@@ -906,7 +843,10 @@ export async function generateExpenseStatementPDF(data: ExpenseStatementPDFData)
 
     y += 2;
     const catRows = Object.entries(data.categoryTotals).map(([cat, amount]) => {
-      const pct = data.totalExpenses > 0 ? ((amount / data.totalExpenses) * 100).toFixed(1) : "0.0";
+      const pct =
+        data.totalExpenses > 0
+          ? ((amount / data.totalExpenses) * 100).toFixed(1)
+          : "0.0";
       return [cat, `Rs. ${fmtINR(amount)}`, `${pct}%`];
     });
 
@@ -946,7 +886,11 @@ export async function generateExpenseStatementPDF(data: ExpenseStatementPDFData)
 
   const itemRows = data.expenses.map((e, index) => [
     `${index + 1}`,
-    new Date(e.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+    new Date(e.date).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }),
     e.category,
     e.note || "No memo recorded",
     e.addedBy || "Admin",
@@ -955,7 +899,16 @@ export async function generateExpenseStatementPDF(data: ExpenseStatementPDFData)
 
   autoTable(doc, {
     startY: y,
-    head: [["S.N.", "Date", "Category", "Description / Memo", "Logged By", "Amount (Rs.)"]],
+    head: [
+      [
+        "S.N.",
+        "Date",
+        "Category",
+        "Description / Memo",
+        "Logged By",
+        "Amount (Rs.)",
+      ],
+    ],
     body: itemRows,
     headStyles: {
       fillColor: [GOLD[0], GOLD[1], GOLD[2]],
@@ -989,11 +942,17 @@ export async function generateExpenseStatementPDF(data: ExpenseStatementPDFData)
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(...DARK);
-  doc.text(`Total Statement Expenses (${data.totalEntries} items)`, L + 4, y + 5.5);
+  doc.text(
+    `Total Statement Expenses (${data.totalEntries} items)`,
+    L + 4,
+    y + 5.5,
+  );
 
   doc.setFontSize(10);
   doc.setTextColor(...ROSE);
-  doc.text(`Rs. ${fmtINR(data.totalExpenses)}`, R - 4, y + 5.5, { align: "right" });
+  doc.text(`Rs. ${fmtINR(data.totalExpenses)}`, R - 4, y + 5.5, {
+    align: "right",
+  });
 
   y += 12;
 
@@ -1005,13 +964,13 @@ export async function generateExpenseStatementPDF(data: ExpenseStatementPDFData)
     "This is an electronically generated financial statement from Zeal Jewellers Shop Management & POS System.",
     pw / 2,
     y,
-    { align: "center" }
+    { align: "center" },
   );
   doc.text(
     "All financial entries are encrypted and verified against store ledger logs.",
     pw / 2,
     y + 4,
-    { align: "center" }
+    { align: "center" },
   );
 
   // Trigger Save / Download and automatically release memory resources
@@ -1060,7 +1019,7 @@ export async function generateSalesStatementPDF(data: SalesStatementPDFData) {
     })}`,
     R - 3,
     y + 4,
-    { align: "right" }
+    { align: "right" },
   );
 
   y += 6;
@@ -1081,12 +1040,16 @@ export async function generateSalesStatementPDF(data: SalesStatementPDFData) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.setTextColor(...GOLD_DARK);
-  doc.text((data.shopName || "ZEAL JEWELLERS").toUpperCase(), pw / 2, y + 9, { align: "center" });
+  doc.text((data.shopName || "ZEAL JEWELLERS").toUpperCase(), pw / 2, y + 9, {
+    align: "center",
+  });
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(...MID);
-  doc.text("SALES REVENUE & INVOICE TRANSACTION STATEMENT", pw / 2, y + 15, { align: "center" });
+  doc.text("SALES REVENUE & INVOICE TRANSACTION STATEMENT", pw / 2, y + 15, {
+    align: "center",
+  });
 
   y += 22;
   doc.setDrawColor(...BORDER);
@@ -1135,8 +1098,15 @@ export async function generateSalesStatementPDF(data: SalesStatementPDFData) {
   doc.setFontSize(8.5);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...MID);
-  doc.text(`Total Invoices Billed: ${data.totalSalesCount}`, R - 6, y + 10, { align: "right" });
-  doc.text(`Paid: ${data.paidCount} | Pending: ${data.pendingCount} | Partial: ${data.partialCount}`, R - 6, y + 15, { align: "right" });
+  doc.text(`Total Invoices Billed: ${data.totalSalesCount}`, R - 6, y + 10, {
+    align: "right",
+  });
+  doc.text(
+    `Paid: ${data.paidCount} | Pending: ${data.pendingCount} | Partial: ${data.partialCount}`,
+    R - 6,
+    y + 15,
+    { align: "right" },
+  );
 
   y += 24;
 
@@ -1151,7 +1121,11 @@ export async function generateSalesStatementPDF(data: SalesStatementPDFData) {
   const itemRows = data.sales.map((s, index) => [
     `${index + 1}`,
     `#${s.invoiceId.slice(-8).toUpperCase()}`,
-    new Date(s.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
+    new Date(s.date).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }),
     s.customerName.toUpperCase(),
     s.customerPhone || "N/A",
     `${s.itemsCount} pc(s)`,
@@ -1161,7 +1135,18 @@ export async function generateSalesStatementPDF(data: SalesStatementPDFData) {
 
   autoTable(doc, {
     startY: y,
-    head: [["S.N.", "Invoice ID", "Date", "Customer Name", "Phone", "Items", "Status & Mode", "Amount (Rs.)"]],
+    head: [
+      [
+        "S.N.",
+        "Invoice ID",
+        "Date",
+        "Customer Name",
+        "Phone",
+        "Items",
+        "Status & Mode",
+        "Amount (Rs.)",
+      ],
+    ],
     body: itemRows,
     headStyles: {
       fillColor: [GOLD[0], GOLD[1], GOLD[2]],
@@ -1197,11 +1182,17 @@ export async function generateSalesStatementPDF(data: SalesStatementPDFData) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(...DARK);
-  doc.text(`Total Sales Revenue (${data.totalSalesCount} invoices)`, L + 4, y + 5.5);
+  doc.text(
+    `Total Sales Revenue (${data.totalSalesCount} invoices)`,
+    L + 4,
+    y + 5.5,
+  );
 
   doc.setFontSize(10);
   doc.setTextColor(...EMERALD);
-  doc.text(`Rs. ${fmtINR(data.totalRevenue)}`, R - 4, y + 5.5, { align: "right" });
+  doc.text(`Rs. ${fmtINR(data.totalRevenue)}`, R - 4, y + 5.5, {
+    align: "right",
+  });
 
   y += 12;
 
@@ -1213,13 +1204,13 @@ export async function generateSalesStatementPDF(data: SalesStatementPDFData) {
     "This is an electronically generated sales financial statement from Zeal Jewellers Shop Management & POS System.",
     pw / 2,
     y,
-    { align: "center" }
+    { align: "center" },
   );
   doc.text(
     "All sales records are encrypted and verified against store ledger logs.",
     pw / 2,
     y + 4,
-    { align: "center" }
+    { align: "center" },
   );
 
   // Trigger Save / Download and automatically release memory resources
