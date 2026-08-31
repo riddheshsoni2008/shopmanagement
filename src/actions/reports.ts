@@ -113,7 +113,15 @@ export async function getDashboardMetrics(
           {
             $group: {
               _id: null,
-              totalAmount: { $sum: "$amount" },
+              totalAmount: {
+                $sum: {
+                  $cond: [
+                    { $gt: [{ $size: { $ifNull: ["$items", []] } }, 0] },
+                    "$totalAmount",
+                    { $ifNull: ["$amount", 0] },
+                  ],
+                },
+              },
             },
           },
         ]),
@@ -228,13 +236,38 @@ export async function getReportData(
     const expensesAgg = await Expense.aggregate([
       { $match: { userId: tenantId, date: { $gte: startDate, $lte: endDate } } },
       {
-        $group: {
-          _id: "$category",
-          amount: { $sum: "$amount" },
+        $facet: {
+          itemsCategories: [
+            { $unwind: "$items" },
+            {
+              $group: {
+                _id: "$items.category",
+                amount: { $sum: "$items.amount" },
+              },
+            },
+          ],
+          legacyCategories: [
+            { $match: { category: { $exists: true, $ne: null } } },
+            {
+              $group: {
+                _id: "$category",
+                amount: { $sum: "$amount" },
+              },
+            },
+          ],
         },
       },
-      { $sort: { amount: -1 } },
     ]);
+
+    const combinedMap: Record<string, number> = {};
+    if (expensesAgg[0]) {
+      (expensesAgg[0].itemsCategories || []).forEach((c: any) => {
+        combinedMap[c._id] = (combinedMap[c._id] || 0) + c.amount;
+      });
+      (expensesAgg[0].legacyCategories || []).forEach((c: any) => {
+        combinedMap[c._id] = (combinedMap[c._id] || 0) + c.amount;
+      });
+    }
 
     let totalRevenue = 0;
     let totalSalesCount = 0;
@@ -249,13 +282,13 @@ export async function getReportData(
     });
 
     let totalExpenses = 0;
-    const expensesByCategory = expensesAgg.map((item) => {
-      totalExpenses += item.amount;
+    const expensesByCategory = Object.entries(combinedMap).map(([cat, amt]) => {
+      totalExpenses += amt;
       return {
-        category: item._id,
-        amount: item.amount,
+        category: cat,
+        amount: amt,
       };
-    });
+    }).sort((a, b) => b.amount - a.amount);
 
     const categorySalesDistribution = categorySalesAgg.map((item) => ({
       category: item._id,

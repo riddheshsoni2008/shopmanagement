@@ -30,14 +30,12 @@ export async function getExpenses(filter: {
 
     const query: Record<string, unknown> = { userId: tenantId };
 
-    if (filter.category && filter.category !== "ALL") {
-      query.category = filter.category;
-    }
-
     if (filter.startDate || filter.endDate) {
       query.date = {};
       if (filter.startDate) {
-        (query.date as any).$gte = new Date(filter.startDate);
+        const start = new Date(filter.startDate);
+        start.setHours(0, 0, 0, 0);
+        (query.date as any).$gte = start;
       }
       if (filter.endDate) {
         const end = new Date(filter.endDate);
@@ -46,37 +44,64 @@ export async function getExpenses(filter: {
       }
     }
 
-    const expenses = await Expense.find(query)
+    const dailyDocs = await Expense.find(query)
+      .populate("items.addedBy", "name email")
       .populate("addedBy", "name email")
       .sort({ date: -1 })
       .lean();
 
-    // Category summary aggregation
-    const categoryTotalsAgg = await Expense.aggregate([
-      { $match: query },
-      { $group: { _id: "$category", total: { $sum: "$amount" } } },
-    ]);
-
+    const formattedExpenses: Array<any> = [];
     const categoryTotals: Record<string, number> = {};
     let totalExpenses = 0;
-    categoryTotalsAgg.forEach((item: any) => {
-      categoryTotals[item._id] = item.total;
-      totalExpenses += item.total;
-    });
 
-    const formatted = expenses.map((e: any) => ({
-      _id: e._id.toString(),
-      category: e.category,
-      amount: e.amount,
-      note: e.note || "",
-      date: new Date(e.date).toISOString(),
-      addedBy: e.addedBy ? { name: e.addedBy.name, email: e.addedBy.email } : { name: "Admin" },
-    }));
+    for (const doc of dailyDocs) {
+      const docDate = new Date(doc.date).toISOString();
+
+      if (Array.isArray(doc.items) && doc.items.length > 0) {
+        for (const item of doc.items) {
+          if (filter.category && filter.category !== "ALL" && item.category !== filter.category) {
+            continue;
+          }
+
+          const itemAmt = Number(item.amount) || 0;
+          categoryTotals[item.category] = (categoryTotals[item.category] || 0) + itemAmt;
+          totalExpenses += itemAmt;
+
+          formattedExpenses.push({
+            _id: item._id ? item._id.toString() : doc._id.toString(),
+            dailyDocId: doc._id.toString(),
+            category: item.category,
+            amount: itemAmt,
+            note: item.note || "",
+            date: docDate,
+            addedBy: item.addedBy ? { name: (item.addedBy as any).name, email: (item.addedBy as any).email } : { name: "Admin" },
+          });
+        }
+      } else if (doc.category && doc.amount) {
+        // Legacy document format fallback
+        if (filter.category && filter.category !== "ALL" && doc.category !== filter.category) {
+          continue;
+        }
+        const itemAmt = Number(doc.amount) || 0;
+        categoryTotals[doc.category] = (categoryTotals[doc.category] || 0) + itemAmt;
+        totalExpenses += itemAmt;
+
+        formattedExpenses.push({
+          _id: doc._id.toString(),
+          dailyDocId: doc._id.toString(),
+          category: doc.category,
+          amount: itemAmt,
+          note: doc.note || "",
+          date: docDate,
+          addedBy: doc.addedBy ? { name: (doc.addedBy as any).name, email: (doc.addedBy as any).email } : { name: "Admin" },
+        });
+      }
+    }
 
     return {
       success: true,
       data: {
-        expenses: formatted,
+        expenses: formattedExpenses,
         categoryTotals,
         totalExpenses,
       },
@@ -111,21 +136,37 @@ export async function createExpense(input: ExpenseInput): Promise<ActionResult<s
 
     await connectDB();
 
-    const newExpense = await Expense.create({
-      userId: tenantId,
+    // Normalize date to start of UTC day so all items logged on the same calendar day group into 1 document
+    const rawDate = new Date(validated.data.date);
+    const dateStart = new Date(Date.UTC(rawDate.getFullYear(), rawDate.getMonth(), rawDate.getDate()));
+
+    const newItemId = new mongoose.Types.ObjectId();
+    const newItem = {
+      _id: newItemId,
       category: validated.data.category,
       amount: validated.data.amount,
       note: validated.data.note || "",
-      date: new Date(validated.data.date),
       addedBy: new mongoose.Types.ObjectId(userId),
-    });
+      createdAt: new Date(),
+    };
+
+    // Upsert into single daily document for this tenantId & date
+    await Expense.findOneAndUpdate(
+      { userId: tenantId, date: dateStart },
+      {
+        $push: { items: newItem },
+        $inc: { totalAmount: validated.data.amount },
+      },
+      { upsert: true, new: true }
+    );
 
     revalidatePath("/expenses");
     revalidatePath("/dashboard");
     revalidatePath("/reports");
 
-    return { success: true, data: newExpense._id.toString() };
-  } catch (error) {
+    return { success: true, data: newItemId.toString() };
+  } catch (error: any) {
+    console.error("Error logging expense:", error);
     return { success: false, error: "Failed to log expense" };
   }
 }
@@ -145,9 +186,35 @@ export async function deleteExpense(id: string): Promise<ActionResult<string>> {
 
     await connectDB();
 
-    const deleted = await Expense.findOneAndDelete({ _id: id, userId: tenantId });
-    if (!deleted) {
+    // Try finding daily document containing this item or matching document _id
+    const doc = await Expense.findOne({
+      userId: tenantId,
+      $or: [{ _id: id }, { "items._id": id }],
+    });
+
+    if (!doc) {
       return { success: false, error: "Expense entry not found" };
+    }
+
+    if (doc._id.toString() === id && (!doc.items || doc.items.length === 0)) {
+      // Legacy document deletion
+      await Expense.deleteOne({ _id: doc._id });
+    } else {
+      // Find item in daily document
+      const itemIndex = doc.items.findIndex((i: any) => i._id.toString() === id);
+      if (itemIndex > -1) {
+        const removedItem = doc.items[itemIndex];
+        doc.items.splice(itemIndex, 1);
+        doc.totalAmount = Math.max(0, doc.totalAmount - removedItem.amount);
+
+        if (doc.items.length === 0) {
+          await Expense.deleteOne({ _id: doc._id });
+        } else {
+          await doc.save();
+        }
+      } else {
+        await Expense.deleteOne({ _id: doc._id });
+      }
     }
 
     revalidatePath("/expenses");
@@ -156,6 +223,7 @@ export async function deleteExpense(id: string): Promise<ActionResult<string>> {
 
     return { success: true, data: "Expense entry deleted successfully" };
   } catch (error) {
+    console.error("Error deleting expense:", error);
     return { success: false, error: "Failed to delete expense entry" };
   }
 }
@@ -179,16 +247,19 @@ export async function bulkDeleteExpenses(ids: string[]): Promise<ActionResult<{ 
 
     await connectDB();
 
-    const result = await Expense.deleteMany({
-      _id: { $in: ids },
-      userId: tenantId,
-    });
+    let deletedCount = 0;
+    for (const id of ids) {
+      const res = await deleteExpense(id);
+      if (res.success) {
+        deletedCount++;
+      }
+    }
 
     revalidatePath("/expenses");
     revalidatePath("/dashboard");
     revalidatePath("/reports");
 
-    return { success: true, data: { deletedCount: result.deletedCount || 0 } };
+    return { success: true, data: { deletedCount } };
   } catch (error) {
     console.error("Error bulk deleting expenses:", error);
     return { success: false, error: "Failed to delete expense entries" };

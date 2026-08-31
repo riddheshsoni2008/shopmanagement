@@ -242,7 +242,7 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
         </div>
       </div>
 
-      {/* Expense List */}
+      {/* Expense List — Daily Grouped Cards Layout */}
       {filteredExpenses.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-amber-200 dark:border-slate-800 bg-amber-50/40 dark:bg-slate-900/40 py-16 text-center">
           <DollarSign className="h-10 w-10 text-slate-400 dark:text-slate-600 mb-2" />
@@ -252,129 +252,110 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
           </p>
         </div>
       ) : (
-        <>
-          {/* Mobile Card Layout */}
-          <div className="space-y-3 md:hidden">
-            {filteredExpenses.map((expense) => {
-              const isSelected = selectedExpenseIds.includes(expense._id);
-              return (
-                <div
-                  key={expense._id}
-                  className={`rounded-xl border p-4 shadow-sm transition-colors ${
-                    isSelected
-                      ? "border-amber-500 bg-amber-50/50 dark:bg-amber-950/20"
-                      : "border-amber-200 dark:border-slate-800 bg-white dark:bg-slate-900/90"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => handleToggleSelect(expense._id)}
-                        className="h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500 accent-amber-600 cursor-pointer shrink-0"
-                      />
-                      <div className="min-w-0">
-                        <Badge variant="outline" className="mb-1">{expense.category}</Badge>
-                        <p className="text-sm text-slate-800 dark:text-slate-300 font-medium mt-0.5">
-                          {expense.note || "No note recorded"}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-lg font-bold text-rose-600 dark:text-rose-400 shrink-0">
-                      {formatCurrency(expense.amount)}
-                    </p>
+        <div className="space-y-6">
+          {(() => {
+            const dailyGroupsMap: Record<string, { dateStr: string; formattedDate: string; total: number; items: any[] }> = {};
+            filteredExpenses.forEach((expense: any) => {
+              const dateKey = new Date(expense.date).toISOString().split("T")[0];
+              if (!dailyGroupsMap[dateKey]) {
+                dailyGroupsMap[dateKey] = {
+                  dateStr: dateKey,
+                  formattedDate: formatDate(expense.date),
+                  total: 0,
+                  items: [],
+                };
+              }
+              dailyGroupsMap[dateKey].items.push(expense);
+              dailyGroupsMap[dateKey].total += expense.amount;
+            });
+            const dailyGroups = Object.values(dailyGroupsMap);
+
+            return dailyGroups.map((group: any) => (
+              <Card
+                key={group.dateStr}
+                className="border-amber-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/90 shadow-sm overflow-hidden"
+              >
+              {/* Daily Header */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-4 py-3 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent dark:from-amber-500/15 border-b border-amber-200/60 dark:border-slate-800">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-400">
+                    <Calendar className="h-4 w-4" />
                   </div>
-                  <div className="flex items-center justify-between mt-3 pt-2 border-t border-amber-100 dark:border-slate-800">
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
-                      {formatDate(expense.date)} • {expense.addedBy?.name || "Admin"}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(expense._id, expense.category, expense.amount)}
-                      className="h-8 w-8 hover:bg-rose-500/10 -mr-2"
-                    >
-                      <Trash2 className="h-4 w-4 text-rose-500 dark:text-rose-400" />
-                    </Button>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                      {group.formattedDate}
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold">
+                        {group.items.length} {group.items.length === 1 ? "entry" : "entries"}
+                      </span>
+                    </h3>
                   </div>
                 </div>
-              );
-            })}
-          </div>
 
-          {/* Desktop Table Layout */}
-          <div className="hidden md:block">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-10">
-                    <input
-                      type="checkbox"
-                      checked={isAllSelected}
-                      onChange={(e) => handleSelectAll(e.target.checked)}
-                      className="h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500 accent-amber-600 cursor-pointer"
-                    />
-                  </TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Description / Memo</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Expense Date</TableHead>
-                  <TableHead>Logged By</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredExpenses.map((expense) => {
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Daily Total:</span>
+                  <Badge className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-2.5 py-1 shadow-sm">
+                    {formatCurrency(group.total)}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Items List in Daily Document */}
+              <div className="divide-y divide-amber-100 dark:divide-slate-800/60">
+                {group.items.map((expense: any) => {
                   const isSelected = selectedExpenseIds.includes(expense._id);
                   return (
-                    <TableRow key={expense._id} className={isSelected ? "bg-amber-50/60 dark:bg-amber-950/20" : ""}>
-                      <TableCell>
+                    <div
+                      key={expense._id}
+                      className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:px-4 gap-3 transition-colors ${
+                        isSelected
+                          ? "bg-amber-50/60 dark:bg-amber-950/20"
+                          : "hover:bg-amber-50/30 dark:hover:bg-slate-800/40"
+                      }`}
+                    >
+                      <div className="flex items-start sm:items-center gap-3 min-w-0">
                         <input
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => handleToggleSelect(expense._id)}
-                          className="h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500 accent-amber-600 cursor-pointer"
+                          className="h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500 accent-amber-600 cursor-pointer mt-1 sm:mt-0 shrink-0"
                         />
-                      </TableCell>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge variant="outline" className="text-xs font-semibold">
+                              {expense.category}
+                            </Badge>
+                            <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                              Logged by {expense.addedBy?.name || "Admin"}
+                            </span>
+                          </div>
+                          <p className="text-sm font-medium text-slate-800 dark:text-slate-200 mt-1">
+                            {expense.note || "No note recorded"}
+                          </p>
+                        </div>
+                      </div>
 
-                      <TableCell>
-                        <Badge variant="outline">{expense.category}</Badge>
-                      </TableCell>
+                      <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800 pt-2 sm:pt-0">
+                        <span className="text-base font-bold text-rose-600 dark:text-rose-400">
+                          {formatCurrency(expense.amount)}
+                        </span>
 
-                      <TableCell className="text-slate-800 dark:text-slate-300 font-medium">
-                        {expense.note || "No note recorded"}
-                      </TableCell>
-
-                      <TableCell className="font-bold text-rose-600 dark:text-rose-400">
-                        {formatCurrency(expense.amount)}
-                      </TableCell>
-
-                      <TableCell className="text-xs text-slate-500 dark:text-slate-400">
-                        {formatDate(expense.date)}
-                      </TableCell>
-
-                      <TableCell className="text-xs text-slate-700 dark:text-slate-300">
-                        {expense.addedBy?.name || "Admin"}
-                      </TableCell>
-
-                      <TableCell className="text-right">
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDelete(expense._id, expense.category, expense.amount)}
-                          className="h-8 w-8 hover:bg-rose-500/10"
+                          className="h-8 w-8 hover:bg-rose-500/10 text-rose-500 hover:text-rose-600 dark:text-rose-400"
                         >
-                          <Trash2 className="h-4 w-4 text-rose-500 dark:text-rose-400" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
-                      </TableCell>
-                    </TableRow>
+                      </div>
+                    </div>
                   );
                 })}
-              </TableBody>
-            </Table>
-          </div>
-        </>
+              </div>
+            </Card>
+          ));
+        })()}
+      </div>
       )}
 
       {/* Expense Dialog */}
