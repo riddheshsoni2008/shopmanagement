@@ -167,48 +167,64 @@ async function loadLogoBase64(): Promise<string | null> {
 // ══════════════════════════════════════════════════════════════════
 function renderUnicodeTextToImage(
   text: string,
-  fontSizePx: number = 32,
+  fontSizePt: number = 9,
   colorHex: string = "#000000",
   fontWeight: "bold" | "normal" = "normal"
-): { dataUrl: string; widthMm: number; heightMm: number } {
+): { dataUrl: string; widthMm: number; heightMm: number; baselineFromTopMm: number } {
   if (typeof window === "undefined" || typeof document === "undefined") {
-    return { dataUrl: "", widthMm: 0, heightMm: 0 };
+    return { dataUrl: "", widthMm: 0, heightMm: 0, baselineFromTopMm: 0 };
   }
 
   try {
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    if (!ctx) return { dataUrl: "", widthMm: 0, heightMm: 0 };
+    if (!ctx) return { dataUrl: "", widthMm: 0, heightMm: 0, baselineFromTopMm: 0 };
 
-    const scale = 3; // 3x DPI high definition canvas for super crisp print quality
-    const scaledFontSize = fontSizePx * scale;
-    const fontStyle = `${fontWeight} ${scaledFontSize}px "Segoe UI", "Noto Sans Gujarati", "Gujarati Sangam MN", "Shruti", "Mukta", sans-serif`;
+    // Scale factor for crisp retina/high-DPI printing (4x scale = 384 DPI print quality)
+    const scale = 4;
+    // 1 pt in PDF = (96 / 72) CSS pixels = 1.333333 px
+    const cssPxSize = fontSizePt * (96 / 72);
+    const scaledFontSize = cssPxSize * scale;
+
+    // Use clean font weights and order for Gujarati typography
+    // Weight 600 or normal ensures glyphs remain clear without heavy synthetic bold distortion
+    const weightCss = fontWeight === "bold" ? "600" : "normal";
+    const fontStyle = `${weightCss} ${scaledFontSize}px "Noto Sans Gujarati", "Gujarati Sangam MN", "Shruti", "Segoe UI", "Mukta", sans-serif`;
 
     ctx.font = fontStyle;
     const metrics = ctx.measureText(text);
 
+    const ascent = metrics.actualBoundingBoxAscent || scaledFontSize * 0.8;
+    const descent = metrics.actualBoundingBoxDescent || scaledFontSize * 0.25;
     const textWidth = Math.ceil(metrics.width);
-    const textHeight = Math.ceil(scaledFontSize * 1.3);
+    const totalHeight = Math.ceil(ascent + descent);
 
-    canvas.width = Math.max(1, textWidth + 20 * scale);
-    canvas.height = Math.max(1, textHeight + 10 * scale);
+    // Subtle 2px margin at 1x scale (8px at 4x scale) to protect glyph edges
+    const padPx = 2 * scale;
 
-    // Re-apply context font after canvas resize
+    canvas.width = Math.max(1, textWidth + padPx * 2);
+    canvas.height = Math.max(1, totalHeight + padPx * 2);
+
+    // Re-apply context settings after canvas resize
     ctx.font = fontStyle;
     ctx.fillStyle = colorHex;
-    ctx.textBaseline = "middle";
+    ctx.textBaseline = "alphabetic";
 
-    ctx.fillText(text, 10 * scale, canvas.height / 2);
+    const drawXOnCanvas = padPx;
+    const drawYOnCanvas = padPx + ascent;
+    ctx.fillText(text, drawXOnCanvas, drawYOnCanvas);
 
     const dataUrl = canvas.toDataURL("image/png");
 
-    // Convert pixels to PDF mm (1 px = 0.264583 mm, divided by 3 scale factor)
-    const widthMm = (canvas.width / scale) * 0.264583;
-    const heightMm = (canvas.height / scale) * 0.264583;
+    // Convert pixels to PDF mm (1 CSS px at 96 DPI = 25.4 / 96 mm = 0.26458333 mm)
+    const pxToMm = 25.4 / 96;
+    const widthMm = (canvas.width / scale) * pxToMm;
+    const heightMm = (canvas.height / scale) * pxToMm;
+    const baselineFromTopMm = (drawYOnCanvas / scale) * pxToMm;
 
-    return { dataUrl, widthMm, heightMm };
+    return { dataUrl, widthMm, heightMm, baselineFromTopMm };
   } catch {
-    return { dataUrl: "", widthMm: 0, heightMm: 0 };
+    return { dataUrl: "", widthMm: 0, heightMm: 0, baselineFromTopMm: 0 };
   }
 }
 
@@ -233,18 +249,18 @@ function drawSafeText(
     const fontWeight = options?.fontWeight || "normal";
     const align = options?.align || "left";
 
-    const pxSize = Math.max(18, Math.round(fontSize * 3.5));
-    const rendered = renderUnicodeTextToImage(str, pxSize, colorHex, fontWeight);
+    const rendered = renderUnicodeTextToImage(str, fontSize, colorHex, fontWeight);
 
     if (rendered.dataUrl) {
-      let drawX = x;
+      const padMm = 2 * (25.4 / 96);
+      let drawX = x - padMm;
       if (align === "center") {
         drawX = x - rendered.widthMm / 2;
       } else if (align === "right") {
-        drawX = x - rendered.widthMm;
+        drawX = x - rendered.widthMm + padMm;
       }
 
-      const drawY = y - rendered.heightMm * 0.72;
+      const drawY = y - rendered.baselineFromTopMm;
       doc.addImage(rendered.dataUrl, "PNG", drawX, drawY, rendered.widthMm, rendered.heightMm);
       return;
     }
@@ -258,14 +274,13 @@ function handleAutoTableCellUnicode(doc: jsPDF, cellData: any) {
     const rawText = cellData.cell.text ? cellData.cell.text.join("\n") : "";
     if (/[^\x00-\x7F]/.test(rawText)) {
       const fontSize = cellData.cell.styles.fontSize || 8;
-      const pxSize = Math.max(18, Math.round(fontSize * 3.5));
       const isBold = cellData.cell.styles.fontStyle === "bold";
       const colorRGB = cellData.cell.styles.textColor || [0, 0, 0];
       const colorHex = Array.isArray(colorRGB)
         ? `#${colorRGB.map((c: number) => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, "0")).join("")}`
         : "#000000";
 
-      const rendered = renderUnicodeTextToImage(rawText, pxSize, colorHex, isBold ? "bold" : "normal");
+      const rendered = renderUnicodeTextToImage(rawText, fontSize, colorHex, isBold ? "bold" : "normal");
       if (rendered.dataUrl) {
         const fill = cellData.cell.styles.fillColor;
         if (fill && Array.isArray(fill)) {
@@ -284,11 +299,13 @@ function handleAutoTableCellUnicode(doc: jsPDF, cellData: any) {
           doc.rect(cellData.cell.x, cellData.cell.y, cellData.cell.width, cellData.cell.height, "S");
         }
 
-        let drawX = cellData.cell.x + (cellData.cell.padding("left") || 1.5);
+        const padLeft = cellData.cell.padding("left") || 1.5;
+        const padMm = 2 * (25.4 / 96);
+        let drawX = cellData.cell.x + padLeft - padMm;
         if (cellData.cell.styles.halign === "center") {
           drawX = cellData.cell.x + (cellData.cell.width - rendered.widthMm) / 2;
         } else if (cellData.cell.styles.halign === "right") {
-          drawX = cellData.cell.x + cellData.cell.width - rendered.widthMm - (cellData.cell.padding("right") || 1.5);
+          drawX = cellData.cell.x + cellData.cell.width - rendered.widthMm - (cellData.cell.padding("right") || 1.5) + padMm;
         }
 
         const drawY = cellData.cell.y + (cellData.cell.height - rendered.heightMm) / 2;
@@ -395,7 +412,7 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.line(L, y, R, y);
 
   // ══════════════════════════════════════════
-  // ROW 4: PARTY DETAILS (left) + INVOICE INFO (right)
+  // ROW 4: CUSTOMER DETAILS (left) + INVOICE INFO (right)
   // ══════════════════════════════════════════
   const partyTop = y;
   const midX = L + W * 0.55;
@@ -403,25 +420,25 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   // Vertical divider
   doc.line(midX, partyTop, midX, partyTop + 32);
 
-  // Left side: Party details
+  // Left side: Customer details
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(...GOLD_DARK);
-  doc.text("Party Details :", L + 3, y + 5);
+  doc.text("Customer Details :", L + 3, y + 5.5);
 
-  drawSafeText(doc, data.customerName, L + 3, y + 10, {
-    fontSize: 9,
-    fontWeight: "bold",
+  drawSafeText(doc, data.customerName, L + 3, y + 12, {
+    fontSize: 9.5,
+    fontWeight: "normal",
     colorHex: "#000000",
   });
 
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...MID);
-  doc.text(`Ph: ${data.customerPhone || "N/A"}`, L + 3, y + 15);
+  doc.text(`Ph: ${data.customerPhone || "N/A"}`, L + 3, y + 18);
 
   doc.setFontSize(7.5);
-  doc.text("GSTIN / UIN : -", L + 3, y + 27);
+  doc.text("GSTIN / UIN : -", L + 3, y + 25);
 
   // Right side: Invoice Metadata
   const rLabelX = midX + 3;
