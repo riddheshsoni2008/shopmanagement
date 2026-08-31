@@ -10,6 +10,11 @@ export const metadata: Metadata = {
   title: "Zeal Jewellers - Shop Manager & POS",
   description:
     "Premium full-stack jewelry shop management system — track stock, process sales, manage expenses, and view real-time analytics.",
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/icon.png",
+    apple: "/icon.png",
+  },
 };
 
 export default function RootLayout({
