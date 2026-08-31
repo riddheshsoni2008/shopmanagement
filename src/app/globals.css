@@ -133,3 +133,55 @@
     display: none !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   PREMIUM FOCUS & FORM CONTROL SELECTION STYLES
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Custom theme text selection */
+::selection {
+  background-color: rgba(245, 158, 11, 0.25);
+  color: inherit;
+}
+
+/* Date input segment focus styling (dd/mm/yyyy segment selection) */
+input[type="date"]::-webkit-datetime-edit-day-field:focus,
+input[type="date"]::-webkit-datetime-edit-month-field:focus,
+input[type="date"]::-webkit-datetime-edit-year-field:focus {
+  background-color: rgba(245, 158, 11, 0.3) !important;
+  color: #d97706 !important;
+  border-radius: 4px;
+  outline: none !important;
+}
+
+.dark input[type="date"]::-webkit-datetime-edit-day-field:focus,
+.dark input[type="date"]::-webkit-datetime-edit-month-field:focus,
+.dark input[type="date"]::-webkit-datetime-edit-year-field:focus {
+  background-color: rgba(245, 158, 11, 0.35) !important;
+  color: #fbbf24 !important;
+  border-radius: 4px;
+  outline: none !important;
+}
+
+/* Date input calendar picker icon */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.85) sepia(50%) saturate(1000%) hue-rotate(350deg);
+}
+
+/* Smooth Focus Glow & Outline Reset */
+*:focus-visible {
+  outline: 2px solid rgba(245, 158, 11, 0.5) !important;
+  outline-offset: 1px !important;
+}
+
