@@ -359,7 +359,7 @@ export function ReportsView({ initialData }: ReportsViewProps) {
                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
                     <XAxis dataKey="date" stroke="#94a3b8" fontSize={11} tickMargin={8} />
                     <YAxis stroke="#94a3b8" fontSize={11} tickFormatter={(val) => `₹${(val / 1000).toFixed(0)}k`} />
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#f59e0b", strokeWidth: 1, strokeDasharray: "4 4" }} />
                     <Area
                       type="monotone"
                       dataKey="revenue"
@@ -488,7 +488,7 @@ export function ReportsView({ initialData }: ReportsViewProps) {
                       <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
                       <XAxis dataKey="category" stroke="#94a3b8" fontSize={10} tickMargin={5} />
                       <YAxis stroke="#94a3b8" fontSize={11} tickFormatter={(val) => `₹${(val / 1000).toFixed(0)}k`} />
-                      <Tooltip content={<CustomTooltip />} />
+                      <Tooltip content={<CustomTooltip />} cursor={false} />
                       <Bar
                         dataKey="totalRevenue"
                         name="Revenue"
