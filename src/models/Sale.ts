@@ -30,6 +30,7 @@ export interface ISale extends Document {
   items: ISaleItem[];
   customerName: string;
   customerPhone: string;
+  customerAddress?: string;
   discount: number;
   totalAmount: number;
   paymentStatus: "PAID" | "PENDING" | "PARTIAL";
@@ -68,6 +69,7 @@ const SaleSchema = new Schema<ISale>(
     items: [SaleItemSchema],
     customerName: { type: String, required: true, trim: true },
     customerPhone: { type: String, required: true, trim: true },
+    customerAddress: { type: String, default: "", trim: true },
     discount: { type: Number, required: true, default: 0, min: 0 },
     totalAmount: { type: Number, required: true, min: 0 },
     paymentStatus: {

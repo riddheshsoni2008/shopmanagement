@@ -60,7 +60,8 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
       const q = search.toLowerCase().trim();
       const matchName = s.customerName.toLowerCase().includes(q);
       const matchPhone = s.customerPhone.includes(q);
-      if (!matchName && !matchPhone) return false;
+      const matchAddress = (s.customerAddress || "").toLowerCase().includes(q);
+      if (!matchName && !matchPhone && !matchAddress) return false;
     }
     if (startDate) {
       if (new Date(s.createdAt) < new Date(startDate)) return false;

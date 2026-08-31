@@ -29,6 +29,7 @@ export interface InvoicePDFData {
   shopName: string;
   customerName: string;
   customerPhone: string;
+  customerAddress?: string;
   createdAt: string | Date;
   soldBy: string;
   paymentStatus?: string;
@@ -445,7 +446,15 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...MID);
-  doc.text(`Ph: ${data.customerPhone || "N/A"}`, L + 3, y + 18);
+  let custText = `Ph: ${data.customerPhone || "N/A"}`;
+  if (data.customerAddress && data.customerAddress.trim()) {
+    custText += ` | Addr: ${data.customerAddress.trim()}`;
+  }
+  drawSafeText(doc, custText, L + 3, y + 18, {
+    fontSize: 8,
+    fontWeight: "normal",
+    colorHex: "#475569",
+  });
 
   doc.setFontSize(7.5);
   doc.text("GSTIN / UIN : -", L + 3, y + 25);

@@ -14,6 +14,7 @@ interface InvoiceModalProps {
     _id: string;
     customerName: string;
     customerPhone: string;
+    customerAddress?: string;
     items: Array<{
       name: string;
       qty: number;
@@ -64,6 +65,7 @@ export function InvoiceModal({
       shopName,
       customerName: sale.customerName,
       customerPhone: sale.customerPhone,
+      customerAddress: sale.customerAddress || "",
       createdAt: sale.createdAt,
       soldBy: sale.soldBy?.name || "Store Staff",
       paymentStatus: sale.paymentStatus || "PAID",
@@ -224,6 +226,9 @@ export function InvoiceModal({
               </span>
               <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{sale.customerName}</p>
               <p className="text-slate-600 dark:text-slate-300 mt-0.5">Phone: {sale.customerPhone}</p>
+              {sale.customerAddress && (
+                <p className="text-slate-600 dark:text-slate-300 mt-0.5">Address: {sale.customerAddress}</p>
+              )}
             </div>
             <div className="sm:text-right">
               <span className="font-semibold text-amber-900 dark:text-amber-400 uppercase tracking-wider block mb-1">

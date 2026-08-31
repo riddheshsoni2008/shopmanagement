@@ -20,6 +20,7 @@ import {
   Calculator,
   User,
   Phone,
+  MapPin,
   Sparkles,
   ClipboardCheck,
 } from "lucide-react";
@@ -70,6 +71,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     defaultValues: {
       customerName: "",
       customerPhone: "",
+      customerAddress: "",
       discount: 0,
       items: [
         {
@@ -327,6 +329,21 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                       {errors.customerPhone.message}
                     </p>
                   )}
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                    Customer Address / City (સરનામું)
+                  </label>
+                  <div className="mt-1 relative">
+                    <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Input
+                      placeholder="e.g. 102, Station Road, Botad / Surat"
+                      className="pl-9"
+                      {...register("customerAddress")}
+                      disabled={isSubmitting}
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 pt-2">

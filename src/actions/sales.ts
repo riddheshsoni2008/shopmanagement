@@ -136,6 +136,7 @@ export async function createSale(input: SaleInput): Promise<ActionResult<{ saleI
             userId: tenantId,
             customerName: validated.data.customerName,
             customerPhone: validated.data.customerPhone,
+            customerAddress: validated.data.customerAddress || "",
             items: populatedItems,
             discount,
             totalAmount,

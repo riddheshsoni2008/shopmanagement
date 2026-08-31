@@ -29,6 +29,7 @@ export const saleSchema = z.object({
   customerPhone: z
     .string()
     .min(10, "Customer phone number must be at least 10 digits"),
+  customerAddress: z.string().optional().default(""),
   discount: z.coerce.number().min(0, "Discount cannot be negative").default(0),
   paymentStatus: z.enum(["PAID", "PENDING", "PARTIAL"]).default("PAID"),
   paymentMethod: z.enum(["Cash", "UPI / GPay", "Card", "Bank Transfer"]).default("Cash"),
