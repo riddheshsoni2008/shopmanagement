@@ -40,6 +40,7 @@ async function cleanupLegacyRatesCollection() {
 
 export async function getRateSettings(): Promise<ActionResult<RateSettingsData>> {
   try {
+    const session = await auth();
     const tenantId = await getTenantId();
     if (!tenantId) {
       return { success: false, error: "Unauthorized access" };
@@ -58,19 +59,22 @@ export async function getRateSettings(): Promise<ActionResult<RateSettingsData>>
     let user = await User.findById(tenantId).lean();
 
     if (!user) {
-      return { success: false, error: "User account not found" };
+      user = await User.findOne({ role: "admin" }).sort({ createdAt: 1 }).lean();
+    }
+    if (!user && session?.user?.id) {
+      user = await User.findById(session.user.id).lean();
     }
 
     const formatted: RateSettingsData = {
-      _id: user._id.toString(),
-      goldRate22k: user.goldRate22k ?? 7200,
-      goldRate18k: user.goldRate18k ?? 5900,
-      silverRate: user.silverRate ?? 85,
-      shopName: user.shopName || "Zeal Jewellers",
-      updatedAt: (user as any).updatedAt
+      _id: tenantId.toString(),
+      goldRate22k: user?.goldRate22k ?? 7200,
+      goldRate18k: user?.goldRate18k ?? 5900,
+      silverRate: user?.silverRate ?? 85,
+      shopName: user?.shopName || "Zeal Jewellers",
+      updatedAt: user && (user as any).updatedAt
         ? new Date((user as any).updatedAt).toISOString()
         : new Date().toISOString(),
-      updatedBy: { name: user.name, email: user.email },
+      updatedBy: user ? { name: user.name, email: user.email } : { name: "Zeal Jewellers", email: "" },
     };
 
     cachedRateDataMap.set(tenantKey, { data: formatted, time: now });
@@ -90,12 +94,6 @@ export async function updateRateSettings(
     const tenantId = await getTenantId();
     if (!session?.user?.id || !tenantId) {
       return { success: false, error: "Unauthorized access" };
-    }
-    const userId = session.user.id;
-
-    const role = (session.user as any).role;
-    if (role !== "admin") {
-      return { success: false, error: "Only admins can update shop rates and settings" };
     }
 
     const validated = rateSchema.safeParse(input);

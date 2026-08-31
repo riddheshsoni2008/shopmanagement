@@ -188,11 +188,6 @@ export async function getReportData(
       return { success: false, error: "Unauthorized access" };
     }
 
-    const role = (session.user as any).role;
-    if (role !== "admin") {
-      return { success: false, error: "Access denied. Admin permissions required." };
-    }
-
     await connectDB();
 
     // Default to last 30 days if no range provided

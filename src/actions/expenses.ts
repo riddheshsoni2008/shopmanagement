@@ -21,11 +21,6 @@ export async function getExpenses(filter: {
       return { success: false, error: "Unauthorized access" };
     }
 
-    const role = (session.user as any).role;
-    if (role !== "admin") {
-      return { success: false, error: "Access denied. Admin rights required." };
-    }
-
     await connectDB();
 
     const query: Record<string, unknown> = { userId: tenantId };
@@ -121,10 +116,7 @@ export async function createExpense(input: ExpenseInput): Promise<ActionResult<s
     }
     const userId = session.user.id;
 
-    const role = (session.user as any).role;
-    if (role !== "admin") {
-      return { success: false, error: "Only admins can record expenses" };
-    }
+
 
     const validated = expenseSchema.safeParse(input);
     if (!validated.success) {

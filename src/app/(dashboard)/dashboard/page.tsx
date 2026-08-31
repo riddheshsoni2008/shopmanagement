@@ -231,8 +231,7 @@ export default async function DashboardPage({
           </CardContent>
         </Card>
       </div>
-
-      {/* Main Grid: Low Stock Warnings & Recent Sales */}
+      
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent Sales History */}
         <Card className="lg:col-span-2">

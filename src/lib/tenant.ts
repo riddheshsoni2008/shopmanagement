@@ -46,8 +46,22 @@ export async function getTenantId(): Promise<mongoose.Types.ObjectId | null> {
   }
 
   const user = await User.findById(userObjId).select("ownerId role").lean();
-  if (user && user.role === "staff" && user.ownerId) {
-    return user.ownerId as mongoose.Types.ObjectId;
+
+  if (user && user.role === "staff") {
+    if (user.ownerId) {
+      const ownerExists = await User.exists({ _id: user.ownerId });
+      if (ownerExists) {
+        return user.ownerId as mongoose.Types.ObjectId;
+      }
+    }
+    // Fallback: If staff has no ownerId or owner was removed, use shop's primary Admin ID
+    const firstAdmin = await User.findOne({ role: "admin" })
+      .sort({ createdAt: 1 })
+      .select("_id")
+      .lean();
+    if (firstAdmin) {
+      return firstAdmin._id as mongoose.Types.ObjectId;
+    }
   }
 
   return userObjId;
