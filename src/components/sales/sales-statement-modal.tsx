@@ -152,7 +152,7 @@ export function SalesStatementModal({
 
       await generateSalesStatementPDF({
         shopName,
-        periodLabel,
+        periodLabel, 
         totalRevenue,
         totalSalesCount: periodSales.length,
         paidCount,
