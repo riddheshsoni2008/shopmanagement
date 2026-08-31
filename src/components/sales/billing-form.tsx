@@ -205,13 +205,34 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     setValue(`items.${index}.lineTotal`, Math.max(0, Number(total.toFixed(2))));
   };
 
-  // Compute live subtotal & grand total
+  // Compute live subtotal & breakdown (metal price vs charges)
+  let totalMetalPrice = 0;
+  let totalMakingCharges = 0;
+  let totalExtraCharges = 0;
   let subtotal = 0;
+
   (watchItems || []).forEach((item) => {
     if (item) {
+      const q = Math.max(1, Number(item.qty) || 1);
+      const netWt = Number(item.netWeight ?? item.weight ?? 0);
+      const rate = Number(item.pricePerGram || 0);
+      const making = Number(item.makingCharge || 0);
+      const extra = (Number(item.hallmarkCharge) || 0) +
+                    (Number(item.jadatarCharge) || 0) +
+                    (Number(item.rhodiumCharge) || 0) +
+                    (Number(item.nangCharge) || 0) +
+                    (Number(item.meenoCharge) || 0);
+
+      const metalCost = q * netWt * rate;
+      const makingCost = q * netWt * making;
+
+      totalMetalPrice += metalCost;
+      totalMakingCharges += makingCost;
+      totalExtraCharges += extra;
       subtotal += Number(item.lineTotal) || 0;
     }
   });
+
   const grandTotal = Math.max(0, subtotal - (Number(watchDiscount) || 0));
 
   const onSubmit = async (values: SaleInput) => {
@@ -895,13 +916,35 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                 <CardDescription className="text-slate-500 dark:text-slate-400">Total settlement calculation</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2 border-b border-amber-100 dark:border-slate-800 pb-4 text-sm">
-                  <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                    <span>Items Subtotal:</span>
-                    <span className="font-mono text-slate-900 dark:text-slate-100 font-semibold">{formatCurrency(subtotal)}</span>
+                <div className="space-y-2.5 border-b border-amber-100 dark:border-slate-800 pb-4 text-xs">
+                  {/* 1. Pure Gold / Metal Base Price */}
+                  <div className="flex justify-between text-slate-700 dark:text-slate-300 font-medium">
+                    <span>Gold / Metal Base Price:</span>
+                    <span className="font-mono font-bold text-slate-900 dark:text-slate-100">{formatCurrency(totalMetalPrice)}</span>
                   </div>
 
-                  <div>
+                  {/* 2. Making Charges */}
+                  <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                    <span>(+) Making Charges:</span>
+                    <span className="font-mono text-slate-800 dark:text-slate-200">{formatCurrency(totalMakingCharges)}</span>
+                  </div>
+
+                  {/* 3. Extra Charges */}
+                  {totalExtraCharges > 0 && (
+                    <div className="flex justify-between text-amber-700 dark:text-amber-400">
+                      <span>(+) Extra Charges:</span>
+                      <span className="font-mono font-medium">{formatCurrency(totalExtraCharges)}</span>
+                    </div>
+                  )}
+
+                  {/* 4. Subtotal */}
+                  <div className="flex justify-between text-slate-800 dark:text-slate-200 font-semibold border-t border-slate-200 dark:border-slate-800 pt-2 text-sm">
+                    <span>Items Subtotal:</span>
+                    <span className="font-mono text-slate-900 dark:text-slate-100">{formatCurrency(subtotal)}</span>
+                  </div>
+
+                  {/* 5. Flat Discount */}
+                  <div className="pt-1">
                     <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                       Flat Discount Amount (₹)
                     </label>

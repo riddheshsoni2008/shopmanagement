@@ -99,18 +99,7 @@ export function InvoiceModal({
 
   const pStatus = sale.paymentStatus || "PAID";
   const pMethod = sale.paymentMethod || "Cash";
-  const subtotal = sale.items.reduce((sum, item) => sum + item.lineTotal, 0);
-
-  const getExtraCharges = (item: typeof sale.items[0]) => {
-    return [
-      item.hallmarkCharge ? `HM: ${formatCurrency(item.hallmarkCharge)}` : null,
-      item.jadatarCharge ? `Jadatar: ${formatCurrency(item.jadatarCharge)}` : null,
-      item.rhodiumCharge ? `Rodium: ${formatCurrency(item.rhodiumCharge)}` : null,
-      item.nangCharge ? `Nang: ${formatCurrency(item.nangCharge)}` : null,
-      item.meenoCharge ? `Meeno: ${formatCurrency(item.meenoCharge)}` : null,
-    ].filter(Boolean);
-  };
-
+  
   const getWeightBreakdown = (item: typeof sale.items[0]) => {
     const rawP = item.productWeight ?? item.weight ?? 0;
     const pUnit = item.productWeightUnit || "g";
@@ -147,35 +136,60 @@ export function InvoiceModal({
     return { pWt, jWt, nWt, mWt, netWt, hasDeduction, deductionsList };
   };
 
+  let totalMetalPrice = 0;
+  let totalMakingCharges = 0;
+  let totalExtraCharges = 0;
+  let subtotal = 0;
+
+  sale.items.forEach((item) => {
+    const { netWt } = getWeightBreakdown(item);
+    const metalCost = item.qty * netWt * item.pricePerGram;
+    const makingCost = item.qty * netWt * item.makingCharge;
+    const extraCost = (item.hallmarkCharge || 0) + (item.jadatarCharge || 0) + (item.rhodiumCharge || 0) + (item.nangCharge || 0) + (item.meenoCharge || 0);
+
+    totalMetalPrice += metalCost;
+    totalMakingCharges += makingCost;
+    totalExtraCharges += extraCost;
+    subtotal += item.lineTotal;
+  });
+
+  const getExtraCharges = (item: typeof sale.items[0]) => {
+    return [
+      item.hallmarkCharge ? `HM: ${formatCurrency(item.hallmarkCharge)}` : null,
+      item.jadatarCharge ? `Jadatar: ${formatCurrency(item.jadatarCharge)}` : null,
+      item.rhodiumCharge ? `Rodium: ${formatCurrency(item.rhodiumCharge)}` : null,
+      item.nangCharge ? `Nang: ${formatCurrency(item.nangCharge)}` : null,
+      item.meenoCharge ? `Meeno: ${formatCurrency(item.meenoCharge)}` : null,
+    ].filter(Boolean);
+  };
+
   return (
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
-      title="Official Sales Invoice & Receipt"
-      maxWidth="2xl"
+      title="Zeal Jewellers Invoice"
+      description="Official Tax Invoice & Calculation Breakdown"
+      maxWidth="max-w-4xl"
     >
-      <div className="space-y-6">
-        {/* Printable Area Container */}
-        <div id="printable-invoice" className="space-y-4 sm:space-y-6 bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-xl border border-amber-200 dark:border-slate-800 transition-colors duration-200">
-          {/* Invoice Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-amber-100 dark:border-slate-800 pb-4">
+      <div className="space-y-4">
+        {/* Printable Area */}
+        <div id="printable-invoice" className="space-y-4 p-2 sm:p-4 bg-white dark:bg-slate-900 rounded-lg">
+          {/* Header section with logo & invoice status */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-amber-200/80 dark:border-slate-800 pb-4 gap-3 sm:gap-0">
             <div className="flex items-center gap-3">
-              <img
-                src="/logo.png"
-                alt="Zeal Jewellers Logo"
-                className="h-8 sm:h-10 w-auto object-contain"
-              />
+              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-tr from-amber-600 to-yellow-400 flex items-center justify-center text-slate-950 font-serif text-lg sm:text-xl font-bold shadow-md shrink-0">
+                ZJ
+              </div>
               <div>
-                <h2 className="font-serif font-bold text-base sm:text-lg text-amber-800 dark:text-amber-400">
-                  {shopName}
-                </h2>
-                <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Premium Fine Jewelry & Tax Invoice</p>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 font-serif tracking-tight">{shopName}</h2>
+                <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">Certified Fine Gold & Diamond Jewellery</p>
+                <p className="text-[10px] sm:text-xs text-amber-700 dark:text-amber-400 font-mono font-medium">Station Road, Botad - 364710 • Contact: +91 98765 43210</p>
               </div>
             </div>
-            <div className="sm:text-right flex sm:flex-col items-center sm:items-end gap-2 sm:gap-0">
+            <div className="text-left sm:text-right shrink-0">
               {pStatus === "PAID" && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 text-[10px] sm:text-xs font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
-                  <CheckCircle className="h-3 w-3 text-emerald-600 dark:text-emerald-400" /> PAID
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 text-[10px] sm:text-xs font-semibold text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+                  PAID IN FULL
                 </span>
               )}
               {pStatus === "PENDING" && (
@@ -224,7 +238,7 @@ export function InvoiceModal({
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 capitalize">{item.name}</p>
                       <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
-                        Qty: {item.qty} • Net Wt: {netWt.toFixed(2)}g {hasDeduction && `(Gross: ${pWt.toFixed(2)}g)`} • Rate: {formatCurrency(item.pricePerGram)}/g
+                        Qty: {item.qty} • Net Wt: {netWt.toFixed(3)}g {hasDeduction && `(Gross: ${pWt.toFixed(3)}g)`} • Rate: {formatCurrency(item.pricePerGram)}/g
                       </p>
                       {hasDeduction && (
                         <p className="text-[10px] text-emerald-700 dark:text-emerald-400 mt-0.5">
@@ -285,10 +299,10 @@ export function InvoiceModal({
                       </TableCell>
                       <TableCell className="text-center font-mono text-xs">{item.qty}</TableCell>
                       <TableCell className="text-right font-mono text-xs">
-                        <div className="font-bold text-slate-900 dark:text-slate-100">{netWt.toFixed(2)} g</div>
+                        <div className="font-bold text-slate-900 dark:text-slate-100">{netWt.toFixed(3)} g</div>
                         {hasDeduction && (
                           <div className="text-[10px] text-slate-400 font-normal whitespace-nowrap">
-                            Gross: {pWt.toFixed(2)} g
+                            Gross: {pWt.toFixed(3)} g
                           </div>
                         )}
                       </TableCell>
@@ -309,32 +323,47 @@ export function InvoiceModal({
 
           {/* Totals Breakdown */}
           <div className="flex justify-end pt-2">
-            <div className="w-full sm:w-64 space-y-2 text-xs">
-              <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                <span>Subtotal:</span>
-                <span className="font-semibold text-slate-900 dark:text-slate-100">{formatCurrency(subtotal)}</span>
+            <div className="w-full sm:w-72 space-y-2 text-xs">
+              {/* 1. Metal Price Only */}
+              <div className="flex justify-between text-slate-700 dark:text-slate-300 font-medium">
+                <span>Gold / Metal Base Price:</span>
+                <span className="font-semibold font-mono text-slate-900 dark:text-slate-100">{formatCurrency(totalMetalPrice)}</span>
               </div>
-              {sale.items.reduce((sum, item) => sum + (item.qty * item.weight * item.makingCharge), 0) > 0 && (
-                <div className="flex justify-between text-slate-500 dark:text-slate-400 text-[11px]">
-                  <span>Making Charges (included):</span>
-                  <span>{formatCurrency(sale.items.reduce((sum, item) => sum + (item.qty * item.weight * item.makingCharge), 0))}</span>
+
+              {/* 2. Making Charges */}
+              {totalMakingCharges > 0 && (
+                <div className="flex justify-between text-slate-600 dark:text-slate-400 text-[11px]">
+                  <span>(+) Making Charges:</span>
+                  <span className="font-mono text-slate-800 dark:text-slate-200">{formatCurrency(totalMakingCharges)}</span>
                 </div>
               )}
-              {sale.items.reduce((sum, item) => sum + (item.hallmarkCharge || 0) + (item.jadatarCharge || 0) + (item.rhodiumCharge || 0) + (item.nangCharge || 0), 0) > 0 && (
+
+              {/* 3. Extra Charges */}
+              {totalExtraCharges > 0 && (
                 <div className="flex justify-between text-amber-700 dark:text-amber-400 text-[11px]">
-                  <span>Extra Charges:</span>
-                  <span className="font-medium">{formatCurrency(sale.items.reduce((sum, item) => sum + (item.hallmarkCharge || 0) + (item.jadatarCharge || 0) + (item.rhodiumCharge || 0) + (item.nangCharge || 0), 0))}</span>
+                  <span>(+) Extra Charges:</span>
+                  <span className="font-medium font-mono">{formatCurrency(totalExtraCharges)}</span>
                 </div>
               )}
+
+              {/* 4. Subtotal */}
+              <div className="flex justify-between border-t border-slate-200 dark:border-slate-800 pt-1.5 text-slate-800 dark:text-slate-200 font-semibold">
+                <span>Items Subtotal:</span>
+                <span className="font-bold font-mono text-slate-900 dark:text-slate-100">{formatCurrency(subtotal)}</span>
+              </div>
+
+              {/* 5. Discount */}
               {sale.discount > 0 && (
                 <div className="flex justify-between text-rose-600 dark:text-rose-400">
-                  <span>Discount:</span>
-                  <span className="font-semibold">- {formatCurrency(sale.discount)}</span>
+                  <span>(-) Discount:</span>
+                  <span className="font-semibold font-mono">- {formatCurrency(sale.discount)}</span>
                 </div>
               )}
+
+              {/* 6. Grand Total */}
               <div className="flex justify-between border-t border-amber-200 dark:border-slate-700 pt-2 text-sm font-bold text-amber-800 dark:text-amber-400">
                 <span>Grand Total:</span>
-                <span className="text-base">{formatCurrency(sale.totalAmount)}</span>
+                <span className="text-base font-mono">{formatCurrency(sale.totalAmount)}</span>
               </div>
             </div>
           </div>

@@ -633,23 +633,38 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.line(L, tY, R, tY);
 
   let subtotal = 0;
-  data.items.forEach((item) => (subtotal += item.lineTotal));
-  let totalWeight = 0;
-  data.items.forEach((item) => (totalWeight += item.weight));
-  const totalMaking = data.items.reduce(
-    (sum, item) => sum + item.qty * item.weight * item.makingCharge,
-    0,
-  );
-  const totalExtra = data.items.reduce(
-    (sum, item) =>
-      sum +
-      (item.hallmarkCharge || 0) +
-      (item.jadatarCharge || 0) +
-      (item.rhodiumCharge || 0) +
-      (item.nangCharge || 0) +
-      (item.meenoCharge || 0),
-    0,
-  );
+  let totalMetalCost = 0;
+  let totalMaking = 0;
+  let totalExtra = 0;
+
+  data.items.forEach((item) => {
+    const rawP = item.productWeight ?? item.weight ?? 0;
+    const pUnit = item.productWeightUnit || "g";
+    const pWeight = pUnit === "mg" ? rawP / 1000 : rawP;
+
+    const rawJ = item.jadatarWeight ?? 0;
+    const jUnit = item.jadatarWeightUnit || "g";
+    const jWeight = jUnit === "mg" ? rawJ / 1000 : rawJ;
+
+    const rawN = item.nangWeight ?? 0;
+    const nUnit = item.nangWeightUnit || "g";
+    const nWeight = nUnit === "mg" ? rawN / 1000 : rawN;
+
+    const rawM = item.meenoWeight ?? 0;
+    const mUnit = item.meenoWeightUnit || "g";
+    const mWeight = mUnit === "mg" ? rawM / 1000 : rawM;
+
+    const netWeight = item.netWeight ?? item.weight ?? Math.max(0, pWeight - jWeight - nWeight - mWeight);
+
+    const metalCost = item.qty * netWeight * item.pricePerGram;
+    const makingCost = item.qty * netWeight * item.makingCharge;
+    const extraCost = (item.hallmarkCharge || 0) + (item.jadatarCharge || 0) + (item.rhodiumCharge || 0) + (item.nangCharge || 0) + (item.meenoCharge || 0);
+
+    totalMetalCost += metalCost;
+    totalMaking += makingCost;
+    totalExtra += extraCost;
+    subtotal += item.lineTotal;
+  });
 
   const taxableAmount = subtotal;
   const cgstRate = 1.5;
@@ -660,43 +675,53 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   const amtX = R - 3;
   const totalLabelX = L + W * 0.45;
 
-  // Subtotal line
+  // 1. Gold / Metal Base Price (without any extra charges)
   tY += 4.5;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8.5);
   doc.setTextColor(...BLACK);
-  doc.text("Subtotal", totalLabelX, tY, { align: "right" });
-  doc.text(fmtINR(subtotal), amtX, tY, { align: "right" });
+  doc.text("Gold / Metal Price", totalLabelX, tY, { align: "right" });
+  doc.text(fmtINR(totalMetalCost), amtX, tY, { align: "right" });
 
-  // Thin line
-  tY += 1.5;
-  doc.setDrawColor(...BORDER);
-  doc.setLineWidth(0.15);
-  doc.line(totalLabelX + 5, tY, R, tY);
+  // 2. Making Charges line
+  if (totalMaking > 0) {
+    tY += 4.5;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...MID);
+    doc.text("Add  :  Making Charges", totalLabelX - 35, tY);
+    doc.text(fmtINR(totalMaking), amtX, tY, { align: "right" });
+  }
 
-  // Making charges line
-  tY += 4.5;
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(7.5);
-  doc.setTextColor(...MID);
-  doc.text("Add  :  Making Charges (included above)", totalLabelX - 35, tY);
-  doc.text(fmtINR(totalMaking), amtX, tY, { align: "right" });
-
-  // Extra charges line
+  // 3. Extra Charges line
   if (totalExtra > 0) {
     tY += 4.5;
     doc.setFont("helvetica", "italic");
     doc.setFontSize(7.5);
     doc.setTextColor(...MID);
     doc.text(
-      "Add  :  Extra Charges (HM/Jadatar/Rodium/Nang)",
+      "Add  :  Extra Charges (HM/Jadatar/Rodium/Nang/Meeno)",
       totalLabelX - 35,
       tY,
     );
     doc.text(fmtINR(totalExtra), amtX, tY, { align: "right" });
   }
 
-  // Discount line
+  // Thin line divider
+  tY += 1.5;
+  doc.setDrawColor(...BORDER);
+  doc.setLineWidth(0.15);
+  doc.line(totalLabelX - 35, tY, R, tY);
+
+  // 4. Subtotal line
+  tY += 4.5;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...BLACK);
+  doc.text("Items Subtotal", totalLabelX, tY, { align: "right" });
+  doc.text(fmtINR(subtotal), amtX, tY, { align: "right" });
+
+  // 5. Discount line
   if (data.discount > 0) {
     tY += 4.5;
     doc.setFont("helvetica", "italic");

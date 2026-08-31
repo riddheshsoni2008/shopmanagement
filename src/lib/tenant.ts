@@ -19,13 +19,24 @@ export async function getTenantId(): Promise<mongoose.Types.ObjectId | null> {
   // Perform a one-time backfill for legacy items created before multi-tenancy
   if (!legacyBackfilled) {
     try {
-      const firstAdmin = await User.findOne({ role: "admin" }).sort({ createdAt: 1 }).lean();
+      const firstAdmin = await User.findOne({ role: "admin" })
+        .sort({ createdAt: 1 })
+        .lean();
       if (firstAdmin) {
         const firstAdminId = firstAdmin._id;
         await Promise.all([
-          Product.updateMany({ userId: { $exists: false } }, { $set: { userId: firstAdminId } }),
-          Sale.updateMany({ userId: { $exists: false } }, { $set: { userId: firstAdminId } }),
-          Expense.updateMany({ userId: { $exists: false } }, { $set: { userId: firstAdminId } }),
+          Product.updateMany(
+            { userId: { $exists: false } },
+            { $set: { userId: firstAdminId } },
+          ),
+          Sale.updateMany(
+            { userId: { $exists: false } },
+            { $set: { userId: firstAdminId } },
+          ),
+          Expense.updateMany(
+            { userId: { $exists: false } },
+            { $set: { userId: firstAdminId } },
+          ),
         ]);
       }
       legacyBackfilled = true;
