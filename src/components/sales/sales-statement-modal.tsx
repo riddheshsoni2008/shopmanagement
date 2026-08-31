@@ -131,6 +131,7 @@ export function SalesStatementModal({
             date: s.createdAt,
             customerName: s.customerName || "Customer",
             customerPhone: s.customerPhone || "N/A",
+            customerAddress: s.customerAddress || "",
             itemsCount: s.itemsCount || s.items?.length || 1,
             itemNames: itemNamesStr,
             paymentStatus: st,

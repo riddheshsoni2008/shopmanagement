@@ -62,6 +62,7 @@ export interface SalesStatementPDFItem {
   date: string;
   customerName: string;
   customerPhone: string;
+  customerAddress?: string;
   itemsCount: number;
   itemNames?: string;
   paymentStatus: string;
@@ -1450,20 +1451,26 @@ export async function generateSalesStatementPDF(data: SalesStatementPDFData) {
 
   y += 2;
 
-  const itemRows = data.sales.map((s, index) => [
-    `${index + 1}`,
-    `#${s.invoiceId.slice(-8).toUpperCase()}`,
-    new Date(s.date).toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }),
-    /[^\x00-\x7F]/.test(s.customerName) ? s.customerName : s.customerName.toUpperCase(),
-    s.customerPhone || "N/A",
-    s.itemNames || `${s.itemsCount} pc(s)`,
-    `${s.paymentStatus} (${s.paymentMethod || "Cash"})`,
-    `Rs. ${fmtINR(s.totalAmount)}`,
-  ]);
+  const itemRows = data.sales.map((s, index) => {
+    const custName = /[^\x00-\x7F]/.test(s.customerName) ? s.customerName : s.customerName.toUpperCase();
+    const phoneStr = s.customerPhone ? `Ph: ${s.customerPhone}` : "Ph: N/A";
+    const addrStr = s.customerAddress && s.customerAddress.trim() ? `Addr: ${s.customerAddress.trim()}` : "Addr: -";
+    const fullCustomerDetails = `${custName}\n${phoneStr}\n${addrStr}`;
+
+    return [
+      `${index + 1}`,
+      `#${s.invoiceId.slice(-8).toUpperCase()}`,
+      new Date(s.date).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
+      fullCustomerDetails,
+      s.itemNames || `${s.itemsCount} pc(s)`,
+      `${s.paymentStatus}\n(${s.paymentMethod || "Cash"})`,
+      `Rs. ${fmtINR(s.totalAmount)}`,
+    ];
+  });
 
   autoTable(doc, {
     startY: y,
@@ -1472,8 +1479,7 @@ export async function generateSalesStatementPDF(data: SalesStatementPDFData) {
         "S.N.",
         "Invoice ID",
         "Date",
-        "Customer Name",
-        "Phone",
+        "Customer Details (Name, Phone & Address)",
         "Items Purchased",
         "Status & Mode",
         "Amount (Rs.)",
@@ -1494,13 +1500,12 @@ export async function generateSalesStatementPDF(data: SalesStatementPDFData) {
     },
     columnStyles: {
       0: { cellWidth: 8, halign: "center" },
-      1: { cellWidth: 22, halign: "center", fontStyle: "bold" },
-      2: { cellWidth: 24, halign: "center" },
-      3: { cellWidth: 42 },
-      4: { cellWidth: 24, halign: "center" },
-      5: { cellWidth: 16, halign: "center" },
-      6: { cellWidth: 28, halign: "center" },
-      7: { cellWidth: 26, halign: "right" },
+      1: { cellWidth: 20, halign: "center", fontStyle: "bold" },
+      2: { cellWidth: 22, halign: "center" },
+      3: { cellWidth: 55 },
+      4: { cellWidth: 35 },
+      5: { cellWidth: 22, halign: "center" },
+      6: { cellWidth: 28, halign: "right", fontStyle: "bold" },
     },
     margin: { left: L, right: 10 },
     didDrawCell: (cellData: any) => {
