@@ -169,7 +169,7 @@ export function InvoiceModal({
       onClose={onClose}
       title="Zeal Jewellers Invoice"
       description="Official Tax Invoice & Calculation Breakdown"
-      maxWidth="max-w-4xl"
+      maxWidth="4xl"
     >
       <div className="space-y-4">
         {/* Printable Area */}
