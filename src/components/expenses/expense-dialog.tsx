@@ -19,11 +19,15 @@ interface ExpenseDialogProps {
 
 export function ExpenseDialog({ isOpen, onClose }: ExpenseDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("Rent");
+  const [customCategory, setCustomCategory] = useState("");
+  const [customCategoryError, setCustomCategoryError] = useState("");
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<ExpenseInput>({
     resolver: zodResolver(expenseSchema),
@@ -35,13 +39,39 @@ export function ExpenseDialog({ isOpen, onClose }: ExpenseDialogProps) {
     },
   });
 
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setSelectedCategory(val);
+    setCustomCategoryError("");
+    if (val !== "Other") {
+      setValue("category", val);
+    } else {
+      setValue("category", customCategory.trim());
+    }
+  };
+
   const onSubmit = async (values: ExpenseInput) => {
+    let finalCategory = selectedCategory;
+    if (selectedCategory === "Other") {
+      if (!customCategory.trim()) {
+        setCustomCategoryError("Please enter a custom expense category name");
+        return;
+      }
+      finalCategory = customCategory.trim();
+    }
+
     setIsSubmitting(true);
     try {
-      const res = await createExpense(values);
+      const res = await createExpense({
+        ...values,
+        category: finalCategory,
+      });
       if (res.success) {
         toast.success("Expense logged successfully!");
         reset();
+        setSelectedCategory("Rent");
+        setCustomCategory("");
+        setCustomCategoryError("");
         onClose();
       } else {
         toast.error(res.error);
@@ -58,7 +88,7 @@ export function ExpenseDialog({ isOpen, onClose }: ExpenseDialogProps) {
       isOpen={isOpen}
       onClose={onClose}
       title="Record Operating Expense"
-      description="Track shop operational expenses like Rent, Salaries, Electricity, or Transport."
+      description="Track shop operational expenses like Rent, Salaries, Electricity, or custom expenses."
       maxWidth="md"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -67,14 +97,43 @@ export function ExpenseDialog({ isOpen, onClose }: ExpenseDialogProps) {
           <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
             Expense Category *
           </label>
-          <Select {...register("category")} disabled={isSubmitting}>
+          <Select
+            value={selectedCategory}
+            onChange={handleCategoryChange}
+            disabled={isSubmitting}
+          >
             {expenseCategories.map((cat) => (
               <option key={cat} value={cat}>
-                {cat}
+                {cat === "Other" ? "Other (Custom Category)" : cat}
               </option>
             ))}
           </Select>
-          {errors.category && (
+
+          {/* Custom Category Input Field when 'Other' is selected */}
+          {selectedCategory === "Other" && (
+            <div className="mt-2.5">
+              <label className="block text-xs font-semibold text-amber-800 dark:text-amber-400 mb-1">
+                Enter Custom Category Name *
+              </label>
+              <Input
+                type="text"
+                placeholder="e.g. Tea & Snacks, Shop Maintenance, Audit Fee..."
+                value={customCategory}
+                onChange={(e) => {
+                  setCustomCategory(e.target.value);
+                  setValue("category", e.target.value);
+                  setCustomCategoryError("");
+                }}
+                disabled={isSubmitting}
+                autoFocus
+              />
+              {customCategoryError && (
+                <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">{customCategoryError}</p>
+              )}
+            </div>
+          )}
+
+          {errors.category && !customCategoryError && (
             <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">{errors.category.message}</p>
           )}
         </div>

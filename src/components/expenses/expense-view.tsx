@@ -112,6 +112,15 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
     }
   };
 
+  // Dynamically include any custom categories present in data alongside standard categories
+  const allCategoryOptions = Array.from(
+    new Set([
+      ...expenseCategories.filter((c) => c !== "Other"),
+      ...Object.keys(initialData.categoryTotals || {}),
+      ...initialData.expenses.map((e) => e.category),
+    ])
+  ).filter(Boolean);
+
   return (
     <div className="space-y-8">
       {/* Category Breakdown Cards Grid */}
@@ -162,7 +171,7 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
             className="w-full sm:w-44"
           >
             <option value="ALL">All Categories</option>
-            {expenseCategories.map((c) => (
+            {allCategoryOptions.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>

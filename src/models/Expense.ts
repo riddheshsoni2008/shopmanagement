@@ -1,13 +1,6 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
-export type ExpenseCategory =
-  | "Rent"
-  | "Salary"
-  | "Electricity"
-  | "Packaging"
-  | "Repairs"
-  | "Transport"
-  | "Misc";
+export type ExpenseCategory = string;
 
 export interface IExpense extends Document {
   _id: mongoose.Types.ObjectId;
@@ -26,7 +19,7 @@ const ExpenseSchema = new Schema<IExpense>(
     category: {
       type: String,
       required: true,
-      enum: ["Rent", "Salary", "Electricity", "Packaging", "Repairs", "Transport", "Misc"],
+      trim: true,
       index: true,
     },
     amount: { type: Number, required: true, min: 0 },
