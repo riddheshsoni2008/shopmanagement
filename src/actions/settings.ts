@@ -67,7 +67,9 @@ export async function getRateSettings(): Promise<ActionResult<RateSettingsData>>
       goldRate18k: user.goldRate18k ?? 5900,
       silverRate: user.silverRate ?? 85,
       shopName: user.shopName || "Zeal Jewellers",
-      updatedAt: user.updatedAt ? new Date(user.updatedAt).toISOString() : new Date().toISOString(),
+      updatedAt: (user as any).updatedAt
+        ? new Date((user as any).updatedAt).toISOString()
+        : new Date().toISOString(),
       updatedBy: { name: user.name, email: user.email },
     };
 

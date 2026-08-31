@@ -12,6 +12,7 @@ export interface IUser extends Document {
   silverRate?: number;
   shopName?: string;
   createdAt: Date;
+  updatedAt?: Date;
 }
 
 const UserSchema = new Schema<IUser>(

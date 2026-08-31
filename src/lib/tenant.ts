@@ -4,7 +4,6 @@ import { User } from "@/models/User";
 import { Product } from "@/models/Product";
 import { Sale } from "@/models/Sale";
 import { Expense } from "@/models/Expense";
-import { Rate } from "@/models/Rate";
 import mongoose from "mongoose";
 
 let legacyBackfilled = false;
@@ -27,7 +26,6 @@ export async function getTenantId(): Promise<mongoose.Types.ObjectId | null> {
           Product.updateMany({ userId: { $exists: false } }, { $set: { userId: firstAdminId } }),
           Sale.updateMany({ userId: { $exists: false } }, { $set: { userId: firstAdminId } }),
           Expense.updateMany({ userId: { $exists: false } }, { $set: { userId: firstAdminId } }),
-          Rate.updateMany({ userId: { $exists: false } }, { $set: { userId: firstAdminId } }),
         ]);
       }
       legacyBackfilled = true;
