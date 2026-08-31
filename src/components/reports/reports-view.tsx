@@ -489,7 +489,14 @@ export function ReportsView({ initialData }: ReportsViewProps) {
                       <XAxis dataKey="category" stroke="#94a3b8" fontSize={10} tickMargin={5} />
                       <YAxis stroke="#94a3b8" fontSize={11} tickFormatter={(val) => `₹${(val / 1000).toFixed(0)}k`} />
                       <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="totalRevenue" name="Revenue" fill="#d97706" radius={[8, 8, 0, 0]}>
+                      <Bar
+                        dataKey="totalRevenue"
+                        name="Revenue"
+                        fill="#d97706"
+                        radius={[8, 8, 0, 0]}
+                        maxBarSize={40}
+                        barSize={36}
+                      >
                         {data.categorySalesDistribution.map((entry, index) => (
                           <Cell key={`bar-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
