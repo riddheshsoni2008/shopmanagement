@@ -186,9 +186,11 @@ export function InvoiceModal({
           {/* Header section with logo & invoice status */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-amber-200/80 dark:border-slate-800 pb-4 gap-3 sm:gap-0">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-tr from-amber-600 to-yellow-400 flex items-center justify-center text-slate-950 font-serif text-lg sm:text-xl font-bold shadow-md shrink-0">
-                ZJ
-              </div>
+              <img
+                src="/logo.png"
+                alt="Zeal Jewellers Brand Logo"
+                className="h-12 w-12 sm:h-14 sm:w-14 object-contain shrink-0 drop-shadow-md rounded-md"
+              />
               <div>
                 <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 font-serif tracking-tight">{shopName}</h2>
                 <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">Certified Fine Gold & Diamond Jewellery</p>
