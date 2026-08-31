@@ -403,9 +403,10 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   // ══════════════════════════════════════════
   // ROW 1: GSTIN line + "Original Copy"
   const showGst = data.showGst !== false;
+  const copyText = showGst ? "Original Copy" : "Estimate";
 
   // ══════════════════════════════════════════
-  // ROW 1: GSTIN line + "Original Copy"
+  // ROW 1: GSTIN line + Copy Label
   // ══════════════════════════════════════════
   if (showGst) {
     doc.setFontSize(8.5);
@@ -417,7 +418,7 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.setFont("helvetica", "italic");
   doc.setFontSize(8.5);
   doc.setTextColor(...BLACK);
-  doc.text("Original Copy", R - 3, y + 5, { align: "right" });
+  doc.text(copyText, R - 3, y + 5, { align: "right" });
 
   // Horizontal line
   y += 7;

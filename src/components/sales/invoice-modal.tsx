@@ -228,8 +228,11 @@ export function InvoiceModal({
                   PARTIAL
                 </span>
               )}
-              <p className="text-[10px] sm:text-xs font-mono font-bold text-slate-800 dark:text-slate-200 sm:mt-2">
+              <p className="text-[10px] font-mono font-bold text-slate-800 dark:text-slate-200 sm:mt-1">
                 INV #{sale._id.slice(-8).toUpperCase()}
+                <span className="ml-2 font-serif italic text-[11px] font-medium text-amber-800 dark:text-amber-400">
+                  ({showGst ? "Original Copy" : "Estimate"})
+                </span>
               </p>
               <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 hidden sm:block" suppressHydrationWarning>{formatDateTime(sale.createdAt)}</p>
             </div>
