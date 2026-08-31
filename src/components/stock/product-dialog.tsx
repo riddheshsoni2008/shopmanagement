@@ -32,7 +32,6 @@ interface ProductDialogProps {
     purchasePrice: number;
     sellingPrice: number;
     lowStockThreshold: number;
-    imageUrl?: string;
   } | null;
 }
 
@@ -58,7 +57,6 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
       purchasePrice: 65000,
       sellingPrice: 75000,
       lowStockThreshold: 3,
-      imageUrl: "",
     },
   });
 
@@ -75,7 +73,6 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
         purchasePrice: product.purchasePrice,
         sellingPrice: product.sellingPrice,
         lowStockThreshold: product.lowStockThreshold,
-        imageUrl: product.imageUrl || "",
       });
     } else {
       reset({
@@ -89,7 +86,6 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
         purchasePrice: 65000,
         sellingPrice: 75000,
         lowStockThreshold: 3,
-        imageUrl: "",
       });
     }
   }, [product, reset, isOpen]);
@@ -299,21 +295,6 @@ export function ProductDialog({ isOpen, onClose, product }: ProductDialogProps) 
               </p>
             )}
           </div>
-        </div>
-
-        {/* Image URL */}
-        <div>
-          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-            Image URL String (Optional)
-          </label>
-          <Input
-            placeholder="https://images.unsplash.com/photo-..."
-            {...register("imageUrl")}
-            disabled={isSubmitting}
-          />
-          {errors.imageUrl && (
-            <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">{errors.imageUrl.message}</p>
-          )}
         </div>
 
         {/* Action Buttons */}

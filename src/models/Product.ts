@@ -25,7 +25,6 @@ export interface IProduct extends Document {
   purchasePrice: number;
   sellingPrice: number;
   lowStockThreshold: number;
-  imageUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -62,7 +61,6 @@ const ProductSchema = new Schema<IProduct>(
     purchasePrice: { type: Number, required: true, min: 0 },
     sellingPrice: { type: Number, required: true, min: 0 },
     lowStockThreshold: { type: Number, required: true, default: 3 },
-    imageUrl: { type: String, trim: true },
   },
   {
     timestamps: true,

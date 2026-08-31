@@ -30,7 +30,6 @@ export interface PaginatedProducts {
     purchasePrice: number;
     sellingPrice: number;
     lowStockThreshold: number;
-    imageUrl?: string;
     createdAt: string;
     updatedAt: string;
   }>;
@@ -93,7 +92,6 @@ export async function getProducts(
       purchasePrice: p.purchasePrice,
       sellingPrice: p.sellingPrice,
       lowStockThreshold: p.lowStockThreshold,
-      imageUrl: p.imageUrl || "",
       createdAt: p.createdAt ? new Date(p.createdAt).toISOString() : "",
       updatedAt: p.updatedAt ? new Date(p.updatedAt).toISOString() : "",
     }));
@@ -139,7 +137,6 @@ export async function getProductById(id: string): Promise<ActionResult<any>> {
       purchasePrice: product.purchasePrice,
       sellingPrice: product.sellingPrice,
       lowStockThreshold: product.lowStockThreshold,
-      imageUrl: product.imageUrl || "",
       createdAt: new Date(product.createdAt).toISOString(),
       updatedAt: new Date(product.updatedAt).toISOString(),
     };

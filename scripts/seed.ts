@@ -41,7 +41,6 @@ const ProductSchema = new mongoose.Schema({
   purchasePrice: Number,
   sellingPrice: Number,
   lowStockThreshold: Number,
-  imageUrl: String,
 });
 
 const RateSchema = new mongoose.Schema({

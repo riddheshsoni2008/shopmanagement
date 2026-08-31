@@ -41,11 +41,6 @@ export const productSchema = z.object({
     .int("Threshold must be an integer")
     .min(0, "Threshold cannot be negative")
     .default(3),
-  imageUrl: z
-    .string()
-    .url("Must be a valid image URL")
-    .optional()
-    .or(z.literal("")),
 });
 
 export type ProductInput = z.infer<typeof productSchema>;

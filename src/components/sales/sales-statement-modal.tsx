@@ -25,7 +25,9 @@ export function SalesStatementModal({
   sales,
 }: SalesStatementModalProps) {
   const router = useRouter();
-  const [periodPreset, setPeriodPreset] = useState<"weekly" | "monthly" | "yearly" | "custom">("monthly");
+  const [periodPreset, setPeriodPreset] = useState<
+    "weekly" | "monthly" | "yearly" | "custom"
+  >("monthly");
   const [customStartDate, setCustomStartDate] = useState("");
   const [customEndDate, setCustomEndDate] = useState("");
   const [autoDeleteAfterDownload, setAutoDeleteAfterDownload] = useState(true);
@@ -36,7 +38,9 @@ export function SalesStatementModal({
   const handleDownload = async () => {
     try {
       setIsGenerating(true);
-      toast.loading("Preparing official sales transaction statement PDF...", { id: "sales-pdf-toast" });
+      toast.loading("Preparing official sales transaction statement PDF...", {
+        id: "sales-pdf-toast",
+      });
 
       const now = new Date();
       let start: Date;
@@ -52,7 +56,10 @@ export function SalesStatementModal({
       } else if (periodPreset === "monthly") {
         start = new Date(now.getFullYear(), now.getMonth(), 1);
         start.setHours(0, 0, 0, 0);
-        const monthName = now.toLocaleString("en-IN", { month: "long", year: "numeric" });
+        const monthName = now.toLocaleString("en-IN", {
+          month: "long",
+          year: "numeric",
+        });
         periodLabel = `Monthly Sales Statement (${monthName})`;
       } else if (periodPreset === "yearly") {
         start = new Date(now.getFullYear(), 0, 1);
@@ -60,7 +67,9 @@ export function SalesStatementModal({
         periodLabel = `Yearly Sales Statement (Year ${now.getFullYear()})`;
       } else {
         if (!customStartDate) {
-          toast.error("Please select a valid start date for custom statement", { id: "sales-pdf-toast" });
+          toast.error("Please select a valid start date for custom statement", {
+            id: "sales-pdf-toast",
+          });
           setIsGenerating(false);
           return;
         }
@@ -80,7 +89,10 @@ export function SalesStatementModal({
       });
 
       if (periodSales.length === 0) {
-        toast.error("No sales records found for the selected statement period.", { id: "sales-pdf-toast" });
+        toast.error(
+          "No sales records found for the selected statement period.",
+          { id: "sales-pdf-toast" },
+        );
         setIsGenerating(false);
         return;
       }
@@ -90,41 +102,44 @@ export function SalesStatementModal({
       let pendingCount = 0;
       let partialCount = 0;
 
-      const formattedPDFItems: SalesStatementPDFItem[] = periodSales.map((s) => {
-        const amt = Number(s.totalAmount) || 0;
-        totalRevenue += amt;
+      const formattedPDFItems: SalesStatementPDFItem[] = periodSales.map(
+        (s) => {
+          const amt = Number(s.totalAmount) || 0;
+          totalRevenue += amt;
 
-        const st = (s.paymentStatus || "PAID").toUpperCase();
-        if (st === "PENDING") pendingCount++;
-        else if (st === "PARTIAL") partialCount++;
-        else paidCount++;
+          const st = (s.paymentStatus || "PAID").toUpperCase();
+          if (st === "PENDING") pendingCount++;
+          else if (st === "PARTIAL") partialCount++;
+          else paidCount++;
 
-        let itemNamesStr = "";
-        if (Array.isArray(s.items) && s.items.length > 0) {
-          itemNamesStr = s.items
-            .map((item: any) => {
-              const name = item.name || "Item";
-              const qty = item.qty && item.qty > 1 ? ` (${item.qty} pcs)` : "";
-              return `${name}${qty}`;
-            })
-            .join(", ");
-        } else {
-          itemNamesStr = `${s.itemsCount || 1} pc(s)`;
-        }
+          let itemNamesStr = "";
+          if (Array.isArray(s.items) && s.items.length > 0) {
+            itemNamesStr = s.items
+              .map((item: any) => {
+                const name = item.name || "Item";
+                const qty =
+                  item.qty && item.qty > 1 ? ` (${item.qty} pcs)` : "";
+                return `${name}${qty}`;
+              })
+              .join(", ");
+          } else {
+            itemNamesStr = `${s.itemsCount || 1} pc(s)`;
+          }
 
-        return {
-          invoiceId: s._id,
-          date: s.createdAt,
-          customerName: s.customerName || "Customer",
-          customerPhone: s.customerPhone || "N/A",
-          itemsCount: s.itemsCount || s.items?.length || 1,
-          itemNames: itemNamesStr,
-          paymentStatus: st,
-          paymentMethod: s.paymentMethod || "Cash",
-          soldBy: s.soldBy?.name || "Staff",
-          totalAmount: amt,
-        };
-      });
+          return {
+            invoiceId: s._id,
+            date: s.createdAt,
+            customerName: s.customerName || "Customer",
+            customerPhone: s.customerPhone || "N/A",
+            itemsCount: s.itemsCount || s.items?.length || 1,
+            itemNames: itemNamesStr,
+            paymentStatus: st,
+            paymentMethod: s.paymentMethod || "Cash",
+            soldBy: s.soldBy?.name || "Staff",
+            totalAmount: amt,
+          };
+        },
+      );
 
       // Fetch shop settings name
       let shopName = "Zeal Jewellers";
@@ -133,11 +148,8 @@ export function SalesStatementModal({
         if (rateRes.success && rateRes.data?.shopName) {
           shopName = rateRes.data.shopName;
         }
-      } catch (e) {
-        // Fallback default
-      }
+      } catch (e) {}
 
-      // Generate & Trigger Browser Auto-Download
       await generateSalesStatementPDF({
         shopName,
         periodLabel,
@@ -156,20 +168,26 @@ export function SalesStatementModal({
         if (delRes.success) {
           toast.success(
             `Statement downloaded & ${delRes.data?.deletedCount || periodSales.length} sales invoice(s) auto-cleared from DB!`,
-            { id: "sales-pdf-toast" }
+            { id: "sales-pdf-toast" },
           );
         } else {
-          toast.success("Statement downloaded successfully!", { id: "sales-pdf-toast" });
+          toast.success("Statement downloaded successfully!", {
+            id: "sales-pdf-toast",
+          });
         }
         router.refresh();
       } else {
-        toast.success("Sales statement PDF downloaded successfully!", { id: "sales-pdf-toast" });
+        toast.success("Sales statement PDF downloaded successfully!", {
+          id: "sales-pdf-toast",
+        });
       }
 
       onClose();
     } catch (err: any) {
       console.error("Sales statement PDF error:", err);
-      toast.error("Failed to generate sales statement PDF.", { id: "sales-pdf-toast" });
+      toast.error("Failed to generate sales statement PDF.", {
+        id: "sales-pdf-toast",
+      });
     } finally {
       setIsGenerating(false);
     }
@@ -217,7 +235,9 @@ export function SalesStatementModal({
               <Calendar className="h-4 w-4 text-amber-500 shrink-0" />
               <div>
                 <p className="font-bold">Weekly</p>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">Past 7 days</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">
+                  Past 7 days
+                </p>
               </div>
             </button>
 
@@ -233,7 +253,9 @@ export function SalesStatementModal({
               <Calendar className="h-4 w-4 text-amber-500 shrink-0" />
               <div>
                 <p className="font-bold">Monthly</p>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">Current month</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">
+                  Current month
+                </p>
               </div>
             </button>
 
@@ -249,7 +271,9 @@ export function SalesStatementModal({
               <Calendar className="h-4 w-4 text-amber-500 shrink-0" />
               <div>
                 <p className="font-bold">Yearly</p>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">Current year</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">
+                  Current year
+                </p>
               </div>
             </button>
 
@@ -265,7 +289,9 @@ export function SalesStatementModal({
               <Calendar className="h-4 w-4 text-amber-500 shrink-0" />
               <div>
                 <p className="font-bold">Custom Range</p>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">Pick dates</p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-normal">
+                  Pick dates
+                </p>
               </div>
             </button>
           </div>
@@ -274,7 +300,9 @@ export function SalesStatementModal({
             <div className="pt-2 space-y-3 bg-amber-50/50 dark:bg-slate-800/40 p-3 rounded-xl border border-amber-100 dark:border-slate-800 animate-in fade-in duration-150">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 block mb-1">From Date:</label>
+                  <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                    From Date:
+                  </label>
                   <Input
                     type="date"
                     value={customStartDate}
@@ -283,7 +311,9 @@ export function SalesStatementModal({
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 block mb-1">To Date:</label>
+                  <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                    To Date:
+                  </label>
                   <Input
                     type="date"
                     value={customEndDate}
@@ -304,14 +334,23 @@ export function SalesStatementModal({
               onChange={(e) => setAutoDeleteAfterDownload(e.target.checked)}
               className="mt-0.5 h-4 w-4 rounded border-rose-300 text-rose-600 focus:ring-rose-500 accent-rose-600 cursor-pointer shrink-0"
             />
-            <label htmlFor="autoDeleteSalesCheckbox" className="text-[11px] font-semibold text-rose-900 dark:text-rose-300 leading-snug cursor-pointer">
-              Automatically delete downloaded sales records from database after successful export
+            <label
+              htmlFor="autoDeleteSalesCheckbox"
+              className="text-[11px] font-semibold text-rose-900 dark:text-rose-300 leading-snug cursor-pointer"
+            >
+              Automatically delete downloaded sales records from database after
+              successful export
             </label>
           </div>
         </div>
 
         <div className="flex items-center justify-end gap-2 pt-3 border-t border-amber-100 dark:border-slate-800">
-          <Button variant="outline" onClick={onClose} disabled={isGenerating} type="button">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            disabled={isGenerating}
+            type="button"
+          >
             Cancel
           </Button>
           <Button
