@@ -15,7 +15,6 @@ import {
   Award,
   Wallet,
   ShoppingBag,
-  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,16 +88,15 @@ export function ReportsView({ initialData }: ReportsViewProps) {
       ? data.totalRevenue / data.totalSalesCount
       : 0;
 
-  // Custom Dark Glassmorphism Tooltip for Area & Bar Charts
+  // Custom Solid Dark Tooltip for Area & Bar Charts
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="rounded-xl border border-amber-500/40 bg-slate-900/95 p-3 shadow-2xl backdrop-blur-md text-xs space-y-1 z-50">
-          <p className="font-bold text-amber-400 border-b border-slate-800 pb-1">
+        <div className="rounded-xl border border-amber-500/50 bg-slate-900 p-3 shadow-2xl text-xs space-y-1 z-50 min-w-[150px]">
+          <p className="font-bold text-amber-400 border-b border-slate-800 pb-1 capitalize">
             {label}
           </p>
-          <div className="flex items-center gap-2 pt-0.5">
-            <span className="h-2 w-2 rounded-full bg-amber-500 inline-block" />
+          <div className="flex items-center justify-between gap-3 pt-0.5">
             <span className="text-slate-300 font-medium">{payload[0].name || "Revenue"}:</span>
             <span className="font-mono font-bold text-white">
               {formatCurrency(Number(payload[0].value))}
@@ -110,15 +108,15 @@ export function ReportsView({ initialData }: ReportsViewProps) {
     return null;
   };
 
-  // Custom Tooltip for Expenses Pie Chart
+  // Custom Solid Dark Tooltip for Expenses Pie Chart
   const CustomPieTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const categoryName = payload[0].name;
       const amount = Number(payload[0].value);
       const pct = data.totalExpenses > 0 ? ((amount / data.totalExpenses) * 100).toFixed(1) : "0.0";
       return (
-        <div className="rounded-xl border border-rose-500/40 bg-slate-900/95 p-3 shadow-2xl backdrop-blur-md text-xs space-y-1 z-50">
-          <p className="font-bold text-rose-400 border-b border-slate-800 pb-1 uppercase tracking-wider">
+        <div className="rounded-xl border border-rose-500/50 bg-slate-900 p-3 shadow-2xl text-xs space-y-1.5 z-50 min-w-[170px]">
+          <p className="font-bold text-rose-400 border-b border-slate-800 pb-1 uppercase tracking-wider capitalize">
             {categoryName}
           </p>
           <div className="flex items-center justify-between gap-4 pt-0.5">
@@ -383,12 +381,19 @@ export function ReportsView({ initialData }: ReportsViewProps) {
         {/* Expenses by Category Chart & Legend */}
         <Card className="border-amber-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 shadow-md flex flex-col justify-between">
           <CardHeader className="border-b border-slate-100 dark:border-slate-800/60 pb-4">
-            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-slate-100 text-base font-bold">
-              <PieIcon className="h-5 w-5 text-rose-600 dark:text-rose-400" /> Expenses Distribution (ખર્ચનું વિભાજન)
-            </CardTitle>
-            <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
-              Breakdown of shop expenses by custom categories
-            </CardDescription>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-slate-100 text-base font-bold">
+                  <PieIcon className="h-5 w-5 text-rose-600 dark:text-rose-400" /> Expenses Distribution (ખર્ચનું વિભાજન)
+                </CardTitle>
+                <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
+                  Breakdown of shop expenses by custom categories
+                </CardDescription>
+              </div>
+              <Badge variant="outline" className="border-rose-400 text-rose-700 dark:text-rose-400 font-mono text-xs font-bold bg-rose-50 dark:bg-rose-950/30">
+                Total: {formatCurrency(data.totalExpenses)}
+              </Badge>
+            </div>
           </CardHeader>
           <CardContent className="pt-6 flex-1 flex flex-col justify-between">
             {data.expensesByCategory.length === 0 ? (
@@ -422,12 +427,6 @@ export function ReportsView({ initialData }: ReportsViewProps) {
                       <Tooltip content={<CustomPieTooltip />} />
                     </PieChart>
                   </ResponsiveContainer>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Expense</span>
-                    <span className="text-sm font-extrabold font-mono text-rose-500 dark:text-rose-400">
-                      {formatCurrency(data.totalExpenses)}
-                    </span>
-                  </div>
                 </div>
 
                 {/* Clear Colored Category Breakdown Legend Table */}
@@ -462,12 +461,19 @@ export function ReportsView({ initialData }: ReportsViewProps) {
         {/* Top Product Revenue Breakdown */}
         <Card className="border-amber-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 shadow-md flex flex-col justify-between">
           <CardHeader className="border-b border-slate-100 dark:border-slate-800/60 pb-4">
-            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-slate-100 text-base font-bold">
-              <Award className="h-5 w-5 text-amber-600 dark:text-amber-400" /> Best-Selling Jewelry Items (સૌથી વધુ વેચાતી વસ્તુઓ)
-            </CardTitle>
-            <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
-              Highest grossing jewelry products by revenue
-            </CardDescription>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-slate-100 text-base font-bold">
+                  <Award className="h-5 w-5 text-amber-600 dark:text-amber-400" /> Best-Selling Jewelry Items (સૌથી વધુ વેચાતી વસ્તુઓ)
+                </CardTitle>
+                <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
+                  Highest grossing jewelry products by revenue
+                </CardDescription>
+              </div>
+              <Badge variant="outline" className="border-amber-400 text-amber-700 dark:text-amber-400 font-mono text-xs font-bold bg-amber-50 dark:bg-amber-950/30">
+                Top {data.categorySalesDistribution.length} Products
+              </Badge>
+            </div>
           </CardHeader>
           <CardContent className="pt-6 flex-1 flex flex-col justify-between">
             {data.categorySalesDistribution.length === 0 ? (
