@@ -7,7 +7,7 @@ export const revalidate = 0; // SSR live rendering
 
 export default async function SalesHistoryPage() {
   const [salesRes, ratesRes] = await Promise.all([
-    getSales({ limit: 100 }),
+    getSales({ limit: 500 }),
     getRateSettings(),
   ]);
 

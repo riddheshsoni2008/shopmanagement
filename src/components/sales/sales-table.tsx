@@ -11,6 +11,9 @@ import {
   User,
   Download,
   Trash2,
+  TrendingUp,
+  DollarSign,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,6 +72,11 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
     }
     return true;
   });
+
+  const totalFilteredSalesAmount = filtered.reduce(
+    (sum, s) => sum + (Number(s.totalAmount) || 0),
+    0
+  );
 
   const itemsPerPage = 10;
   const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
@@ -130,6 +138,50 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
 
   return (
     <div className="space-y-6">
+      {/* Dynamic Filtered Sales Total Summary Card */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="rounded-2xl border border-amber-300 dark:border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-yellow-500/5 to-amber-500/10 dark:from-slate-900 dark:to-slate-900 p-4 sm:p-5 shadow-sm backdrop-blur-md flex items-center justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <Badge className="bg-amber-600 text-white font-bold text-[10px] uppercase tracking-wider">
+                {startDate || endDate || search ? "Filtered Sales Total" : "Total Sales Revenue"}
+              </Badge>
+              {(startDate || endDate) && (
+                <span className="text-xs text-amber-700 dark:text-amber-400 font-medium">
+                  ({startDate ? `From ${startDate}` : ""} {endDate ? `To ${endDate}` : ""})
+                </span>
+              )}
+            </div>
+            <p className="text-2xl sm:text-3xl font-extrabold font-mono text-amber-900 dark:text-amber-300 mt-2">
+              {formatCurrency(totalFilteredSalesAmount)}
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+              Total revenue from <strong className="text-slate-900 dark:text-slate-100">{filtered.length}</strong> sales invoice(s)
+            </p>
+          </div>
+          <div className="h-12 w-12 rounded-xl bg-amber-500/20 dark:bg-amber-400/20 border border-amber-400 dark:border-amber-500/40 flex items-center justify-center text-amber-800 dark:text-amber-300 shrink-0">
+            <TrendingUp className="h-6 w-6" />
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-amber-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 p-4 sm:p-5 shadow-sm backdrop-blur-md flex items-center justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+              Filtered Records
+            </p>
+            <p className="text-2xl sm:text-3xl font-extrabold font-mono text-slate-900 dark:text-slate-100 mt-2">
+              {filtered.length} <span className="text-sm font-normal text-slate-500">Bills</span>
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+              Average bill value: <strong className="text-slate-800 dark:text-slate-200">{formatCurrency(filtered.length > 0 ? totalFilteredSalesAmount / filtered.length : 0)}</strong>
+            </p>
+          </div>
+          <div className="h-12 w-12 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-300 shrink-0">
+            <Receipt className="h-6 w-6" />
+          </div>
+        </div>
+      </div>
+
       {/* Search & Date Range Header */}
       <div className="flex flex-col gap-3 rounded-2xl border border-amber-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-3 sm:p-4 shadow-sm backdrop-blur-md transition-colors duration-200">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
