@@ -252,6 +252,9 @@ export function BillingForm({ products, rates }: BillingFormProps) {
           _id: typeof res.data === "string" ? res.data : (res.data?.saleId || ""),
           customerName: values.customerName,
           customerPhone: values.customerPhone,
+          customerAddress: values.customerAddress || "",
+          paymentStatus: values.paymentStatus || "PAID",
+          paymentMethod: values.paymentMethod || "Cash",
           items: values.items,
           discount: values.discount,
           totalAmount: grandTotal,
@@ -262,6 +265,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
         reset({
           customerName: "",
           customerPhone: "",
+          customerAddress: "",
           discount: 0,
           items: [],
         });
