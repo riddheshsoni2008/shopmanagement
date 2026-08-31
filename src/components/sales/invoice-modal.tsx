@@ -176,12 +176,17 @@ export function InvoiceModal({
     ].filter(Boolean);
   };
 
+  const showGst = sale.showGst !== false;
+  const taxableBase = Math.max(0, subtotal - sale.discount);
+  const cgstAmount = showGst ? Math.round(((taxableBase * 1.5) / 100) * 100) / 100 : 0;
+  const sgstAmount = showGst ? Math.round(((taxableBase * 1.5) / 100) * 100) / 100 : 0;
+
   return (
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
       title={`${displayShopName} Invoice`}
-      description="Official Tax Invoice & Calculation Breakdown"
+      description={showGst ? "Official Tax Invoice & Calculation Breakdown" : "Official Retail Invoice & Calculation Breakdown"}
       maxWidth="4xl"
     >
       <div className="space-y-4">
@@ -203,7 +208,7 @@ export function InvoiceModal({
                 <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">Certified Fine Gold & Diamond Jewellery</p>
                 <p className="text-[10px] sm:text-xs text-amber-700 dark:text-amber-400 font-mono font-medium">
                   Station Road, Botad - 364710 • Contact: +91 98765 43210
-                  {sale.showGst !== false && " • GSTIN: 24BPLPR1615B1Z8"}
+                  {showGst && " • GSTIN: 24BPLPR1615B1Z8"}
                 </p>
               </div>
             </div>
@@ -410,6 +415,20 @@ export function InvoiceModal({
                   <span>(-) Discount:</span>
                   <span className="font-semibold font-mono">- {formatCurrency(sale.discount)}</span>
                 </div>
+              )}
+
+              {/* GST Tax Lines */}
+              {showGst && (
+                <>
+                  <div className="flex justify-between text-slate-600 dark:text-slate-400 text-[11px]">
+                    <span>(+) CGST @ 1.5%:</span>
+                    <span className="font-mono text-slate-800 dark:text-slate-200">{formatCurrency(cgstAmount)}</span>
+                  </div>
+                  <div className="flex justify-between text-slate-600 dark:text-slate-400 text-[11px]">
+                    <span>(+) SGST @ 1.5%:</span>
+                    <span className="font-mono text-slate-800 dark:text-slate-200">{formatCurrency(sgstAmount)}</span>
+                  </div>
+                </>
               )}
 
               {/* 6. Grand Total */}

@@ -126,8 +126,12 @@ export async function createSale(input: SaleInput): Promise<ActionResult<{ saleI
         });
       }
 
+      const showGst = validated.data.showGst ?? true;
       const discount = validated.data.discount || 0;
-      const totalAmount = Math.max(0, subtotal - discount);
+      const taxableBase = Math.max(0, subtotal - discount);
+      const cgstAmount = showGst ? Math.round(((taxableBase * 1.5) / 100) * 100) / 100 : 0;
+      const sgstAmount = showGst ? Math.round(((taxableBase * 1.5) / 100) * 100) / 100 : 0;
+      const totalAmount = Math.max(0, taxableBase + cgstAmount + sgstAmount);
 
       // Create sale bill record with tenantId
       const newSale = await Sale.create(

@@ -239,7 +239,12 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     }
   });
 
-  const grandTotal = Math.max(0, subtotal - (Number(watchDiscount) || 0));
+  const watchShowGst = watch("showGst") ?? true;
+  const taxableBase = Math.max(0, subtotal - (Number(watchDiscount) || 0));
+  const cgstAmount = watchShowGst ? Math.round(((taxableBase * 1.5) / 100) * 100) / 100 : 0;
+  const sgstAmount = watchShowGst ? Math.round(((taxableBase * 1.5) / 100) * 100) / 100 : 0;
+  const totalTaxAmount = cgstAmount + sgstAmount;
+  const grandTotal = Math.max(0, taxableBase + totalTaxAmount);
 
   const onSubmit = async (values: SaleInput) => {
     setIsSubmitting(true);
@@ -1025,6 +1030,24 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                       disabled={isSubmitting}
                     />
                   </div>
+
+                  {/* 6. GST Taxes (CGST + SGST @ 1.5% each) */}
+                  {watchShowGst && (
+                    <div className="space-y-1.5 pt-2 border-t border-slate-200 dark:border-slate-800 text-xs">
+                      <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                        <span>(+) CGST @ 1.5%:</span>
+                        <span className="font-mono font-medium text-slate-800 dark:text-slate-200">
+                          {formatCurrency(cgstAmount)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                        <span>(+) SGST @ 1.5%:</span>
+                        <span className="font-mono font-medium text-slate-800 dark:text-slate-200">
+                          {formatCurrency(sgstAmount)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="rounded-xl bg-amber-50 dark:bg-amber-500/10 p-4 border border-amber-300 dark:border-amber-500/30">

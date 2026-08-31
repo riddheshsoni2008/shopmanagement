@@ -220,7 +220,7 @@ function renderUnicodeTextToImage(
       const regFontSize = scaledFontSize * 0.42;
       let regWidth = 0;
       if (hasReg) {
-        ctx.font = `${weightCss} ${regFontSize}px "Segoe UI", "Arial", sans-serif`;
+        ctx.font = `${weightCss} ${regFontSize}px "Noto Sans", "Roboto", "Helvetica Neue", "Arial", sans-serif`;
         regWidth = ctx.measureText("®").width + 1 * scale;
         ctx.font = fontStyle;
       }
@@ -229,6 +229,7 @@ function renderUnicodeTextToImage(
         lineStr,
         baseLine,
         hasReg,
+        baseWidth: Math.ceil(m.width),
         width: Math.ceil(m.width + regWidth),
         ascent: m.actualBoundingBoxAscent || scaledFontSize * 0.8,
         descent: m.actualBoundingBoxDescent || scaledFontSize * 0.25,
@@ -261,9 +262,9 @@ function renderUnicodeTextToImage(
 
       if (item.hasReg) {
         const regFontSize = scaledFontSize * 0.42;
-        ctx.font = `${weightCss} ${regFontSize}px "Segoe UI", "Arial", sans-serif`;
+        ctx.font = `${weightCss} ${regFontSize}px "Noto Sans", "Roboto", "Helvetica Neue", "Arial", sans-serif`;
         ctx.fillStyle = colorHex;
-        ctx.fillText("®", drawX + (item.width - 2 * scale), currentY - item.ascent * 0.42);
+        ctx.fillText("®", drawX + item.baseWidth + 1 * scale, currentY - item.ascent * 0.42);
       }
 
       currentY += singleLineHeight + lineGap;
@@ -401,8 +402,12 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
 
   // ══════════════════════════════════════════
   // ROW 1: GSTIN line + "Original Copy"
+  const showGst = data.showGst !== false;
+
   // ══════════════════════════════════════════
-  if (data.showGst !== false) {
+  // ROW 1: GSTIN line + "Original Copy"
+  // ══════════════════════════════════════════
+  if (showGst) {
     doc.setFontSize(8.5);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...BLACK);
@@ -421,14 +426,15 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.line(L, y, R, y);
 
   // ══════════════════════════════════════════
-  // ROW 2: TAX INVOICE centered label
+  // ROW 2: TAX INVOICE / INVOICE centered label
   // ══════════════════════════════════════════
+  const titleText = showGst ? "TAX INVOICE" : "INVOICE";
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
   doc.setTextColor(...BLACK);
-  doc.text("TAX INVOICE", pw / 2, y + 4.5, { align: "center" });
+  doc.text(titleText, pw / 2, y + 4.5, { align: "center" });
 
-  const tiW = doc.getTextWidth("TAX INVOICE");
+  const tiW = doc.getTextWidth(titleText);
   doc.setDrawColor(...GOLD);
   doc.setLineWidth(0.4);
   doc.line(pw / 2 - tiW / 2, y + 5.5, pw / 2 + tiW / 2, y + 5.5);
@@ -508,10 +514,12 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
     colorHex: "#475569",
   });
 
-  doc.setFontSize(7.5);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(...MID);
-  doc.text("GSTIN / UIN : -", L + 3, y + 27);
+  if (showGst) {
+    doc.setFontSize(7.5);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...MID);
+    doc.text("GSTIN / UIN : -", L + 3, y + 27);
+  }
 
   // Right side: Invoice Metadata
   const rLabelX = midX + 3;
@@ -738,11 +746,12 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
     subtotal += item.lineTotal;
   });
 
-  const taxableAmount = subtotal;
+  const taxableAmount = Math.max(0, subtotal - (data.discount || 0));
   const cgstRate = 1.5;
   const sgstRate = 1.5;
-  const cgstAmount = Math.round(((taxableAmount * cgstRate) / 100) * 100) / 100;
-  const sgstAmount = Math.round(((taxableAmount * sgstRate) / 100) * 100) / 100;
+  const cgstAmount = showGst ? Math.round(((taxableAmount * cgstRate) / 100) * 100) / 100 : 0;
+  const sgstAmount = showGst ? Math.round(((taxableAmount * sgstRate) / 100) * 100) / 100 : 0;
+  const totalTaxAmount = cgstAmount + sgstAmount;
 
   const amtX = R - 3;
   const totalLabelX = L + W * 0.45;
@@ -836,16 +845,18 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   }
 
   // CGST & SGST
-  tY += 4.5;
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(7.5);
-  doc.setTextColor(...MID);
-  doc.text("Add  :  CGST @ 1.5%", totalLabelX - 35, tY);
-  doc.text(fmtINR(cgstAmount), amtX, tY, { align: "right" });
+  if (showGst) {
+    tY += 4.5;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...MID);
+    doc.text("Add  :  CGST @ 1.5%", totalLabelX - 35, tY);
+    doc.text(fmtINR(cgstAmount), amtX, tY, { align: "right" });
 
-  tY += 4.5;
-  doc.text("Add  :  SGST @ 1.5%", totalLabelX - 35, tY);
-  doc.text(fmtINR(sgstAmount), amtX, tY, { align: "right" });
+    tY += 4.5;
+    doc.text("Add  :  SGST @ 1.5%", totalLabelX - 35, tY);
+    doc.text(fmtINR(sgstAmount), amtX, tY, { align: "right" });
+  }
 
   tY += 3.5;
   doc.setDrawColor(...BORDER);
@@ -884,40 +895,42 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   // ══════════════════════════════════════════
   // TAX BREAKDOWN TABLE
   // ══════════════════════════════════════════
-  tY += 1;
-  const taxCols = [
-    { label: "Tax Rate", x: L + 3, w: 18 },
-    { label: "Taxable Amt.", x: L + 24, w: 28 },
-    { label: "CGST Amt.", x: L + 55, w: 24 },
-    { label: "SGST Amt.", x: L + 82, w: 24 },
-    { label: "Total Tax", x: L + 109, w: 24 },
-  ];
+  if (showGst) {
+    tY += 1;
+    const taxCols = [
+      { label: "Tax Rate", x: L + 3, w: 18 },
+      { label: "Taxable Amt.", x: L + 24, w: 28 },
+      { label: "CGST Amt.", x: L + 55, w: 24 },
+      { label: "SGST Amt.", x: L + 82, w: 24 },
+      { label: "Total Tax", x: L + 109, w: 24 },
+    ];
 
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...GOLD_DARK);
-  taxCols.forEach((col) => {
-    doc.text(col.label, col.x, tY + 3.5);
-  });
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...GOLD_DARK);
+    taxCols.forEach((col) => {
+      doc.text(col.label, col.x, tY + 3.5);
+    });
 
-  tY += 4.5;
-  doc.setDrawColor(...BORDER);
-  doc.setLineWidth(0.15);
-  doc.line(L + 1, tY, L + 135, tY);
+    tY += 4.5;
+    doc.setDrawColor(...BORDER);
+    doc.setLineWidth(0.15);
+    doc.line(L + 1, tY, L + 135, tY);
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.5);
-  doc.setTextColor(...BLACK);
-  doc.text("3%", taxCols[0].x, tY + 3.5);
-  doc.text(fmtINR(taxableAmount), taxCols[1].x, tY + 3.5);
-  doc.text(fmtINR(cgstAmount), taxCols[2].x, tY + 3.5);
-  doc.text(fmtINR(sgstAmount), taxCols[3].x, tY + 3.5);
-  doc.text(fmtINR(cgstAmount + sgstAmount), taxCols[4].x, tY + 3.5);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...BLACK);
+    doc.text("3%", taxCols[0].x, tY + 3.5);
+    doc.text(fmtINR(taxableAmount), taxCols[1].x, tY + 3.5);
+    doc.text(fmtINR(cgstAmount), taxCols[2].x, tY + 3.5);
+    doc.text(fmtINR(sgstAmount), taxCols[3].x, tY + 3.5);
+    doc.text(fmtINR(totalTaxAmount), taxCols[4].x, tY + 3.5);
 
-  tY += 6;
-  doc.setDrawColor(...BORDER);
-  doc.setLineWidth(0.3);
-  doc.line(L, tY, R, tY);
+    tY += 6;
+    doc.setDrawColor(...BORDER);
+    doc.setLineWidth(0.3);
+    doc.line(L, tY, R, tY);
+  }
 
   // ══════════════════════════════════════════
   // AMOUNT IN WORDS
