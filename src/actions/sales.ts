@@ -205,6 +205,7 @@ export async function getSales(
       query.$or = [
         { customerName: { $regex: q, $options: "i" } },
         { customerPhone: { $regex: q, $options: "i" } },
+        { customerAddress: { $regex: q, $options: "i" } },
       ];
     }
 
@@ -222,6 +223,7 @@ export async function getSales(
       _id: s._id.toString(),
       customerName: s.customerName,
       customerPhone: s.customerPhone,
+      customerAddress: s.customerAddress || "",
       discount: s.discount,
       totalAmount: s.totalAmount,
       paymentStatus: s.paymentStatus || "PAID",
@@ -278,6 +280,7 @@ export async function getSaleById(id: string): Promise<ActionResult<any>> {
       _id: (sale._id as any).toString(),
       customerName: sale.customerName,
       customerPhone: sale.customerPhone,
+      customerAddress: (sale as any).customerAddress || "",
       discount: sale.discount,
       totalAmount: sale.totalAmount,
       paymentStatus: (sale as any).paymentStatus || "PAID",

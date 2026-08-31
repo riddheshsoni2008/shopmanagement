@@ -435,9 +435,9 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(...GOLD_DARK);
-  doc.text("Customer Details :", L + 3, y + 5.5);
+  doc.text("Customer Details :", L + 3, y + 5);
 
-  drawSafeText(doc, data.customerName, L + 3, y + 12, {
+  drawSafeText(doc, data.customerName, L + 3, y + 10.5, {
     fontSize: 9.5,
     fontWeight: "normal",
     colorHex: "#000000",
@@ -446,18 +446,22 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...MID);
-  let custText = `Ph: ${data.customerPhone || "N/A"}`;
-  if (data.customerAddress && data.customerAddress.trim()) {
-    custText += ` | Addr: ${data.customerAddress.trim()}`;
-  }
-  drawSafeText(doc, custText, L + 3, y + 18, {
+  doc.text(`Ph: ${data.customerPhone || "N/A"}`, L + 3, y + 16);
+
+  const addressText = data.customerAddress && data.customerAddress.trim()
+    ? `Addr: ${data.customerAddress.trim()}`
+    : "Addr: -";
+
+  drawSafeText(doc, addressText, L + 3, y + 21.5, {
     fontSize: 8,
     fontWeight: "normal",
     colorHex: "#475569",
   });
 
   doc.setFontSize(7.5);
-  doc.text("GSTIN / UIN : -", L + 3, y + 25);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...MID);
+  doc.text("GSTIN / UIN : -", L + 3, y + 27);
 
   // Right side: Invoice Metadata
   const rLabelX = midX + 3;
