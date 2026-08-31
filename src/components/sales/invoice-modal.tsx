@@ -194,7 +194,10 @@ export function InvoiceModal({
                 className="h-12 w-12 sm:h-14 sm:w-14 object-contain shrink-0 drop-shadow-md rounded-md"
               />
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 font-serif tracking-tight">{displayShopName}</h2>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 font-serif tracking-tight inline-flex items-start gap-0.5">
+                  {displayShopName.replace(/®/g, "")}
+                  <sup className="text-[9px] sm:text-[10px] text-amber-700 dark:text-amber-400 font-sans font-bold leading-none select-none">®</sup>
+                </h2>
                 <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">Certified Fine Gold & Diamond Jewellery</p>
                 <p className="text-[10px] sm:text-xs text-amber-700 dark:text-amber-400 font-mono font-medium">Station Road, Botad - 364710 • Contact: +91 98765 43210</p>
               </div>

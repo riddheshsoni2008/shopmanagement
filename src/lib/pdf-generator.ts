@@ -204,17 +204,30 @@ function renderUnicodeTextToImage(
     const cssPxSize = fontSizePt * (96 / 72);
     const scaledFontSize = cssPxSize * scale;
 
+    // Check if text has registered symbol ® to format as small professional superscript
+    const hasRegSymbol = text.includes("®");
+    const baseText = hasRegSymbol ? text.replace(/®/g, "") : text;
+
     // Use clean font weights and order for Gujarati typography
-    // Weight 600 or normal ensures glyphs remain clear without heavy synthetic bold distortion
     const weightCss = fontWeight === "bold" ? "600" : "normal";
     const fontStyle = `${weightCss} ${scaledFontSize}px "Noto Sans Gujarati", "Gujarati Sangam MN", "Shruti", "Segoe UI", "Mukta", sans-serif`;
 
     ctx.font = fontStyle;
-    const metrics = ctx.measureText(text);
+    const metrics = ctx.measureText(baseText);
 
     const ascent = metrics.actualBoundingBoxAscent || scaledFontSize * 0.8;
     const descent = metrics.actualBoundingBoxDescent || scaledFontSize * 0.25;
-    const textWidth = Math.ceil(metrics.width);
+
+    const regFontSize = scaledFontSize * 0.42; // ~42% size for small sleek ® symbol
+    const regFontStyle = `${weightCss} ${regFontSize}px "Segoe UI", "Arial", sans-serif`;
+
+    let regWidth = 0;
+    if (hasRegSymbol) {
+      ctx.font = regFontStyle;
+      regWidth = ctx.measureText("®").width + 1 * scale;
+    }
+
+    const textWidth = Math.ceil(metrics.width + regWidth);
     const totalHeight = Math.ceil(ascent + descent);
 
     // Subtle 2px margin at 1x scale (8px at 4x scale) to protect glyph edges
@@ -230,7 +243,13 @@ function renderUnicodeTextToImage(
 
     const drawXOnCanvas = padPx;
     const drawYOnCanvas = padPx + ascent;
-    ctx.fillText(text, drawXOnCanvas, drawYOnCanvas);
+    ctx.fillText(baseText, drawXOnCanvas, drawYOnCanvas);
+
+    if (hasRegSymbol) {
+      ctx.font = regFontStyle;
+      ctx.fillStyle = colorHex;
+      ctx.fillText("®", drawXOnCanvas + metrics.width + 0.5 * scale, drawYOnCanvas - ascent * 0.42);
+    }
 
     const dataUrl = canvas.toDataURL("image/png");
 
