@@ -34,6 +34,7 @@ export interface InvoicePDFData {
   soldBy: string;
   paymentStatus?: string;
   paymentMethod?: string;
+  showGst?: boolean;
   items: InvoiceItem[];
   discount: number;
   totalAmount: number;
@@ -205,60 +206,75 @@ function renderUnicodeTextToImage(
     const cssPxSize = fontSizePt * (96 / 72);
     const scaledFontSize = cssPxSize * scale;
 
-    // Check if text has registered symbol ® to format as small professional superscript
-    const hasRegSymbol = text.includes("®");
-    const baseText = hasRegSymbol ? text.replace(/®/g, "") : text;
-
-    // Use clean font weights and order for Gujarati typography
     const weightCss = fontWeight === "bold" ? "600" : "normal";
     const fontStyle = `${weightCss} ${scaledFontSize}px "Noto Sans Gujarati", "Gujarati Sangam MN", "Shruti", "Segoe UI", "Mukta", sans-serif`;
 
+    const rawLines = (text || "").split("\n");
     ctx.font = fontStyle;
-    const metrics = ctx.measureText(baseText);
 
-    const ascent = metrics.actualBoundingBoxAscent || scaledFontSize * 0.8;
-    const descent = metrics.actualBoundingBoxDescent || scaledFontSize * 0.25;
+    const lineMetrics = rawLines.map((lineStr) => {
+      const hasReg = lineStr.includes("®");
+      const baseLine = hasReg ? lineStr.replace(/®/g, "") : lineStr;
+      const m = ctx.measureText(baseLine);
 
-    const regFontSize = scaledFontSize * 0.42; // ~42% size for small sleek ® symbol
-    const regFontStyle = `${weightCss} ${regFontSize}px "Segoe UI", "Arial", sans-serif`;
+      const regFontSize = scaledFontSize * 0.42;
+      let regWidth = 0;
+      if (hasReg) {
+        ctx.font = `${weightCss} ${regFontSize}px "Segoe UI", "Arial", sans-serif`;
+        regWidth = ctx.measureText("®").width + 1 * scale;
+        ctx.font = fontStyle;
+      }
 
-    let regWidth = 0;
-    if (hasRegSymbol) {
-      ctx.font = regFontStyle;
-      regWidth = ctx.measureText("®").width + 1 * scale;
-    }
+      return {
+        lineStr,
+        baseLine,
+        hasReg,
+        width: Math.ceil(m.width + regWidth),
+        ascent: m.actualBoundingBoxAscent || scaledFontSize * 0.8,
+        descent: m.actualBoundingBoxDescent || scaledFontSize * 0.25,
+      };
+    });
 
-    const textWidth = Math.ceil(metrics.width + regWidth);
-    const totalHeight = Math.ceil(ascent + descent);
+    const maxLineAscent = Math.max(...lineMetrics.map((l) => l.ascent), scaledFontSize * 0.8);
+    const maxLineDescent = Math.max(...lineMetrics.map((l) => l.descent), scaledFontSize * 0.25);
+    const maxLineWidth = Math.max(...lineMetrics.map((l) => l.width), 1);
 
-    // Subtle 2px margin at 1x scale (8px at 4x scale) to protect glyph edges
+    const lineGap = scaledFontSize * 0.35;
+    const singleLineHeight = maxLineAscent + maxLineDescent;
+    const totalContentHeight = rawLines.length * singleLineHeight + (rawLines.length - 1) * lineGap;
+
     const padPx = 2 * scale;
+    canvas.width = Math.max(1, maxLineWidth + padPx * 2);
+    canvas.height = Math.max(1, Math.ceil(totalContentHeight) + padPx * 2);
 
-    canvas.width = Math.max(1, textWidth + padPx * 2);
-    canvas.height = Math.max(1, totalHeight + padPx * 2);
-
-    // Re-apply context settings after canvas resize
-    ctx.font = fontStyle;
-    ctx.fillStyle = colorHex;
     ctx.textBaseline = "alphabetic";
 
-    const drawXOnCanvas = padPx;
-    const drawYOnCanvas = padPx + ascent;
-    ctx.fillText(baseText, drawXOnCanvas, drawYOnCanvas);
+    let currentY = padPx + maxLineAscent;
 
-    if (hasRegSymbol) {
-      ctx.font = regFontStyle;
+    rawLines.forEach((_, idx) => {
+      const item = lineMetrics[idx];
+      const drawX = padPx;
+
+      ctx.font = fontStyle;
       ctx.fillStyle = colorHex;
-      ctx.fillText("®", drawXOnCanvas + metrics.width + 0.5 * scale, drawYOnCanvas - ascent * 0.42);
-    }
+      ctx.fillText(item.baseLine, drawX, currentY);
+
+      if (item.hasReg) {
+        const regFontSize = scaledFontSize * 0.42;
+        ctx.font = `${weightCss} ${regFontSize}px "Segoe UI", "Arial", sans-serif`;
+        ctx.fillStyle = colorHex;
+        ctx.fillText("®", drawX + (item.width - 2 * scale), currentY - item.ascent * 0.42);
+      }
+
+      currentY += singleLineHeight + lineGap;
+    });
 
     const dataUrl = canvas.toDataURL("image/png");
 
-    // Convert pixels to PDF mm (1 CSS px at 96 DPI = 25.4 / 96 mm = 0.26458333 mm)
     const pxToMm = 25.4 / 96;
     const widthMm = (canvas.width / scale) * pxToMm;
     const heightMm = (canvas.height / scale) * pxToMm;
-    const baselineFromTopMm = (drawYOnCanvas / scale) * pxToMm;
+    const baselineFromTopMm = ((padPx + maxLineAscent) / scale) * pxToMm;
 
     return { dataUrl, widthMm, heightMm, baselineFromTopMm };
   } catch {
@@ -338,6 +354,7 @@ function handleAutoTableCellUnicode(doc: jsPDF, cellData: any) {
         }
 
         const padLeft = cellData.cell.padding("left") || 1.5;
+        const padTop = cellData.cell.padding("top") || 1.5;
         const padMm = 2 * (25.4 / 96);
         let drawX = cellData.cell.x + padLeft - padMm;
         if (cellData.cell.styles.halign === "center") {
@@ -346,7 +363,10 @@ function handleAutoTableCellUnicode(doc: jsPDF, cellData: any) {
           drawX = cellData.cell.x + cellData.cell.width - rendered.widthMm - (cellData.cell.padding("right") || 1.5) + padMm;
         }
 
-        const drawY = cellData.cell.y + (cellData.cell.height - rendered.heightMm) / 2;
+        let drawY = cellData.cell.y + padTop;
+        if (rendered.heightMm < cellData.cell.height) {
+          drawY = cellData.cell.y + (cellData.cell.height - rendered.heightMm) / 2;
+        }
         doc.addImage(rendered.dataUrl, "PNG", drawX, drawY, rendered.widthMm, rendered.heightMm);
       }
     }
@@ -382,13 +402,16 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   // ══════════════════════════════════════════
   // ROW 1: GSTIN line + "Original Copy"
   // ══════════════════════════════════════════
-  doc.setFontSize(8.5);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...BLACK);
-  doc.text("GSTIN : 24BPLPR1615B1Z8", L + 3, y + 5);
+  if (data.showGst !== false) {
+    doc.setFontSize(8.5);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...BLACK);
+    doc.text("GSTIN : 24BPLPR1615B1Z8", L + 3, y + 5);
+  }
 
   doc.setFont("helvetica", "italic");
   doc.setFontSize(8.5);
+  doc.setTextColor(...BLACK);
   doc.text("Original Copy", R - 3, y + 5, { align: "right" });
 
   // Horizontal line

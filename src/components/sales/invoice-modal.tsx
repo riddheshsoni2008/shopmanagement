@@ -41,6 +41,7 @@ interface InvoiceModalProps {
     totalAmount: number;
     paymentStatus?: string;
     paymentMethod?: string;
+    showGst?: boolean;
     soldBy?: { name: string };
     createdAt: string;
   } | null;
@@ -72,6 +73,7 @@ export function InvoiceModal({
       soldBy: sale.soldBy?.name || "Store Staff",
       paymentStatus: sale.paymentStatus || "PAID",
       paymentMethod: sale.paymentMethod || "Cash",
+      showGst: sale.showGst !== false,
       items: sale.items.map((i) => ({
         name: i.name,
         qty: i.qty,
@@ -199,7 +201,10 @@ export function InvoiceModal({
                   <sup className="text-[9px] sm:text-[10px] text-amber-700 dark:text-amber-400 font-sans font-bold leading-none select-none">®</sup>
                 </h2>
                 <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">Certified Fine Gold & Diamond Jewellery</p>
-                <p className="text-[10px] sm:text-xs text-amber-700 dark:text-amber-400 font-mono font-medium">Station Road, Botad - 364710 • Contact: +91 98765 43210</p>
+                <p className="text-[10px] sm:text-xs text-amber-700 dark:text-amber-400 font-mono font-medium">
+                  Station Road, Botad - 364710 • Contact: +91 98765 43210
+                  {sale.showGst !== false && " • GSTIN: 24BPLPR1615B1Z8"}
+                </p>
               </div>
             </div>
             <div className="text-left sm:text-right shrink-0">

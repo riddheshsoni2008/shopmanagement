@@ -142,6 +142,7 @@ export async function createSale(input: SaleInput): Promise<ActionResult<{ saleI
             totalAmount,
             paymentStatus: validated.data.paymentStatus || "PAID",
             paymentMethod: validated.data.paymentMethod || "Cash",
+            showGst: validated.data.showGst ?? true,
             soldBy: new mongoose.Types.ObjectId(userId),
           },
         ],
@@ -228,6 +229,7 @@ export async function getSales(
       totalAmount: s.totalAmount,
       paymentStatus: s.paymentStatus || "PAID",
       paymentMethod: s.paymentMethod || "Cash",
+      showGst: s.showGst ?? true,
       itemsCount: s.items?.length || 0,
       items: s.items.map((i: any) => ({
         product: i.product?.toString() || "",
@@ -285,6 +287,7 @@ export async function getSaleById(id: string): Promise<ActionResult<any>> {
       totalAmount: sale.totalAmount,
       paymentStatus: (sale as any).paymentStatus || "PAID",
       paymentMethod: (sale as any).paymentMethod || "Cash",
+      showGst: (sale as any).showGst ?? true,
       items: sale.items.map((i: any) => ({
         product: i.product?.toString() || "",
         name: i.name,

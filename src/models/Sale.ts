@@ -35,6 +35,7 @@ export interface ISale extends Document {
   totalAmount: number;
   paymentStatus: "PAID" | "PENDING" | "PARTIAL";
   paymentMethod: "Cash" | "UPI / GPay" | "Card" | "Bank Transfer";
+  showGst?: boolean;
   soldBy: mongoose.Types.ObjectId;
   createdAt: Date;
 }
@@ -82,6 +83,7 @@ const SaleSchema = new Schema<ISale>(
       enum: ["Cash", "UPI / GPay", "Card", "Bank Transfer"],
       default: "Cash",
     },
+    showGst: { type: Boolean, default: true },
     soldBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },
   {

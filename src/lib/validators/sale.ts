@@ -33,6 +33,7 @@ export const saleSchema = z.object({
   discount: z.coerce.number().min(0, "Discount cannot be negative").default(0),
   paymentStatus: z.enum(["PAID", "PENDING", "PARTIAL"]).default("PAID"),
   paymentMethod: z.enum(["Cash", "UPI / GPay", "Card", "Bank Transfer"]).default("Cash"),
+  showGst: z.boolean().optional().default(true),
   items: z
     .array(saleItemSchema)
     .min(1, "At least one item is required in the sale bill"),

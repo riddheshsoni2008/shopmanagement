@@ -72,6 +72,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
       customerName: "",
       customerPhone: "",
       customerAddress: "",
+      showGst: true,
       discount: 0,
       items: [
         {
@@ -255,6 +256,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
           customerAddress: values.customerAddress || "",
           paymentStatus: values.paymentStatus || "PAID",
           paymentMethod: values.paymentMethod || "Cash",
+          showGst: values.showGst ?? true,
           items: values.items,
           discount: values.discount,
           totalAmount: grandTotal,
@@ -266,6 +268,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
           customerName: "",
           customerPhone: "",
           customerAddress: "",
+          showGst: true,
           discount: 0,
           items: [],
         });
@@ -348,6 +351,21 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                       disabled={isSubmitting}
                     />
                   </div>
+                </div>
+
+                <div className="sm:col-span-2 pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                  <label htmlFor="showGst" className="flex items-center gap-2.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      id="showGst"
+                      {...register("showGst")}
+                      disabled={isSubmitting}
+                      className="h-4 w-4 rounded border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-amber-600 focus:ring-amber-500 accent-amber-600"
+                    />
+                    <span className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">
+                      Include GST Number on Invoice Bill (GSTIN: 24BPLPR1615B1Z8)
+                    </span>
+                  </label>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 pt-2">
