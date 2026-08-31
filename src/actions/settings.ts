@@ -3,7 +3,6 @@
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import { User } from "@/models/User";
-import { Rate } from "@/models/Rate";
 import { rateSchema, RateInput } from "@/lib/validators/rate";
 import { ActionResult } from "@/actions/auth";
 import { revalidatePath } from "next/cache";
@@ -20,9 +19,24 @@ export interface RateSettingsData {
   updatedBy?: { name: string; email: string };
 }
 
-// In-Memory Caching per Tenant to eliminate DB latency while maintaining multi-tenant isolation
+// In-Memory Caching per Tenant to eliminate DB latency
 const cachedRateDataMap = new Map<string, { data: RateSettingsData; time: number }>();
-const CACHE_TTL_MS = 60000; // 60 seconds memory cache
+const CACHE_TTL_MS = 60000;
+
+// Helper to drop legacy 'rates' collection from MongoDB if it exists
+async function cleanupLegacyRatesCollection() {
+  try {
+    if (mongoose.connection.db) {
+      const collections = await mongoose.connection.db.listCollections({ name: "rates" }).toArray();
+      if (collections.length > 0) {
+        await mongoose.connection.db.dropCollection("rates");
+        console.log("Legacy rates collection dropped successfully.");
+      }
+    }
+  } catch (e) {
+    // Ignore if already dropped
+  }
+}
 
 export async function getRateSettings(): Promise<ActionResult<RateSettingsData>> {
   try {
@@ -39,35 +53,22 @@ export async function getRateSettings(): Promise<ActionResult<RateSettingsData>>
     }
 
     await connectDB();
+    await cleanupLegacyRatesCollection();
 
-    let rate = await Rate.findOne({ userId: tenantId }).populate("updatedBy", "name email").lean();
+    let user = await User.findById(tenantId).lean();
 
-    if (!rate) {
-      // Create default rate settings document for this new tenant
-      const created = await Rate.create({
-        userId: tenantId,
-        goldRate22k: 7200,
-        goldRate18k: 5900,
-        silverRate: 85,
-        shopName: "Zeal Jewellers",
-      });
-      rate = await Rate.findById(created._id).populate("updatedBy", "name email").lean();
-    }
-
-    if (!rate) {
-      return { success: false, error: "Failed to initialize rate settings" };
+    if (!user) {
+      return { success: false, error: "User account not found" };
     }
 
     const formatted: RateSettingsData = {
-      _id: rate._id.toString(),
-      goldRate22k: rate.goldRate22k,
-      goldRate18k: rate.goldRate18k,
-      silverRate: rate.silverRate,
-      shopName: rate.shopName || "Zeal Jewellers",
-      updatedAt: rate.updatedAt ? new Date(rate.updatedAt).toISOString() : new Date().toISOString(),
-      updatedBy: rate.updatedBy
-        ? { name: (rate.updatedBy as any).name, email: (rate.updatedBy as any).email }
-        : undefined,
+      _id: user._id.toString(),
+      goldRate22k: user.goldRate22k ?? 7200,
+      goldRate18k: user.goldRate18k ?? 5900,
+      silverRate: user.silverRate ?? 85,
+      shopName: user.shopName || "Zeal Jewellers",
+      updatedAt: user.updatedAt ? new Date(user.updatedAt).toISOString() : new Date().toISOString(),
+      updatedBy: { name: user.name, email: user.email },
     };
 
     cachedRateDataMap.set(tenantKey, { data: formatted, time: now });
@@ -104,30 +105,21 @@ export async function updateRateSettings(
     }
 
     await connectDB();
+    await cleanupLegacyRatesCollection();
 
-    const existingRate = await Rate.findOne({ userId: tenantId });
-
-    if (existingRate) {
-      existingRate.goldRate22k = validated.data.goldRate22k;
-      existingRate.goldRate18k = validated.data.goldRate18k;
-      existingRate.silverRate = validated.data.silverRate;
-      existingRate.shopName = validated.data.shopName;
-      existingRate.updatedBy = new mongoose.Types.ObjectId(userId);
-      await existingRate.save();
-    } else {
-      await Rate.create({
-        userId: tenantId,
-        goldRate22k: validated.data.goldRate22k,
-        goldRate18k: validated.data.goldRate18k,
-        silverRate: validated.data.silverRate,
-        shopName: validated.data.shopName,
-        updatedBy: new mongoose.Types.ObjectId(userId),
-      });
-    }
+    const updateData: Record<string, any> = {
+      goldRate22k: validated.data.goldRate22k,
+      goldRate18k: validated.data.goldRate18k,
+      silverRate: validated.data.silverRate,
+      shopName: validated.data.shopName,
+    };
 
     if (validated.data.ownerName && validated.data.ownerName.trim()) {
-      await User.findByIdAndUpdate(userId, { name: validated.data.ownerName.trim() });
+      updateData.name = validated.data.ownerName.trim();
     }
+
+    // Update rate fields directly on the User model document (no separate rates collection)
+    await User.findByIdAndUpdate(tenantId, updateData);
 
     // Invalidate memory cache for this tenant
     cachedRateDataMap.delete(tenantId.toString());

@@ -7,6 +7,10 @@ export interface IUser extends Document {
   passwordHash: string;
   role: "admin" | "staff";
   ownerId?: mongoose.Types.ObjectId;
+  goldRate22k?: number;
+  goldRate18k?: number;
+  silverRate?: number;
+  shopName?: string;
   createdAt: Date;
 }
 
@@ -24,6 +28,10 @@ const UserSchema = new Schema<IUser>(
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ["admin", "staff"], default: "staff" },
     ownerId: { type: Schema.Types.ObjectId, ref: "User", default: null },
+    goldRate22k: { type: Number, default: 7200 },
+    goldRate18k: { type: Number, default: 5900 },
+    silverRate: { type: Number, default: 85 },
+    shopName: { type: String, default: "Zeal Jewellers" },
   },
   {
     timestamps: true,

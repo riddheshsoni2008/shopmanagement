@@ -63,6 +63,9 @@ export function SettingsForm({ initialRates, currentUser }: SettingsFormProps) {
   const onSubmit = async (values: RateInput) => {
     setIsSubmitting(true);
     try {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("zeal_rate_settings", JSON.stringify(values));
+      }
       const res = await updateRateSettings(values);
       if (res.success) {
         toast.success("Live rates & shop settings updated successfully!");
