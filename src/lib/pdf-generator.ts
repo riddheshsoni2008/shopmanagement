@@ -636,6 +636,7 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   let totalMetalCost = 0;
   let totalMaking = 0;
   let totalExtra = 0;
+  let totalWeight = 0;
 
   data.items.forEach((item) => {
     const rawP = item.productWeight ?? item.weight ?? 0;
@@ -660,6 +661,7 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
     const makingCost = item.qty * netWeight * item.makingCharge;
     const extraCost = (item.hallmarkCharge || 0) + (item.jadatarCharge || 0) + (item.rhodiumCharge || 0) + (item.nangCharge || 0) + (item.meenoCharge || 0);
 
+    totalWeight += (item.qty || 1) * netWeight;
     totalMetalCost += metalCost;
     totalMaking += makingCost;
     totalExtra += extraCost;
