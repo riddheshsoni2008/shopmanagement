@@ -187,7 +187,6 @@ export default async function DashboardPage({
           </Card>
         )}
 
-        {/* Period Sales Count */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -205,7 +204,6 @@ export default async function DashboardPage({
           </CardContent>
         </Card>
 
-        {/* Low Stock Alerts */}
         <Card className={metrics?.lowStockCount ? "border-rose-300 dark:border-rose-500/40 bg-rose-50/70 dark:bg-rose-950/10" : ""}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
@@ -256,34 +254,43 @@ export default async function DashboardPage({
                 </Link>
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Items</TableHead>
-                    <TableHead>Total Amount</TableHead>
-                    <TableHead>Time</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {metrics.recentSales.map((sale) => (
-                    <TableRow key={sale._id}>
-                      <TableCell className="font-semibold text-slate-900 dark:text-slate-200">
-                        {sale.customerName}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{sale.itemsCount} pc(s)</Badge>
-                      </TableCell>
-                      <TableCell className="font-bold text-amber-700 dark:text-amber-400">
-                        {formatCurrency(sale.totalAmount)}
-                      </TableCell>
-                      <TableCell className="text-xs text-slate-500 dark:text-slate-400" suppressHydrationWarning>
-                        {formatDateTime(sale.createdAt)}
-                      </TableCell>
+              <div className="overflow-x-auto -mx-2 sm:mx-0">
+                <Table className="min-w-full">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Customer</TableHead>
+                      <TableHead className="text-center sm:text-left">Items</TableHead>
+                      <TableHead className="text-right sm:text-left">Total Amount</TableHead>
+                      <TableHead className="hidden sm:table-cell">Time</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {metrics.recentSales.map((sale) => (
+                      <TableRow key={sale._id}>
+                        <TableCell className="py-2.5">
+                          <div className="font-semibold text-slate-900 dark:text-slate-200 text-xs sm:text-sm">
+                            {sale.customerName}
+                          </div>
+                          <div className="text-[10px] sm:hidden text-slate-500 dark:text-slate-400 font-mono mt-0.5" suppressHydrationWarning>
+                            {formatDateTime(sale.createdAt)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-2.5 text-center sm:text-left">
+                          <Badge variant="outline" className="text-[10px] sm:text-xs px-1.5 py-0.5 whitespace-nowrap">
+                            {sale.itemsCount} pc(s)
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="py-2.5 font-bold text-amber-700 dark:text-amber-400 text-xs sm:text-sm text-right sm:text-left whitespace-nowrap">
+                          {formatCurrency(sale.totalAmount)}
+                        </TableCell>
+                        <TableCell className="py-2.5 hidden sm:table-cell text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap" suppressHydrationWarning>
+                          {formatDateTime(sale.createdAt)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>
