@@ -89,7 +89,7 @@ async function seed() {
     goldRate22k: 7200,
     goldRate18k: 5900,
     silverRate: 85,
-    shopName: "Zeal Jewellers",
+    shopName: "Zeal Jewellers®",
     updatedBy: adminUser._id,
   });
 

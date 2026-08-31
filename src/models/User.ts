@@ -32,7 +32,7 @@ const UserSchema = new Schema<IUser>(
     goldRate22k: { type: Number, default: 7200 },
     goldRate18k: { type: Number, default: 5900 },
     silverRate: { type: Number, default: 85 },
-    shopName: { type: String, default: "Zeal Jewellers" },
+    shopName: { type: String, default: "Zeal Jewellers®" },
   },
   {
     timestamps: true,

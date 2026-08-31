@@ -54,7 +54,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     goldRate22k: rates?.goldRate22k || 7200,
     goldRate18k: rates?.goldRate18k || 5900,
     silverRate: rates?.silverRate || 85,
-    shopName: rates?.shopName || "Zeal Jewellers",
+    shopName: rates?.shopName || "Zeal Jewellers®",
   };
   const safeProducts = products || [];
 

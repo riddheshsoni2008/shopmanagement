@@ -51,9 +51,11 @@ export function InvoiceModal({
   isOpen,
   onClose,
   sale,
-  shopName = "Zeal Jewellers",
+  shopName = "Zeal Jewellers®",
 }: InvoiceModalProps) {
   if (!sale) return null;
+
+  const displayShopName = shopName.includes("®") ? shopName : `${shopName}®`;
 
   const handlePrint = () => {
     window.print();
@@ -176,7 +178,7 @@ export function InvoiceModal({
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
-      title="Zeal Jewellers Invoice"
+      title={`${displayShopName} Invoice`}
       description="Official Tax Invoice & Calculation Breakdown"
       maxWidth="4xl"
     >
@@ -188,11 +190,11 @@ export function InvoiceModal({
             <div className="flex items-center gap-3">
               <img
                 src="/logo.png"
-                alt="Zeal Jewellers Brand Logo"
+                alt={`${displayShopName} Brand Logo`}
                 className="h-12 w-12 sm:h-14 sm:w-14 object-contain shrink-0 drop-shadow-md rounded-md"
               />
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 font-serif tracking-tight">{shopName}</h2>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 font-serif tracking-tight">{displayShopName}</h2>
                 <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">Certified Fine Gold & Diamond Jewellery</p>
                 <p className="text-[10px] sm:text-xs text-amber-700 dark:text-amber-400 font-mono font-medium">Station Road, Botad - 364710 • Contact: +91 98765 43210</p>
               </div>

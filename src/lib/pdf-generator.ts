@@ -90,6 +90,13 @@ function fmtINR(val: number): string {
   }).format(val);
 }
 
+// Helper to format shop name with ® company registration mark
+function formatShopNameWithReg(name?: string): string {
+  const shop = (name || "Zeal Jewellers").trim();
+  if (shop.includes("®")) return shop;
+  return `${shop}®`;
+}
+
 // Number to Words Converter for INR
 function numberToWords(num: number): string {
   const a = [
@@ -404,7 +411,7 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   }
 
   // Shop Name — centered gold header
-  drawSafeText(doc, data.shopName, pw / 2, y + 10, {
+  drawSafeText(doc, formatShopNameWithReg(data.shopName), pw / 2, y + 10, {
     fontSize: 19,
     fontWeight: "bold",
     colorHex: "#825f14",
@@ -933,12 +940,18 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   );
 
   // RIGHT: Signatures
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.setTextColor(...GOLD_DARK);
-  doc.text(`for ${data.shopName.toUpperCase()}`, R - 3, footerStartY + 4.5, {
-    align: "right",
-  });
+  drawSafeText(
+    doc,
+    `for ${formatShopNameWithReg(data.shopName).toUpperCase()}`,
+    R - 3,
+    footerStartY + 4.5,
+    {
+      fontSize: 8,
+      fontWeight: "bold",
+      colorHex: "#825f14",
+      align: "right",
+    }
+  );
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7);
@@ -967,14 +980,17 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   doc.rect(L, footerEndY, W, 1.5, "F");
 
   // Thank you line
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "italic");
-  doc.setTextColor(...MID);
-  doc.text(
-    `Thank you for choosing ${data.shopName}! Your trust is our treasure.`,
+  drawSafeText(
+    doc,
+    `Thank you for choosing ${formatShopNameWithReg(data.shopName)}! Your trust is our treasure.`,
     pw / 2,
     footerEndY + 5,
-    { align: "center" },
+    {
+      fontSize: 7,
+      fontWeight: "normal",
+      colorHex: "#504632",
+      align: "center",
+    }
   );
 
   // ══════════════════════════════════════════
@@ -1046,12 +1062,18 @@ export async function generateExpenseStatementPDF(
     } catch {}
   }
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.setTextColor(...GOLD_DARK);
-  doc.text((data.shopName || "ZEAL JEWELLERS").toUpperCase(), pw / 2, y + 9, {
-    align: "center",
-  });
+  drawSafeText(
+    doc,
+    formatShopNameWithReg(data.shopName).toUpperCase(),
+    pw / 2,
+    y + 9,
+    {
+      fontSize: 18,
+      fontWeight: "bold",
+      colorHex: "#825f14",
+      align: "center",
+    }
+  );
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
@@ -1322,12 +1344,18 @@ export async function generateSalesStatementPDF(data: SalesStatementPDFData) {
     } catch {}
   }
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.setTextColor(...GOLD_DARK);
-  doc.text((data.shopName || "ZEAL JEWELLERS").toUpperCase(), pw / 2, y + 9, {
-    align: "center",
-  });
+  drawSafeText(
+    doc,
+    formatShopNameWithReg(data.shopName).toUpperCase(),
+    pw / 2,
+    y + 9,
+    {
+      fontSize: 18,
+      fontWeight: "bold",
+      colorHex: "#825f14",
+      align: "center",
+    }
+  );
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);

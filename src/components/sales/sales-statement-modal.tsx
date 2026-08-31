@@ -142,7 +142,7 @@ export function SalesStatementModal({
       );
 
       // Fetch shop settings name
-      let shopName = "Zeal Jewellers";
+      let shopName = "Zeal Jewellers®";
       try {
         const rateRes = await getRateSettings();
         if (rateRes.success && rateRes.data?.shopName) {
