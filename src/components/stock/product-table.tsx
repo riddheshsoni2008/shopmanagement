@@ -55,7 +55,7 @@ export function ProductTable({ initialData, userRole }: ProductTableProps) {
   const [lowStockOnly, setLowStockOnly] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const isAdmin = userRole === "admin";
+  const isAdmin = true;
 
   // Filter products on client for fluid interactive UX
   let filtered = initialData.products.filter((p) => {

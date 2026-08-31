@@ -41,9 +41,9 @@ export function MobileNav({ isOpen, onClose, user, shopName }: MobileNavProps) {
     { title: "Inventory Stock", href: "/stock", icon: Gem, roles: ["admin", "staff"] },
     { title: "New Sale Bill", href: "/sales/new", icon: ShoppingCart, roles: ["admin", "staff"] },
     { title: "Sales History", href: "/sales", icon: Receipt, roles: ["admin", "staff"] },
-    { title: "Expenses", href: "/expenses", icon: DollarSign, roles: ["admin"] },
-    { title: "Reports & Analytics", href: "/reports", icon: BarChart3, roles: ["admin"] },
-    { title: "Shop Settings", href: "/settings", icon: Settings, roles: ["admin"] },
+    { title: "Expenses", href: "/expenses", icon: DollarSign, roles: ["admin", "staff"] },
+    { title: "Reports & Analytics", href: "/reports", icon: BarChart3, roles: ["admin", "staff"] },
+    { title: "Shop Settings", href: "/settings", icon: Settings, roles: ["admin", "staff"] },
   ];
 
   const filteredItems = navItems.filter((item) =>

@@ -9,8 +9,8 @@ export const revalidate = 0; // SSR live data
 export default async function ExpensesPage() {
   const session = await auth();
 
-  if ((session?.user as any)?.role !== "admin") {
-    redirect("/dashboard");
+  if (!session?.user) {
+    redirect("/login");
   }
 
   const res = await getExpenses();

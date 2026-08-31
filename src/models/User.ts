@@ -27,7 +27,7 @@ const UserSchema = new Schema<IUser>(
       index: true,
     },
     passwordHash: { type: String, required: true },
-    role: { type: String, enum: ["admin", "staff"], default: "staff" },
+    role: { type: String, enum: ["admin", "staff"], default: "admin" },
     ownerId: { type: Schema.Types.ObjectId, ref: "User", default: null },
     goldRate22k: { type: Number, default: 7200 },
     goldRate18k: { type: Number, default: 5900 },

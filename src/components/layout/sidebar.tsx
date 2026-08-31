@@ -61,19 +61,19 @@ export function Sidebar({ user, shopName }: SidebarProps) {
       title: "Expenses",
       href: "/expenses",
       icon: DollarSign,
-      roles: ["admin"],
+      roles: ["admin", "staff"],
     },
     {
       title: "Reports & Analytics",
       href: "/reports",
       icon: BarChart3,
-      roles: ["admin"],
+      roles: ["admin", "staff"],
     },
     {
       title: "Shop Settings",
       href: "/settings",
       icon: Settings,
-      roles: ["admin"],
+      roles: ["admin", "staff"],
     },
   ];
 

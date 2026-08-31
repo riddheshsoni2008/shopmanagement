@@ -425,27 +425,7 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <div>
-                <label
-                  htmlFor="reg-role"
-                  className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1"
-                >
-                  Role Access Level
-                </label>
-                <select
-                  id="reg-role"
-                  className="w-full h-10 px-3 bg-white dark:bg-slate-950 border border-amber-200 dark:border-slate-800 focus:border-amber-500 text-slate-900 dark:text-slate-100 rounded-xl text-sm outline-none"
-                  disabled={isPending}
-                  {...registerReg("role")}
-                >
-                  <option value="admin">
-                    Admin (Full Access & Reports)
-                  </option>
-                  <option value="staff">
-                    Staff (POS & Stock Management)
-                  </option>
-                </select>
-              </div>
+
 
               <Button
                 type="submit"
