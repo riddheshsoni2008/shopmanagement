@@ -99,12 +99,26 @@ export function SalesStatementModal({
         else if (st === "PARTIAL") partialCount++;
         else paidCount++;
 
+        let itemNamesStr = "";
+        if (Array.isArray(s.items) && s.items.length > 0) {
+          itemNamesStr = s.items
+            .map((item: any) => {
+              const name = item.name || "Item";
+              const qty = item.qty && item.qty > 1 ? ` (${item.qty} pcs)` : "";
+              return `${name}${qty}`;
+            })
+            .join(", ");
+        } else {
+          itemNamesStr = `${s.itemsCount || 1} pc(s)`;
+        }
+
         return {
           invoiceId: s._id,
           date: s.createdAt,
           customerName: s.customerName || "Customer",
           customerPhone: s.customerPhone || "N/A",
           itemsCount: s.itemsCount || s.items?.length || 1,
+          itemNames: itemNamesStr,
           paymentStatus: st,
           paymentMethod: s.paymentMethod || "Cash",
           soldBy: s.soldBy?.name || "Staff",

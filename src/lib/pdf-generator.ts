@@ -53,6 +53,7 @@ export interface SalesStatementPDFItem {
   customerName: string;
   customerPhone: string;
   itemsCount: number;
+  itemNames?: string;
   paymentStatus: string;
   paymentMethod: string;
   soldBy: string;
@@ -1291,7 +1292,7 @@ export async function generateSalesStatementPDF(data: SalesStatementPDFData) {
     }),
     /[^\x00-\x7F]/.test(s.customerName) ? s.customerName : s.customerName.toUpperCase(),
     s.customerPhone || "N/A",
-    `${s.itemsCount} pc(s)`,
+    s.itemNames || `${s.itemsCount} pc(s)`,
     `${s.paymentStatus} (${s.paymentMethod || "Cash"})`,
     `Rs. ${fmtINR(s.totalAmount)}`,
   ]);
@@ -1305,7 +1306,7 @@ export async function generateSalesStatementPDF(data: SalesStatementPDFData) {
         "Date",
         "Customer Name",
         "Phone",
-        "Items",
+        "Items Purchased",
         "Status & Mode",
         "Amount (Rs.)",
       ],
