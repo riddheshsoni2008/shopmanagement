@@ -5,6 +5,11 @@ export interface ISaleItem {
   name: string;
   qty: number;
   weight: number;
+  productWeight?: number;
+  jadatarWeight?: number;
+  nangWeight?: number;
+  meenoWeight?: number;
+  netWeight?: number;
   pricePerGram: number;
   makingCharge: number;
   hallmarkCharge: number;
@@ -34,6 +39,11 @@ const SaleItemSchema = new Schema<ISaleItem>({
   name: { type: String, required: true },
   qty: { type: Number, required: true, min: 1 },
   weight: { type: Number, required: true, min: 0 },
+  productWeight: { type: Number, default: 0 },
+  jadatarWeight: { type: Number, default: 0 },
+  nangWeight: { type: Number, default: 0 },
+  meenoWeight: { type: Number, default: 0 },
+  netWeight: { type: Number, default: 0 },
   pricePerGram: { type: Number, required: true, min: 0 },
   makingCharge: { type: Number, required: true, default: 0 },
   hallmarkCharge: { type: Number, required: true, default: 0 },

@@ -18,6 +18,11 @@ interface InvoiceModalProps {
       name: string;
       qty: number;
       weight: number;
+      productWeight?: number;
+      jadatarWeight?: number;
+      nangWeight?: number;
+      meenoWeight?: number;
+      netWeight?: number;
       pricePerGram: number;
       makingCharge: number;
       hallmarkCharge?: number;
@@ -63,6 +68,11 @@ export function InvoiceModal({
         name: i.name,
         qty: i.qty,
         weight: i.weight,
+        productWeight: i.productWeight ?? i.weight ?? 0,
+        jadatarWeight: i.jadatarWeight ?? 0,
+        nangWeight: i.nangWeight ?? 0,
+        meenoWeight: i.meenoWeight ?? 0,
+        netWeight: i.netWeight ?? i.weight ?? 0,
         pricePerGram: i.pricePerGram,
         makingCharge: i.makingCharge,
         hallmarkCharge: i.hallmarkCharge || 0,
@@ -91,6 +101,22 @@ export function InvoiceModal({
       item.nangCharge ? `Nang: ${formatCurrency(item.nangCharge)}` : null,
       item.meenoCharge ? `Meeno: ${formatCurrency(item.meenoCharge)}` : null,
     ].filter(Boolean);
+  };
+
+  const getWeightBreakdown = (item: typeof sale.items[0]) => {
+    const pWt = item.productWeight ?? item.weight ?? 0;
+    const jWt = item.jadatarWeight ?? 0;
+    const nWt = item.nangWeight ?? 0;
+    const mWt = item.meenoWeight ?? 0;
+    const netWt = item.netWeight ?? item.weight ?? Math.max(0, pWt - jWt - nWt - mWt);
+    const hasDeduction = jWt > 0 || nWt > 0 || mWt > 0;
+    const deductionsList = [
+      jWt > 0 ? `Jadatar: ${jWt.toFixed(2)}g` : null,
+      nWt > 0 ? `Stone: ${nWt.toFixed(2)}g` : null,
+      mWt > 0 ? `Meeno: ${mWt.toFixed(2)}g` : null,
+    ].filter(Boolean);
+
+    return { pWt, jWt, nWt, mWt, netWt, hasDeduction, deductionsList };
   };
 
   return (
@@ -163,16 +189,22 @@ export function InvoiceModal({
           <div className="space-y-2 sm:hidden">
             {sale.items.map((item, idx) => {
               const extras = getExtraCharges(item);
+              const { pWt, netWt, hasDeduction, deductionsList } = getWeightBreakdown(item);
               return (
                 <div key={idx} className="rounded-lg border border-amber-200/60 dark:border-slate-700 p-3 bg-white dark:bg-slate-900/50">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 capitalize">{item.name}</p>
                       <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
-                        Qty: {item.qty} • Wt: {item.weight}g • Rate: {formatCurrency(item.pricePerGram)}/g
+                        Qty: {item.qty} • Net Wt: {netWt.toFixed(2)}g {hasDeduction && `(Gross: ${pWt.toFixed(2)}g)`} • Rate: {formatCurrency(item.pricePerGram)}/g
                       </p>
+                      {hasDeduction && (
+                        <p className="text-[10px] text-emerald-700 dark:text-emerald-400 mt-0.5">
+                          Less Deductions: {deductionsList.join(" | ")}
+                        </p>
+                      )}
                       <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                        Making: {formatCurrency(item.makingCharge)}/g (Total: {formatCurrency(item.qty * item.weight * item.makingCharge)})
+                        Making: {formatCurrency(item.makingCharge)}/g (Total: {formatCurrency(item.qty * netWt * item.makingCharge)})
                       </p>
                       {extras.length > 0 && (
                         <p className="text-[10px] text-amber-700 dark:text-amber-400 mt-0.5">
@@ -204,29 +236,45 @@ export function InvoiceModal({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sale.items.map((item, idx) => (
-                  <TableRow key={idx}>
-                    <TableCell className="text-xs font-mono text-slate-500 dark:text-slate-400">{idx + 1}</TableCell>
-                    <TableCell className="font-semibold text-slate-900 dark:text-slate-100">
-                      <div className="capitalize">{item.name}</div>
-                      {getExtraCharges(item).length > 0 && (
-                        <div className="text-[10px] text-amber-700 dark:text-amber-400 font-normal mt-0.5 whitespace-nowrap">
-                          {getExtraCharges(item).join(" | ")}
+                {sale.items.map((item, idx) => {
+                  const { pWt, netWt, hasDeduction, deductionsList } = getWeightBreakdown(item);
+                  const extras = getExtraCharges(item);
+                  return (
+                    <TableRow key={idx}>
+                      <TableCell className="text-xs font-mono text-slate-500 dark:text-slate-400">{idx + 1}</TableCell>
+                      <TableCell className="font-semibold text-slate-900 dark:text-slate-100">
+                        <div className="capitalize">{item.name}</div>
+                        {hasDeduction && (
+                          <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-normal mt-0.5 whitespace-nowrap">
+                            Less: {deductionsList.join(", ")}
+                          </div>
+                        )}
+                        {extras.length > 0 && (
+                          <div className="text-[10px] text-amber-700 dark:text-amber-400 font-normal mt-0.5 whitespace-nowrap">
+                            {extras.join(" | ")}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center font-mono text-xs">{item.qty}</TableCell>
+                      <TableCell className="text-right font-mono text-xs">
+                        <div className="font-bold text-slate-900 dark:text-slate-100">{netWt.toFixed(2)} g</div>
+                        {hasDeduction && (
+                          <div className="text-[10px] text-slate-400 font-normal whitespace-nowrap">
+                            Gross: {pWt.toFixed(2)} g
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right font-mono text-xs">{formatCurrency(item.pricePerGram)}</TableCell>
+                      <TableCell className="text-right font-mono text-xs">
+                        <div>{formatCurrency(item.makingCharge)}/g</div>
+                        <div className="text-[10px] text-slate-500 dark:text-slate-400 font-normal whitespace-nowrap">
+                          Total: {formatCurrency((item.qty || 1) * netWt * (item.makingCharge || 0))}
                         </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-center font-mono text-xs">{item.qty}</TableCell>
-                    <TableCell className="text-right font-mono text-xs">{item.weight} g</TableCell>
-                    <TableCell className="text-right font-mono text-xs">{formatCurrency(item.pricePerGram)}</TableCell>
-                    <TableCell className="text-right font-mono text-xs">
-                      <div>{formatCurrency(item.makingCharge)}/g</div>
-                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-normal whitespace-nowrap">
-                        Total: {formatCurrency((item.qty || 1) * (item.weight || 0) * (item.makingCharge || 0))}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right font-bold text-slate-900 dark:text-slate-100">{formatCurrency(item.lineTotal)}</TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                      <TableCell className="text-right font-bold text-slate-900 dark:text-slate-100">{formatCurrency(item.lineTotal)}</TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>

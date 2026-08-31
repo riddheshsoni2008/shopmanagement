@@ -58,16 +58,23 @@ export async function createSale(input: SaleInput): Promise<ActionResult<{ saleI
         }
 
         // Deduct inventory stock quantity & total weight
+        const pWeight = itemInput.productWeight ?? itemInput.weight ?? 0;
+        const jWeight = itemInput.jadatarWeight ?? 0;
+        const nWeight = itemInput.nangWeight ?? 0;
+        const mWeight = itemInput.meenoWeight ?? 0;
+        const calculatedNetWeight = Math.max(0, pWeight - jWeight - nWeight - mWeight);
+        const netWeight = itemInput.netWeight !== undefined && itemInput.netWeight > 0 ? itemInput.netWeight : calculatedNetWeight;
+
         product.quantity -= itemInput.qty;
-        const totalSoldWeight = itemInput.qty * itemInput.weight;
+        const totalSoldWeight = itemInput.qty * (pWeight || itemInput.weight || 0);
         product.weightPerPiece = Math.max(
           0,
           Number((product.weightPerPiece - totalSoldWeight).toFixed(4))
         );
         await product.save({ session });
 
-        // Calculate item line total
-        const weightTotal = itemInput.qty * itemInput.weight;
+        // Calculate item line total based on Net Weight
+        const weightTotal = itemInput.qty * netWeight;
         const metalCost = weightTotal * itemInput.pricePerGram;
         const makingCost = weightTotal * (itemInput.makingCharge || 0);
 
@@ -86,7 +93,12 @@ export async function createSale(input: SaleInput): Promise<ActionResult<{ saleI
           product: product._id,
           name: product.name,
           qty: itemInput.qty,
-          weight: itemInput.weight,
+          weight: netWeight,
+          productWeight: pWeight,
+          jadatarWeight: jWeight,
+          nangWeight: nWeight,
+          meenoWeight: mWeight,
+          netWeight: netWeight,
           pricePerGram: itemInput.pricePerGram,
           makingCharge: itemInput.makingCharge || 0,
           hallmarkCharge: hallmarkCost,

@@ -76,7 +76,12 @@ export function BillingForm({ products, rates }: BillingFormProps) {
           productId: "",
           name: "",
           qty: 1,
-          weight: 10,
+          productWeight: 0,
+          jadatarWeight: 0,
+          nangWeight: 0,
+          meenoWeight: 0,
+          netWeight: 0,
+          weight: 0,
           pricePerGram: safeRates.goldRate22k,
           makingCharge: 150,
           hallmarkCharge: 0,
@@ -84,7 +89,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
           rhodiumCharge: 0,
           nangCharge: 0,
           meenoCharge: 0,
-          lineTotal: 10 * (safeRates.goldRate22k + 150),
+          lineTotal: 0,
         },
       ],
     },
@@ -101,18 +106,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
   // Quick rate preset filler function
   const applyRatePreset = (index: number, rate: number) => {
     setValue(`items.${index}.pricePerGram`, rate);
-    const item = watchItems?.[index];
-    if (!item) return;
-    const q = Math.max(1, Number(item.qty) || 1);
-    const w = Math.max(0, Number(item.weight) || 0);
-    const m = Math.max(0, Number(item.makingCharge) || 0);
-    const h = Math.max(0, Number(item.hallmarkCharge) || 0);
-    const j = Math.max(0, Number(item.jadatarCharge) || 0);
-    const r = Math.max(0, Number(item.rhodiumCharge) || 0);
-    const n = Math.max(0, Number(item.nangCharge) || 0);
-    const me = Math.max(0, Number(item.meenoCharge) || 0);
-    const total = q * (w * (rate + m) + h + j + r + n + me);
-    setValue(`items.${index}.lineTotal`, Math.max(0, total));
+    updateLineTotal(index);
   };
 
   // Auto-fill price per gram based on selected product and current stored rates
@@ -138,19 +132,28 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     }
 
     const qty = 1;
-    const weight = selectedProduct.weightPerPiece || 1;
+    const pWeight = selectedProduct.weightPerPiece || 0;
+    const jWeight = 0;
+    const nWeight = 0;
+    const mWeight = 0;
+    const netWeight = pWeight;
     const making = 120; // default ₹120 per gram making charge
     const hallmark = watchItems?.[index]?.hallmarkCharge || 0;
     const jadatar = watchItems?.[index]?.jadatarCharge || 0;
     const rhodium = watchItems?.[index]?.rhodiumCharge || 0;
     const nang = watchItems?.[index]?.nangCharge || 0;
     const meeno = watchItems?.[index]?.meenoCharge || 0;
-    const lineTotal = qty * (weight * (ratePerGram + making) + hallmark + jadatar + rhodium + nang + meeno);
+    const lineTotal = qty * (netWeight * (ratePerGram + making) + hallmark + jadatar + rhodium + nang + meeno);
 
     setValue(`items.${index}.productId`, selectedProduct._id);
     setValue(`items.${index}.name`, selectedProduct.name);
     setValue(`items.${index}.qty`, qty);
-    setValue(`items.${index}.weight`, weight);
+    setValue(`items.${index}.productWeight`, pWeight);
+    setValue(`items.${index}.jadatarWeight`, jWeight);
+    setValue(`items.${index}.nangWeight`, nWeight);
+    setValue(`items.${index}.meenoWeight`, mWeight);
+    setValue(`items.${index}.netWeight`, netWeight);
+    setValue(`items.${index}.weight`, netWeight);
     setValue(`items.${index}.pricePerGram`, ratePerGram);
     setValue(`items.${index}.makingCharge`, making);
     setValue(`items.${index}.lineTotal`, lineTotal);
@@ -160,7 +163,16 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     const item = watchItems?.[index];
     if (!item) return;
     const q = Math.max(1, Number(item.qty) || 1);
-    const w = Math.max(0, Number(item.weight) || 0);
+    const pWeight = Math.max(0, Number(item.productWeight ?? item.weight) || 0);
+    const jWeight = Math.max(0, Number(item.jadatarWeight) || 0);
+    const nWeight = Math.max(0, Number(item.nangWeight) || 0);
+    const mWeight = Math.max(0, Number(item.meenoWeight) || 0);
+
+    const calculatedNetWeight = Math.max(0, Number((pWeight - jWeight - nWeight - mWeight).toFixed(4)));
+
+    setValue(`items.${index}.netWeight`, calculatedNetWeight);
+    setValue(`items.${index}.weight`, calculatedNetWeight);
+
     const p = Math.max(0, Number(item.pricePerGram) || 0);
     const m = Math.max(0, Number(item.makingCharge) || 0);
     const h = Math.max(0, Number(item.hallmarkCharge) || 0);
@@ -168,8 +180,9 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     const r = Math.max(0, Number(item.rhodiumCharge) || 0);
     const n = Math.max(0, Number(item.nangCharge) || 0);
     const me = Math.max(0, Number(item.meenoCharge) || 0);
-    const total = q * (w * (p + m) + h + j + r + n + me);
-    setValue(`items.${index}.lineTotal`, Math.max(0, total));
+
+    const total = q * (calculatedNetWeight * (p + m) + h + j + r + n + me);
+    setValue(`items.${index}.lineTotal`, Math.max(0, Number(total.toFixed(2))));
   };
 
   // Compute live subtotal & grand total
@@ -325,7 +338,12 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                       productId: "",
                       name: "",
                       qty: 1,
-                      weight: 5,
+                      productWeight: 0,
+                      jadatarWeight: 0,
+                      nangWeight: 0,
+                      meenoWeight: 0,
+                      netWeight: 0,
+                      weight: 0,
                       pricePerGram: safeRates.goldRate22k,
                       makingCharge: 100,
                       hallmarkCharge: 0,
@@ -333,7 +351,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                       rhodiumCharge: 0,
                       nangCharge: 0,
                       meenoCharge: 0,
-                      lineTotal: 5 * (safeRates.goldRate22k + 100),
+                      lineTotal: 0,
                     })
                   }
                   className="text-xs"
@@ -420,17 +438,18 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                           />
                         </div>
 
-                        {/* Weight */}
+                        {/* Product Weight */}
                         <div>
                           <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                            Total Weight (g) *
+                            Product Weight (g) *
                           </label>
                           <Input
                             type="number"
-                            min="0.01"
+                            min="0"
                             step="0.01"
+                            placeholder="0"
                             className="mt-1"
-                            {...register(`items.${index}.weight`, {
+                            {...register(`items.${index}.productWeight`, {
                               valueAsNumber: true,
                               onChange: () => updateLineTotal(index),
                             })}
@@ -490,7 +509,7 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                               Making / g (₹) *
                             </label>
                             <span className="text-[10px] text-amber-700 dark:text-amber-400 font-mono font-bold">
-                              Total: {formatCurrency((watchItems?.[index]?.qty || 1) * (watchItems?.[index]?.weight || 0) * (watchItems?.[index]?.makingCharge || 0))}
+                              Total: {formatCurrency((watchItems?.[index]?.qty || 1) * (watchItems?.[index]?.netWeight || watchItems?.[index]?.weight || 0) * (watchItems?.[index]?.makingCharge || 0))}
                             </span>
                           </div>
                           <Input
@@ -504,6 +523,76 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                             })}
                             disabled={isSubmitting}
                           />
+                        </div>
+                      </div>
+
+                      {/* Weight Deductions Row (Jadatar Weight, Stone Weight, Meeno Weight) */}
+                      <div className="border-t border-amber-200/60 dark:border-slate-800 pt-3">
+                        <div className="flex items-center justify-between mb-2 flex-wrap gap-1">
+                          <span className="text-[11px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wider">
+                            Weight Deductions (Jadatar, Stone, Meeno)
+                          </span>
+                          <span className="text-[10px] font-semibold text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 px-2.5 py-0.5 rounded-full font-mono">
+                            Net Metal Wt: {Number(watchItems?.[index]?.netWeight ?? watchItems?.[index]?.weight ?? 0).toFixed(2)} g
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          {/* Jadatar Weight */}
+                          <div>
+                            <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                              Jadatar Weight (g)
+                            </label>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              placeholder="0"
+                              className="mt-1"
+                              {...register(`items.${index}.jadatarWeight`, {
+                                valueAsNumber: true,
+                                onChange: () => updateLineTotal(index),
+                              })}
+                              disabled={isSubmitting}
+                            />
+                          </div>
+
+                          {/* Stone / Nang Weight */}
+                          <div>
+                            <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                              Nang / Stone Weight (g)
+                            </label>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              placeholder="0"
+                              className="mt-1"
+                              {...register(`items.${index}.nangWeight`, {
+                                valueAsNumber: true,
+                                onChange: () => updateLineTotal(index),
+                              })}
+                              disabled={isSubmitting}
+                            />
+                          </div>
+
+                          {/* Meeno Weight */}
+                          <div>
+                            <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                              Meeno Weight (g)
+                            </label>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              placeholder="0"
+                              className="mt-1"
+                              {...register(`items.${index}.meenoWeight`, {
+                                valueAsNumber: true,
+                                onChange: () => updateLineTotal(index),
+                              })}
+                              disabled={isSubmitting}
+                            />
+                          </div>
                         </div>
                       </div>
 

@@ -5,6 +5,11 @@ export interface InvoiceItem {
   name: string;
   qty: number;
   weight: number;
+  productWeight?: number;
+  jadatarWeight?: number;
+  nangWeight?: number;
+  meenoWeight?: number;
+  netWeight?: number;
   pricePerGram: number;
   makingCharge: number;
   hallmarkCharge?: number;
@@ -501,6 +506,22 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
 
   const tableRows = data.items.map((item, i) => {
     let nameText = /[^\x00-\x7F]/.test(item.name) ? item.name : item.name.toUpperCase();
+
+    const pWeight = item.productWeight ?? item.weight ?? 0;
+    const jWeight = item.jadatarWeight ?? 0;
+    const nWeight = item.nangWeight ?? 0;
+    const mWeight = item.meenoWeight ?? 0;
+    const netWeight = item.netWeight ?? item.weight ?? Math.max(0, pWeight - jWeight - nWeight - mWeight);
+
+    const wtDeductions: string[] = [];
+    if (jWeight > 0) wtDeductions.push(`Jadatar: ${jWeight.toFixed(3)}g`);
+    if (nWeight > 0) wtDeductions.push(`Stone: ${nWeight.toFixed(3)}g`);
+    if (mWeight > 0) wtDeductions.push(`Meeno: ${mWeight.toFixed(3)}g`);
+
+    if (wtDeductions.length > 0) {
+      nameText += `\nGross: ${pWeight.toFixed(3)}g | Less (${wtDeductions.join(", ")}) = Net: ${netWeight.toFixed(3)}g`;
+    }
+
     const extras: string[] = [];
     if (item.hallmarkCharge && item.hallmarkCharge > 0)
       extras.push(`HM: ${fmtINR(item.hallmarkCharge)}`);
@@ -514,14 +535,14 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
       extras.push(`Meeno: ${fmtINR(item.meenoCharge)}`);
 
     if (extras.length > 0) {
-      nameText += `\n(${extras.join(" | ")})`;
+      nameText += `\nCharges: (${extras.join(" | ")})`;
     }
 
     return [
       `${i + 1}`,
       nameText,
       "7113",
-      item.weight.toFixed(4),
+      netWeight.toFixed(3),
       "GMS",
       fmtINR(item.pricePerGram),
       fmtINR(item.lineTotal),
