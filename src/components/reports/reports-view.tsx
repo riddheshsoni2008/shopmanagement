@@ -349,7 +349,7 @@ export function ReportsView({ initialData }: ReportsViewProps) {
             ) : (
               <div className="h-64 sm:h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={data.salesTrend} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                  <AreaChart data={data.salesTrend} margin={{ top: 10, right: 20, left: 0, bottom: 0 }} style={{ outline: "none" }}>
                     <defs>
                       <linearGradient id="colorRevenueGradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4} />
@@ -404,7 +404,7 @@ export function ReportsView({ initialData }: ReportsViewProps) {
               <div className="space-y-6">
                 <div className="h-56 w-full flex items-center justify-center relative">
                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
+                    <PieChart style={{ outline: "none" }}>
                       <Pie
                         data={data.expensesByCategory}
                         cx="50%"
@@ -484,7 +484,7 @@ export function ReportsView({ initialData }: ReportsViewProps) {
               <div className="space-y-6">
                 <div className="h-56 w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data.categorySalesDistribution} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
+                    <BarChart data={data.categorySalesDistribution} margin={{ top: 10, right: 10, left: 0, bottom: 20 }} style={{ outline: "none" }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
                       <XAxis dataKey="category" stroke="#94a3b8" fontSize={10} tickMargin={5} />
                       <YAxis stroke="#94a3b8" fontSize={11} tickFormatter={(val) => `₹${(val / 1000).toFixed(0)}k`} />

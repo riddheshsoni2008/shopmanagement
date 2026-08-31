@@ -185,3 +185,22 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   outline-offset: 1px !important;
 }
 
+/* Disable Click / Focus Outline Box on SVG & Recharts Components */
+svg,
+svg:focus,
+svg:focus-visible,
+.recharts-wrapper,
+.recharts-wrapper *,
+.recharts-wrapper *:focus,
+.recharts-wrapper *:focus-visible,
+.recharts-surface,
+.recharts-surface:focus,
+.recharts-pie-sector,
+.recharts-sector,
+.recharts-bar-rectangle,
+.recharts-layer {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
