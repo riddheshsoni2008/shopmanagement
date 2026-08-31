@@ -208,7 +208,11 @@ export function BillingForm({ products, rates }: BillingFormProps) {
   // Compute live subtotal & breakdown (metal price vs charges)
   let totalMetalPrice = 0;
   let totalMakingCharges = 0;
-  let totalExtraCharges = 0;
+  let totalHallmarkCharges = 0;
+  let totalJadatarCharges = 0;
+  let totalRhodiumCharges = 0;
+  let totalNangCharges = 0;
+  let totalMeenoCharges = 0;
   let subtotal = 0;
 
   (watchItems || []).forEach((item) => {
@@ -217,18 +221,17 @@ export function BillingForm({ products, rates }: BillingFormProps) {
       const netWt = Number(item.netWeight ?? item.weight ?? 0);
       const rate = Number(item.pricePerGram || 0);
       const making = Number(item.makingCharge || 0);
-      const extra = (Number(item.hallmarkCharge) || 0) +
-                    (Number(item.jadatarCharge) || 0) +
-                    (Number(item.rhodiumCharge) || 0) +
-                    (Number(item.nangCharge) || 0) +
-                    (Number(item.meenoCharge) || 0);
 
       const metalCost = q * netWt * rate;
       const makingCost = q * netWt * making;
 
       totalMetalPrice += metalCost;
       totalMakingCharges += makingCost;
-      totalExtraCharges += extra;
+      totalHallmarkCharges += Number(item.hallmarkCharge) || 0;
+      totalJadatarCharges += Number(item.jadatarCharge) || 0;
+      totalRhodiumCharges += Number(item.rhodiumCharge) || 0;
+      totalNangCharges += Number(item.nangCharge) || 0;
+      totalMeenoCharges += Number(item.meenoCharge) || 0;
       subtotal += Number(item.lineTotal) || 0;
     }
   });
@@ -929,11 +932,39 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                     <span className="font-mono text-slate-800 dark:text-slate-200">{formatCurrency(totalMakingCharges)}</span>
                   </div>
 
-                  {/* 3. Extra Charges */}
-                  {totalExtraCharges > 0 && (
+                  {/* Itemized Extra Charges */}
+                  {totalHallmarkCharges > 0 && (
                     <div className="flex justify-between text-amber-700 dark:text-amber-400">
-                      <span>(+) Extra Charges:</span>
-                      <span className="font-mono font-medium">{formatCurrency(totalExtraCharges)}</span>
+                      <span>(+) Hallmark Charge (HM):</span>
+                      <span className="font-mono font-medium">{formatCurrency(totalHallmarkCharges)}</span>
+                    </div>
+                  )}
+
+                  {totalJadatarCharges > 0 && (
+                    <div className="flex justify-between text-amber-700 dark:text-amber-400">
+                      <span>(+) Jadatar Charge:</span>
+                      <span className="font-mono font-medium">{formatCurrency(totalJadatarCharges)}</span>
+                    </div>
+                  )}
+
+                  {totalRhodiumCharges > 0 && (
+                    <div className="flex justify-between text-amber-700 dark:text-amber-400">
+                      <span>(+) Rhodium Charge:</span>
+                      <span className="font-mono font-medium">{formatCurrency(totalRhodiumCharges)}</span>
+                    </div>
+                  )}
+
+                  {totalNangCharges > 0 && (
+                    <div className="flex justify-between text-amber-700 dark:text-amber-400">
+                      <span>(+) Stone / Nang Charge:</span>
+                      <span className="font-mono font-medium">{formatCurrency(totalNangCharges)}</span>
+                    </div>
+                  )}
+
+                  {totalMeenoCharges > 0 && (
+                    <div className="flex justify-between text-amber-700 dark:text-amber-400">
+                      <span>(+) Meeno Charge:</span>
+                      <span className="font-mono font-medium">{formatCurrency(totalMeenoCharges)}</span>
                     </div>
                   )}
 

@@ -138,18 +138,25 @@ export function InvoiceModal({
 
   let totalMetalPrice = 0;
   let totalMakingCharges = 0;
-  let totalExtraCharges = 0;
+  let totalHallmarkCharges = 0;
+  let totalJadatarCharges = 0;
+  let totalRhodiumCharges = 0;
+  let totalNangCharges = 0;
+  let totalMeenoCharges = 0;
   let subtotal = 0;
 
   sale.items.forEach((item) => {
     const { netWt } = getWeightBreakdown(item);
     const metalCost = item.qty * netWt * item.pricePerGram;
     const makingCost = item.qty * netWt * item.makingCharge;
-    const extraCost = (item.hallmarkCharge || 0) + (item.jadatarCharge || 0) + (item.rhodiumCharge || 0) + (item.nangCharge || 0) + (item.meenoCharge || 0);
 
     totalMetalPrice += metalCost;
     totalMakingCharges += makingCost;
-    totalExtraCharges += extraCost;
+    totalHallmarkCharges += item.hallmarkCharge || 0;
+    totalJadatarCharges += item.jadatarCharge || 0;
+    totalRhodiumCharges += item.rhodiumCharge || 0;
+    totalNangCharges += item.nangCharge || 0;
+    totalMeenoCharges += item.meenoCharge || 0;
     subtotal += item.lineTotal;
   });
 
@@ -338,11 +345,39 @@ export function InvoiceModal({
                 </div>
               )}
 
-              {/* 3. Extra Charges */}
-              {totalExtraCharges > 0 && (
+              {/* Itemized Extra Charges */}
+              {totalHallmarkCharges > 0 && (
                 <div className="flex justify-between text-amber-700 dark:text-amber-400 text-[11px]">
-                  <span>(+) Extra Charges:</span>
-                  <span className="font-medium font-mono">{formatCurrency(totalExtraCharges)}</span>
+                  <span>(+) Hallmark Charge (HM):</span>
+                  <span className="font-medium font-mono">{formatCurrency(totalHallmarkCharges)}</span>
+                </div>
+              )}
+
+              {totalJadatarCharges > 0 && (
+                <div className="flex justify-between text-amber-700 dark:text-amber-400 text-[11px]">
+                  <span>(+) Jadatar Charge:</span>
+                  <span className="font-medium font-mono">{formatCurrency(totalJadatarCharges)}</span>
+                </div>
+              )}
+
+              {totalRhodiumCharges > 0 && (
+                <div className="flex justify-between text-amber-700 dark:text-amber-400 text-[11px]">
+                  <span>(+) Rhodium Charge:</span>
+                  <span className="font-medium font-mono">{formatCurrency(totalRhodiumCharges)}</span>
+                </div>
+              )}
+
+              {totalNangCharges > 0 && (
+                <div className="flex justify-between text-amber-700 dark:text-amber-400 text-[11px]">
+                  <span>(+) Stone / Nang Charge:</span>
+                  <span className="font-medium font-mono">{formatCurrency(totalNangCharges)}</span>
+                </div>
+              )}
+
+              {totalMeenoCharges > 0 && (
+                <div className="flex justify-between text-amber-700 dark:text-amber-400 text-[11px]">
+                  <span>(+) Meeno Charge:</span>
+                  <span className="font-medium font-mono">{formatCurrency(totalMeenoCharges)}</span>
                 </div>
               )}
 

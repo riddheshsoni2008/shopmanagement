@@ -635,7 +635,11 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   let subtotal = 0;
   let totalMetalCost = 0;
   let totalMaking = 0;
-  let totalExtra = 0;
+  let totalHallmark = 0;
+  let totalJadatar = 0;
+  let totalRhodium = 0;
+  let totalNang = 0;
+  let totalMeeno = 0;
   let totalWeight = 0;
 
   data.items.forEach((item) => {
@@ -659,12 +663,15 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
 
     const metalCost = item.qty * netWeight * item.pricePerGram;
     const makingCost = item.qty * netWeight * item.makingCharge;
-    const extraCost = (item.hallmarkCharge || 0) + (item.jadatarCharge || 0) + (item.rhodiumCharge || 0) + (item.nangCharge || 0) + (item.meenoCharge || 0);
 
     totalWeight += (item.qty || 1) * netWeight;
     totalMetalCost += metalCost;
     totalMaking += makingCost;
-    totalExtra += extraCost;
+    totalHallmark += item.hallmarkCharge || 0;
+    totalJadatar += item.jadatarCharge || 0;
+    totalRhodium += item.rhodiumCharge || 0;
+    totalNang += item.nangCharge || 0;
+    totalMeeno += item.meenoCharge || 0;
     subtotal += item.lineTotal;
   });
 
@@ -695,18 +702,50 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
     doc.text(fmtINR(totalMaking), amtX, tY, { align: "right" });
   }
 
-  // 3. Extra Charges line
-  if (totalExtra > 0) {
+  // 3. Itemized Extra Charges lines
+  if (totalHallmark > 0) {
     tY += 4.5;
     doc.setFont("helvetica", "italic");
     doc.setFontSize(7.5);
     doc.setTextColor(...MID);
-    doc.text(
-      "Add  :  Extra Charges (HM/Jadatar/Rodium/Nang/Meeno)",
-      totalLabelX - 35,
-      tY,
-    );
-    doc.text(fmtINR(totalExtra), amtX, tY, { align: "right" });
+    doc.text("Add  :  Hallmark Charge (HM)", totalLabelX - 35, tY);
+    doc.text(fmtINR(totalHallmark), amtX, tY, { align: "right" });
+  }
+
+  if (totalJadatar > 0) {
+    tY += 4.5;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...MID);
+    doc.text("Add  :  Jadatar Charge", totalLabelX - 35, tY);
+    doc.text(fmtINR(totalJadatar), amtX, tY, { align: "right" });
+  }
+
+  if (totalRhodium > 0) {
+    tY += 4.5;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...MID);
+    doc.text("Add  :  Rhodium Charge", totalLabelX - 35, tY);
+    doc.text(fmtINR(totalRhodium), amtX, tY, { align: "right" });
+  }
+
+  if (totalNang > 0) {
+    tY += 4.5;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...MID);
+    doc.text("Add  :  Stone / Nang Charge", totalLabelX - 35, tY);
+    doc.text(fmtINR(totalNang), amtX, tY, { align: "right" });
+  }
+
+  if (totalMeeno > 0) {
+    tY += 4.5;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...MID);
+    doc.text("Add  :  Meeno Charge", totalLabelX - 35, tY);
+    doc.text(fmtINR(totalMeeno), amtX, tY, { align: "right" });
   }
 
   // Thin line divider
