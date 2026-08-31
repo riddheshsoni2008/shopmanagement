@@ -58,15 +58,27 @@ export async function createSale(input: SaleInput): Promise<ActionResult<{ saleI
         }
 
         // Deduct inventory stock quantity & total weight
-        const pWeight = itemInput.productWeight ?? itemInput.weight ?? 0;
-        const jWeight = itemInput.jadatarWeight ?? 0;
-        const nWeight = itemInput.nangWeight ?? 0;
-        const mWeight = itemInput.meenoWeight ?? 0;
-        const calculatedNetWeight = Math.max(0, pWeight - jWeight - nWeight - mWeight);
+        const rawPWeight = itemInput.productWeight ?? itemInput.weight ?? 0;
+        const pUnit = itemInput.productWeightUnit || "g";
+        const pWeightGrams = pUnit === "mg" ? rawPWeight / 1000 : rawPWeight;
+
+        const rawJWeight = itemInput.jadatarWeight ?? 0;
+        const jUnit = itemInput.jadatarWeightUnit || "g";
+        const jWeightGrams = jUnit === "mg" ? rawJWeight / 1000 : rawJWeight;
+
+        const rawNWeight = itemInput.nangWeight ?? 0;
+        const nUnit = itemInput.nangWeightUnit || "g";
+        const nWeightGrams = nUnit === "mg" ? rawNWeight / 1000 : rawNWeight;
+
+        const rawMWeight = itemInput.meenoWeight ?? 0;
+        const mUnit = itemInput.meenoWeightUnit || "g";
+        const mWeightGrams = mUnit === "mg" ? rawMWeight / 1000 : rawMWeight;
+
+        const calculatedNetWeight = Math.max(0, Number((pWeightGrams - jWeightGrams - nWeightGrams - mWeightGrams).toFixed(4)));
         const netWeight = itemInput.netWeight !== undefined && itemInput.netWeight > 0 ? itemInput.netWeight : calculatedNetWeight;
 
         product.quantity -= itemInput.qty;
-        const totalSoldWeight = itemInput.qty * (pWeight || itemInput.weight || 0);
+        const totalSoldWeight = itemInput.qty * pWeightGrams;
         product.weightPerPiece = Math.max(
           0,
           Number((product.weightPerPiece - totalSoldWeight).toFixed(4))
@@ -94,10 +106,14 @@ export async function createSale(input: SaleInput): Promise<ActionResult<{ saleI
           name: product.name,
           qty: itemInput.qty,
           weight: netWeight,
-          productWeight: pWeight,
-          jadatarWeight: jWeight,
-          nangWeight: nWeight,
-          meenoWeight: mWeight,
+          productWeight: rawPWeight,
+          productWeightUnit: pUnit,
+          jadatarWeight: rawJWeight,
+          jadatarWeightUnit: jUnit,
+          nangWeight: rawNWeight,
+          nangWeightUnit: nUnit,
+          meenoWeight: rawMWeight,
+          meenoWeightUnit: mUnit,
           netWeight: netWeight,
           pricePerGram: itemInput.pricePerGram,
           makingCharge: itemInput.makingCharge || 0,

@@ -77,9 +77,13 @@ export function BillingForm({ products, rates }: BillingFormProps) {
           name: "",
           qty: 1,
           productWeight: 0,
+          productWeightUnit: "g",
           jadatarWeight: 0,
+          jadatarWeightUnit: "g",
           nangWeight: 0,
+          nangWeightUnit: "g",
           meenoWeight: 0,
+          meenoWeightUnit: "g",
           netWeight: 0,
           weight: 0,
           pricePerGram: safeRates.goldRate22k,
@@ -149,9 +153,13 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     setValue(`items.${index}.name`, selectedProduct.name);
     setValue(`items.${index}.qty`, qty);
     setValue(`items.${index}.productWeight`, pWeight);
+    setValue(`items.${index}.productWeightUnit`, "g");
     setValue(`items.${index}.jadatarWeight`, jWeight);
+    setValue(`items.${index}.jadatarWeightUnit`, "g");
     setValue(`items.${index}.nangWeight`, nWeight);
+    setValue(`items.${index}.nangWeightUnit`, "g");
     setValue(`items.${index}.meenoWeight`, mWeight);
+    setValue(`items.${index}.meenoWeightUnit`, "g");
     setValue(`items.${index}.netWeight`, netWeight);
     setValue(`items.${index}.weight`, netWeight);
     setValue(`items.${index}.pricePerGram`, ratePerGram);
@@ -163,12 +171,24 @@ export function BillingForm({ products, rates }: BillingFormProps) {
     const item = watchItems?.[index];
     if (!item) return;
     const q = Math.max(1, Number(item.qty) || 1);
-    const pWeight = Math.max(0, Number(item.productWeight ?? item.weight) || 0);
-    const jWeight = Math.max(0, Number(item.jadatarWeight) || 0);
-    const nWeight = Math.max(0, Number(item.nangWeight) || 0);
-    const mWeight = Math.max(0, Number(item.meenoWeight) || 0);
+    
+    const rawPWeight = Math.max(0, Number(item.productWeight ?? item.weight) || 0);
+    const pUnit = item.productWeightUnit || "g";
+    const pWeightGrams = pUnit === "mg" ? rawPWeight / 1000 : rawPWeight;
 
-    const calculatedNetWeight = Math.max(0, Number((pWeight - jWeight - nWeight - mWeight).toFixed(4)));
+    const rawJWeight = Math.max(0, Number(item.jadatarWeight) || 0);
+    const jUnit = item.jadatarWeightUnit || "g";
+    const jWeightGrams = jUnit === "mg" ? rawJWeight / 1000 : rawJWeight;
+
+    const rawNWeight = Math.max(0, Number(item.nangWeight) || 0);
+    const nUnit = item.nangWeightUnit || "g";
+    const nWeightGrams = nUnit === "mg" ? rawNWeight / 1000 : rawNWeight;
+
+    const rawMWeight = Math.max(0, Number(item.meenoWeight) || 0);
+    const mUnit = item.meenoWeightUnit || "g";
+    const mWeightGrams = mUnit === "mg" ? rawMWeight / 1000 : rawMWeight;
+
+    const calculatedNetWeight = Math.max(0, Number((pWeightGrams - jWeightGrams - nWeightGrams - mWeightGrams).toFixed(4)));
 
     setValue(`items.${index}.netWeight`, calculatedNetWeight);
     setValue(`items.${index}.weight`, calculatedNetWeight);
@@ -339,9 +359,13 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                       name: "",
                       qty: 1,
                       productWeight: 0,
+                      productWeightUnit: "g",
                       jadatarWeight: 0,
+                      jadatarWeightUnit: "g",
                       nangWeight: 0,
+                      nangWeightUnit: "g",
                       meenoWeight: 0,
+                      meenoWeightUnit: "g",
                       netWeight: 0,
                       weight: 0,
                       pricePerGram: safeRates.goldRate22k,
@@ -440,21 +464,57 @@ export function BillingForm({ products, rates }: BillingFormProps) {
 
                         {/* Product Weight */}
                         <div>
-                          <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                            Product Weight (g) *
-                          </label>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                              Product Wt *
+                            </label>
+                            <div className="inline-flex rounded-md p-0.5 bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setValue(`items.${index}.productWeightUnit`, "g");
+                                  updateLineTotal(index);
+                                }}
+                                className={`px-1.5 py-0.5 text-[9px] font-bold rounded transition-colors ${
+                                  (watchItems?.[index]?.productWeightUnit || "g") === "g"
+                                    ? "bg-amber-600 text-white shadow-2xs"
+                                    : "text-slate-600 dark:text-slate-400 hover:text-amber-700 dark:hover:text-amber-400"
+                                }`}
+                              >
+                                g
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setValue(`items.${index}.productWeightUnit`, "mg");
+                                  updateLineTotal(index);
+                                }}
+                                className={`px-1.5 py-0.5 text-[9px] font-bold rounded transition-colors ${
+                                  (watchItems?.[index]?.productWeightUnit || "g") === "mg"
+                                    ? "bg-amber-600 text-white shadow-2xs"
+                                    : "text-slate-600 dark:text-slate-400 hover:text-amber-700 dark:hover:text-amber-400"
+                                }`}
+                              >
+                                mg
+                              </button>
+                            </div>
+                          </div>
                           <Input
                             type="number"
                             min="0"
-                            step="0.01"
+                            step="0.001"
                             placeholder="0"
-                            className="mt-1"
                             {...register(`items.${index}.productWeight`, {
                               valueAsNumber: true,
                               onChange: () => updateLineTotal(index),
                             })}
                             disabled={isSubmitting}
                           />
+                          {watchItems?.[index]?.productWeightUnit === "mg" && Number(watchItems?.[index]?.productWeight || 0) > 0 && (
+                            <p className="text-[9px] text-amber-700 dark:text-amber-400 mt-0.5 font-mono">
+                              = {(Number(watchItems?.[index]?.productWeight || 0) / 1000).toFixed(3)} g
+                            </p>
+                          )}
                         </div>
 
                         {/* Rate per gram */}
@@ -533,65 +593,173 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                             Weight Deductions (Jadatar, Stone, Meeno)
                           </span>
                           <span className="text-[10px] font-semibold text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 px-2.5 py-0.5 rounded-full font-mono">
-                            Net Metal Wt: {Number(watchItems?.[index]?.netWeight ?? watchItems?.[index]?.weight ?? 0).toFixed(2)} g
+                            Net Metal Wt: {Number(watchItems?.[index]?.netWeight ?? watchItems?.[index]?.weight ?? 0).toFixed(3)} g ({Math.round(Number(watchItems?.[index]?.netWeight ?? watchItems?.[index]?.weight ?? 0) * 1000)} mg)
                           </span>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           {/* Jadatar Weight */}
                           <div>
-                            <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                              Jadatar Weight (g)
-                            </label>
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                                Jadatar Wt
+                              </label>
+                              <div className="inline-flex rounded-md p-0.5 bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setValue(`items.${index}.jadatarWeightUnit`, "g");
+                                    updateLineTotal(index);
+                                  }}
+                                  className={`px-1.5 py-0.5 text-[9px] font-bold rounded transition-colors ${
+                                    (watchItems?.[index]?.jadatarWeightUnit || "g") === "g"
+                                      ? "bg-amber-600 text-white shadow-2xs"
+                                      : "text-slate-600 dark:text-slate-400 hover:text-amber-700 dark:hover:text-amber-400"
+                                  }`}
+                                >
+                                  g
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setValue(`items.${index}.jadatarWeightUnit`, "mg");
+                                    updateLineTotal(index);
+                                  }}
+                                  className={`px-1.5 py-0.5 text-[9px] font-bold rounded transition-colors ${
+                                    (watchItems?.[index]?.jadatarWeightUnit || "g") === "mg"
+                                      ? "bg-amber-600 text-white shadow-2xs"
+                                      : "text-slate-600 dark:text-slate-400 hover:text-amber-700 dark:hover:text-amber-400"
+                                  }`}
+                                >
+                                  mg
+                                </button>
+                              </div>
+                            </div>
                             <Input
                               type="number"
                               min="0"
-                              step="0.01"
-                              placeholder="0"
-                              className="mt-1"
+                              step="0.001"
+                              placeholder={watchItems?.[index]?.jadatarWeightUnit === "mg" ? "e.g. 250 mg" : "0"}
                               {...register(`items.${index}.jadatarWeight`, {
                                 valueAsNumber: true,
                                 onChange: () => updateLineTotal(index),
                               })}
                               disabled={isSubmitting}
                             />
+                            {watchItems?.[index]?.jadatarWeightUnit === "mg" && Number(watchItems?.[index]?.jadatarWeight || 0) > 0 && (
+                              <p className="text-[9px] text-amber-700 dark:text-amber-400 mt-0.5 font-mono">
+                                = {(Number(watchItems?.[index]?.jadatarWeight || 0) / 1000).toFixed(3)} g
+                              </p>
+                            )}
                           </div>
 
                           {/* Stone / Nang Weight */}
                           <div>
-                            <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                              Nang / Stone Weight (g)
-                            </label>
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                                Nang / Stone Wt
+                              </label>
+                              <div className="inline-flex rounded-md p-0.5 bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setValue(`items.${index}.nangWeightUnit`, "g");
+                                    updateLineTotal(index);
+                                  }}
+                                  className={`px-1.5 py-0.5 text-[9px] font-bold rounded transition-colors ${
+                                    (watchItems?.[index]?.nangWeightUnit || "g") === "g"
+                                      ? "bg-amber-600 text-white shadow-2xs"
+                                      : "text-slate-600 dark:text-slate-400 hover:text-amber-700 dark:hover:text-amber-400"
+                                  }`}
+                                >
+                                  g
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setValue(`items.${index}.nangWeightUnit`, "mg");
+                                    updateLineTotal(index);
+                                  }}
+                                  className={`px-1.5 py-0.5 text-[9px] font-bold rounded transition-colors ${
+                                    (watchItems?.[index]?.nangWeightUnit || "g") === "mg"
+                                      ? "bg-amber-600 text-white shadow-2xs"
+                                      : "text-slate-600 dark:text-slate-400 hover:text-amber-700 dark:hover:text-amber-400"
+                                  }`}
+                                >
+                                  mg
+                                </button>
+                              </div>
+                            </div>
                             <Input
                               type="number"
                               min="0"
-                              step="0.01"
-                              placeholder="0"
-                              className="mt-1"
+                              step="0.001"
+                              placeholder={watchItems?.[index]?.nangWeightUnit === "mg" ? "e.g. 500 mg" : "0"}
                               {...register(`items.${index}.nangWeight`, {
                                 valueAsNumber: true,
                                 onChange: () => updateLineTotal(index),
                               })}
                               disabled={isSubmitting}
                             />
+                            {watchItems?.[index]?.nangWeightUnit === "mg" && Number(watchItems?.[index]?.nangWeight || 0) > 0 && (
+                              <p className="text-[9px] text-amber-700 dark:text-amber-400 mt-0.5 font-mono">
+                                = {(Number(watchItems?.[index]?.nangWeight || 0) / 1000).toFixed(3)} g
+                              </p>
+                            )}
                           </div>
 
                           {/* Meeno Weight */}
                           <div>
-                            <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                              Meeno Weight (g)
-                            </label>
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                                Meeno Wt
+                              </label>
+                              <div className="inline-flex rounded-md p-0.5 bg-slate-200 dark:bg-slate-800 border border-slate-300 dark:border-slate-700">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setValue(`items.${index}.meenoWeightUnit`, "g");
+                                    updateLineTotal(index);
+                                  }}
+                                  className={`px-1.5 py-0.5 text-[9px] font-bold rounded transition-colors ${
+                                    (watchItems?.[index]?.meenoWeightUnit || "g") === "g"
+                                      ? "bg-amber-600 text-white shadow-2xs"
+                                      : "text-slate-600 dark:text-slate-400 hover:text-amber-700 dark:hover:text-amber-400"
+                                  }`}
+                                >
+                                  g
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setValue(`items.${index}.meenoWeightUnit`, "mg");
+                                    updateLineTotal(index);
+                                  }}
+                                  className={`px-1.5 py-0.5 text-[9px] font-bold rounded transition-colors ${
+                                    (watchItems?.[index]?.meenoWeightUnit || "g") === "mg"
+                                      ? "bg-amber-600 text-white shadow-2xs"
+                                      : "text-slate-600 dark:text-slate-400 hover:text-amber-700 dark:hover:text-amber-400"
+                                  }`}
+                                >
+                                  mg
+                                </button>
+                              </div>
+                            </div>
                             <Input
                               type="number"
                               min="0"
-                              step="0.01"
-                              placeholder="0"
-                              className="mt-1"
+                              step="0.001"
+                              placeholder={watchItems?.[index]?.meenoWeightUnit === "mg" ? "e.g. 100 mg" : "0"}
                               {...register(`items.${index}.meenoWeight`, {
                                 valueAsNumber: true,
                                 onChange: () => updateLineTotal(index),
                               })}
                               disabled={isSubmitting}
                             />
+                            {watchItems?.[index]?.meenoWeightUnit === "mg" && Number(watchItems?.[index]?.meenoWeight || 0) > 0 && (
+                              <p className="text-[9px] text-amber-700 dark:text-amber-400 mt-0.5 font-mono">
+                                = {(Number(watchItems?.[index]?.meenoWeight || 0) / 1000).toFixed(3)} g
+                              </p>
+                            )}
                           </div>
                         </div>
                       </div>

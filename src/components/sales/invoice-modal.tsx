@@ -19,9 +19,13 @@ interface InvoiceModalProps {
       qty: number;
       weight: number;
       productWeight?: number;
+      productWeightUnit?: "g" | "mg";
       jadatarWeight?: number;
+      jadatarWeightUnit?: "g" | "mg";
       nangWeight?: number;
+      nangWeightUnit?: "g" | "mg";
       meenoWeight?: number;
+      meenoWeightUnit?: "g" | "mg";
       netWeight?: number;
       pricePerGram: number;
       makingCharge: number;
@@ -69,9 +73,13 @@ export function InvoiceModal({
         qty: i.qty,
         weight: i.weight,
         productWeight: i.productWeight ?? i.weight ?? 0,
+        productWeightUnit: i.productWeightUnit || "g",
         jadatarWeight: i.jadatarWeight ?? 0,
+        jadatarWeightUnit: i.jadatarWeightUnit || "g",
         nangWeight: i.nangWeight ?? 0,
+        nangWeightUnit: i.nangWeightUnit || "g",
         meenoWeight: i.meenoWeight ?? 0,
+        meenoWeightUnit: i.meenoWeightUnit || "g",
         netWeight: i.netWeight ?? i.weight ?? 0,
         pricePerGram: i.pricePerGram,
         makingCharge: i.makingCharge,
@@ -104,16 +112,36 @@ export function InvoiceModal({
   };
 
   const getWeightBreakdown = (item: typeof sale.items[0]) => {
-    const pWt = item.productWeight ?? item.weight ?? 0;
-    const jWt = item.jadatarWeight ?? 0;
-    const nWt = item.nangWeight ?? 0;
-    const mWt = item.meenoWeight ?? 0;
+    const rawP = item.productWeight ?? item.weight ?? 0;
+    const pUnit = item.productWeightUnit || "g";
+    const pWt = pUnit === "mg" ? rawP / 1000 : rawP;
+
+    const rawJ = item.jadatarWeight ?? 0;
+    const jUnit = item.jadatarWeightUnit || "g";
+    const jWt = jUnit === "mg" ? rawJ / 1000 : rawJ;
+
+    const rawN = item.nangWeight ?? 0;
+    const nUnit = item.nangWeightUnit || "g";
+    const nWt = nUnit === "mg" ? rawN / 1000 : rawN;
+
+    const rawM = item.meenoWeight ?? 0;
+    const mUnit = item.meenoWeightUnit || "g";
+    const mWt = mUnit === "mg" ? rawM / 1000 : rawM;
+
     const netWt = item.netWeight ?? item.weight ?? Math.max(0, pWt - jWt - nWt - mWt);
     const hasDeduction = jWt > 0 || nWt > 0 || mWt > 0;
+
+    const formatWt = (rawVal: number, unit?: string) => {
+      if (unit === "mg") {
+        return `${rawVal} mg (${(rawVal / 1000).toFixed(3)}g)`;
+      }
+      return `${rawVal.toFixed(3)}g`;
+    };
+
     const deductionsList = [
-      jWt > 0 ? `Jadatar: ${jWt.toFixed(2)}g` : null,
-      nWt > 0 ? `Stone: ${nWt.toFixed(2)}g` : null,
-      mWt > 0 ? `Meeno: ${mWt.toFixed(2)}g` : null,
+      rawJ > 0 ? `Jadatar: ${formatWt(rawJ, jUnit)}` : null,
+      rawN > 0 ? `Stone: ${formatWt(rawN, nUnit)}` : null,
+      rawM > 0 ? `Meeno: ${formatWt(rawM, mUnit)}` : null,
     ].filter(Boolean);
 
     return { pWt, jWt, nWt, mWt, netWt, hasDeduction, deductionsList };

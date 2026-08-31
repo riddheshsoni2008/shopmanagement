@@ -6,9 +6,13 @@ export interface ISaleItem {
   qty: number;
   weight: number;
   productWeight?: number;
+  productWeightUnit?: "g" | "mg";
   jadatarWeight?: number;
+  jadatarWeightUnit?: "g" | "mg";
   nangWeight?: number;
+  nangWeightUnit?: "g" | "mg";
   meenoWeight?: number;
+  meenoWeightUnit?: "g" | "mg";
   netWeight?: number;
   pricePerGram: number;
   makingCharge: number;
@@ -40,9 +44,13 @@ const SaleItemSchema = new Schema<ISaleItem>({
   qty: { type: Number, required: true, min: 1 },
   weight: { type: Number, required: true, min: 0 },
   productWeight: { type: Number, default: 0 },
+  productWeightUnit: { type: String, enum: ["g", "mg"], default: "g" },
   jadatarWeight: { type: Number, default: 0 },
+  jadatarWeightUnit: { type: String, enum: ["g", "mg"], default: "g" },
   nangWeight: { type: Number, default: 0 },
+  nangWeightUnit: { type: String, enum: ["g", "mg"], default: "g" },
   meenoWeight: { type: Number, default: 0 },
+  meenoWeightUnit: { type: String, enum: ["g", "mg"], default: "g" },
   netWeight: { type: Number, default: 0 },
   pricePerGram: { type: Number, required: true, min: 0 },
   makingCharge: { type: Number, required: true, default: 0 },

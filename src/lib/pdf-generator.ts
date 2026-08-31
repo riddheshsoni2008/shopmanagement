@@ -6,9 +6,13 @@ export interface InvoiceItem {
   qty: number;
   weight: number;
   productWeight?: number;
+  productWeightUnit?: "g" | "mg";
   jadatarWeight?: number;
+  jadatarWeightUnit?: "g" | "mg";
   nangWeight?: number;
+  nangWeightUnit?: "g" | "mg";
   meenoWeight?: number;
+  meenoWeightUnit?: "g" | "mg";
   netWeight?: number;
   pricePerGram: number;
   makingCharge: number;
@@ -507,19 +511,36 @@ export async function generateInvoicePDF(data: InvoicePDFData) {
   const tableRows = data.items.map((item, i) => {
     let nameText = /[^\x00-\x7F]/.test(item.name) ? item.name : item.name.toUpperCase();
 
-    const pWeight = item.productWeight ?? item.weight ?? 0;
-    const jWeight = item.jadatarWeight ?? 0;
-    const nWeight = item.nangWeight ?? 0;
-    const mWeight = item.meenoWeight ?? 0;
+    const rawP = item.productWeight ?? item.weight ?? 0;
+    const pUnit = item.productWeightUnit || "g";
+    const pWeight = pUnit === "mg" ? rawP / 1000 : rawP;
+
+    const rawJ = item.jadatarWeight ?? 0;
+    const jUnit = item.jadatarWeightUnit || "g";
+    const jWeight = jUnit === "mg" ? rawJ / 1000 : rawJ;
+
+    const rawN = item.nangWeight ?? 0;
+    const nUnit = item.nangWeightUnit || "g";
+    const nWeight = nUnit === "mg" ? rawN / 1000 : rawN;
+
+    const rawM = item.meenoWeight ?? 0;
+    const mUnit = item.meenoWeightUnit || "g";
+    const mWeight = mUnit === "mg" ? rawM / 1000 : rawM;
+
     const netWeight = item.netWeight ?? item.weight ?? Math.max(0, pWeight - jWeight - nWeight - mWeight);
 
+    const fmtUnitWt = (rawVal: number, unit?: string) => {
+      if (unit === "mg") return `${rawVal}mg`;
+      return `${rawVal.toFixed(3)}g`;
+    };
+
     const wtDeductions: string[] = [];
-    if (jWeight > 0) wtDeductions.push(`Jadatar: ${jWeight.toFixed(3)}g`);
-    if (nWeight > 0) wtDeductions.push(`Stone: ${nWeight.toFixed(3)}g`);
-    if (mWeight > 0) wtDeductions.push(`Meeno: ${mWeight.toFixed(3)}g`);
+    if (rawJ > 0) wtDeductions.push(`Jadatar: ${fmtUnitWt(rawJ, jUnit)}`);
+    if (rawN > 0) wtDeductions.push(`Stone: ${fmtUnitWt(rawN, nUnit)}`);
+    if (rawM > 0) wtDeductions.push(`Meeno: ${fmtUnitWt(rawM, mUnit)}`);
 
     if (wtDeductions.length > 0) {
-      nameText += `\nGross: ${pWeight.toFixed(3)}g | Less (${wtDeductions.join(", ")}) = Net: ${netWeight.toFixed(3)}g`;
+      nameText += `\nGross: ${fmtUnitWt(rawP, pUnit)} | Less (${wtDeductions.join(", ")}) = Net: ${netWeight.toFixed(3)}g`;
     }
 
     const extras: string[] = [];
