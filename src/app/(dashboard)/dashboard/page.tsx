@@ -214,7 +214,7 @@ export default async function DashboardPage({
             <div
               className={`rounded-lg p-2 ${
                 metrics?.lowStockCount
-                  ? "bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400"
+                  ? "bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400 animate-pulse"
                   : "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400"
               }`}
             >
