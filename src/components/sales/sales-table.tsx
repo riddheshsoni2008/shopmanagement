@@ -54,6 +54,12 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
   const [endDate, setEndDate] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
+  const handleSelectRange = (startStr: string, endStr: string) => {
+    setStartDate(startStr);
+    setEndDate(endStr);
+    setCurrentPage(1);
+  };
+
   // Client filtering
   let filtered = initialData.sales.filter((s) => {
     if (search && search.trim()) {
@@ -204,6 +210,66 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            {/* Quick Preset Buttons */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const today = new Date().toISOString().split("T")[0];
+                  handleSelectRange(today, today);
+                }}
+                className="h-9 px-2.5 text-xs font-bold border-amber-300 dark:border-slate-700 bg-amber-50/50 dark:bg-slate-800 text-amber-900 dark:text-amber-300 hover:bg-amber-100"
+              >
+                Today
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const now = new Date();
+                  const w = new Date();
+                  w.setDate(now.getDate() - 7);
+                  const year = w.getFullYear();
+                  const month = String(w.getMonth() + 1).padStart(2, "0");
+                  const day = String(w.getDate()).padStart(2, "0");
+                  handleSelectRange(`${year}-${month}-${day}`, now.toISOString().split("T")[0]);
+                }}
+                className="h-9 px-2.5 text-xs font-bold border-amber-300 dark:border-slate-700 bg-amber-50/50 dark:bg-slate-800 text-amber-900 dark:text-amber-300 hover:bg-amber-100"
+              >
+                This Week
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const now = new Date();
+                  const year = now.getFullYear();
+                  const month = String(now.getMonth() + 1).padStart(2, "0");
+                  handleSelectRange(`${year}-${month}-01`, now.toISOString().split("T")[0]);
+                }}
+                className="h-9 px-2.5 text-xs font-bold border-amber-300 dark:border-slate-700 bg-amber-50/50 dark:bg-slate-800 text-amber-900 dark:text-amber-300 hover:bg-amber-100"
+              >
+                This Month
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const now = new Date();
+                  const year = now.getFullYear();
+                  handleSelectRange(`${year}-01-01`, now.toISOString().split("T")[0]);
+                }}
+                className="h-9 px-2.5 text-xs font-bold border-amber-300 dark:border-slate-700 bg-amber-50/50 dark:bg-slate-800 text-amber-900 dark:text-amber-300 hover:bg-amber-100"
+              >
+                This Year
+              </Button>
+            </div>
+
             {/* Start Date */}
             <div className="flex items-center gap-1.5">
               <span className="text-xs text-slate-600 dark:text-slate-400 font-semibold shrink-0">From:</span>
@@ -214,7 +280,7 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
                   setStartDate(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-[130px] sm:w-36 h-10 text-xs"
+                className="w-[130px] sm:w-36 h-10 text-xs font-mono"
               />
             </div>
 
@@ -228,7 +294,7 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
                   setEndDate(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-[130px] sm:w-36 h-10 text-xs"
+                className="w-[130px] sm:w-36 h-10 text-xs font-mono"
               />
             </div>
 

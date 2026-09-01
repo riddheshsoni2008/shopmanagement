@@ -13,6 +13,8 @@ import { bulkDeleteSales } from "@/actions/sales";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+import { TransactionDateSelect } from "@/components/common/transaction-date-select";
+
 interface SalesStatementModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -298,8 +300,23 @@ export function SalesStatementModal({
           </div>
 
           {periodPreset === "custom" && (
-            <div className="pt-2 space-y-3 bg-amber-50/50 dark:bg-slate-800/40 p-3 rounded-xl border border-amber-100 dark:border-slate-800 animate-in fade-in duration-150">
-              <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-3 bg-amber-50/50 dark:bg-slate-800/40 p-3 rounded-xl border border-amber-100 dark:border-slate-800 animate-in fade-in duration-150">
+              <div>
+                <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 block mb-1">
+                  Quick Select Active Day or Period:
+                </label>
+                <TransactionDateSelect
+                  onSelectRange={(start, end) => {
+                    setCustomStartDate(start);
+                    setCustomEndDate(end);
+                  }}
+                  selectedStartDate={customStartDate}
+                  selectedEndDate={customEndDate}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-amber-200/50 dark:border-slate-700/50">
                 <div>
                   <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 block mb-1">
                     From Date:

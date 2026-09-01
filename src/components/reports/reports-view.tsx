@@ -78,6 +78,25 @@ export function ReportsView({ initialData }: ReportsViewProps) {
     }
   };
 
+  const handleSelectRange = async (start: string, end: string, label?: string) => {
+    setStartDate(start);
+    setEndDate(end);
+    setIsLoading(true);
+    try {
+      const res = await getReportData(start, end);
+      if (res.success) {
+        setData(res.data);
+        toast.success(`Analytics updated for ${label || `${start} to ${end}`}`);
+      } else {
+        toast.error(res.error);
+      }
+    } catch (err) {
+      toast.error("Failed to generate analytics report.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const profitMargin =
     data.totalRevenue > 0
       ? ((data.netProfit / data.totalRevenue) * 100).toFixed(1)
@@ -137,8 +156,71 @@ export function ReportsView({ initialData }: ReportsViewProps) {
     <div className="space-y-8">
       {/* Date Filter Controls */}
       <div className="flex flex-col gap-3 rounded-2xl border border-amber-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-4 shadow-sm backdrop-blur-md transition-colors duration-200">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap justify-between">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center justify-between">
           <div className="flex flex-wrap items-center gap-3">
+            {/* Quick Preset Buttons */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const today = new Date().toISOString().split("T")[0];
+                  handleSelectRange(today, today, "Today");
+                }}
+                className="h-9 px-3 text-xs font-bold border-amber-300 dark:border-slate-700 bg-amber-50/50 dark:bg-slate-800 text-amber-900 dark:text-amber-300 hover:bg-amber-100"
+              >
+                Today
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const now = new Date();
+                  const w = new Date();
+                  w.setDate(now.getDate() - 7);
+                  const year = w.getFullYear();
+                  const month = String(w.getMonth() + 1).padStart(2, "0");
+                  const day = String(w.getDate()).padStart(2, "0");
+                  handleSelectRange(`${year}-${month}-${day}`, now.toISOString().split("T")[0], "This Week");
+                }}
+                className="h-9 px-3 text-xs font-bold border-amber-300 dark:border-slate-700 bg-amber-50/50 dark:bg-slate-800 text-amber-900 dark:text-amber-300 hover:bg-amber-100"
+              >
+                This Week
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const now = new Date();
+                  const year = now.getFullYear();
+                  const month = String(now.getMonth() + 1).padStart(2, "0");
+                  handleSelectRange(`${year}-${month}-01`, now.toISOString().split("T")[0], "This Month");
+                }}
+                className="h-9 px-3 text-xs font-bold border-amber-300 dark:border-slate-700 bg-amber-50/50 dark:bg-slate-800 text-amber-900 dark:text-amber-300 hover:bg-amber-100"
+              >
+                This Month
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const now = new Date();
+                  const year = now.getFullYear();
+                  handleSelectRange(`${year}-01-01`, now.toISOString().split("T")[0], "This Year");
+                }}
+                className="h-9 px-3 text-xs font-bold border-amber-300 dark:border-slate-700 bg-amber-50/50 dark:bg-slate-800 text-amber-900 dark:text-amber-300 hover:bg-amber-100"
+              >
+                This Year
+              </Button>
+            </div>
+
+            <div className="hidden sm:block h-6 w-px bg-amber-200 dark:bg-slate-800" />
+
+            {/* Manual Date Input Pickers */}
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
               <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">From Date:</span>

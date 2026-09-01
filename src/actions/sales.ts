@@ -350,3 +350,56 @@ export async function bulkDeleteSales(ids: string[]): Promise<ActionResult<{ del
     return { success: false, error: "Failed to delete sales records" };
   }
 }
+
+export interface AvailableTransactionDate {
+  dateStr: string;
+  formatted: string;
+  count: number;
+  totalAmount: number;
+}
+
+export async function getAvailableTransactionDates(): Promise<ActionResult<AvailableTransactionDate[]>> {
+  try {
+    const tenantId = await getTenantId();
+    if (!tenantId) {
+      return { success: false, error: "Unauthorized access" };
+    }
+
+    await connectDB();
+
+    const datesAgg = await Sale.aggregate([
+      { $match: { userId: tenantId } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          count: { $sum: 1 },
+          totalAmount: { $sum: "$totalAmount" },
+        },
+      },
+      { $sort: { _id: -1 } },
+      { $limit: 100 },
+    ]);
+
+    const result: AvailableTransactionDate[] = datesAgg.map((item) => {
+      const parts = item._id.split("-");
+      const year = parts[0];
+      const month = parts[1];
+      const day = parts[2];
+      const d = new Date(Number(year), Number(month) - 1, Number(day));
+      const dayName = d.toLocaleDateString("en-IN", { weekday: "short" });
+      const formattedDate = `${day}/${month}/${year}`;
+
+      return {
+        dateStr: item._id,
+        formatted: `${formattedDate} (${dayName}) — ${item.count} bill(s)`,
+        count: item.count,
+        totalAmount: item.totalAmount,
+      };
+    });
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("Error fetching available transaction dates:", error);
+    return { success: false, error: "Failed to fetch transaction dates" };
+  }
+}
