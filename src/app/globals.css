@@ -144,14 +144,61 @@
   color: inherit;
 }
 
-/* Date input segment focus styling (dd/mm/yyyy segment selection) */
+/* Date input smooth focus ring & outline reset */
+input[type="date"] {
+  position: relative;
+  cursor: pointer;
+  color-scheme: light dark;
+}
+
+input[type="date"]:focus,
+input[type="date"]:focus-within {
+  outline: none !important;
+  border-color: #d97706 !important;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2) !important;
+}
+
+/* Date input segment edit field formatting & spacing */
+input[type="date"]::-webkit-datetime-edit {
+  padding: 0;
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
+  padding: 1px 3px;
+  border-radius: 4px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* Override Chromium native blue selection highlight box on date subfields (dd/mm/yyyy) */
+input[type="date"]::-webkit-datetime-edit-day-field::selection,
+input[type="date"]::-webkit-datetime-edit-month-field::selection,
+input[type="date"]::-webkit-datetime-edit-year-field::selection {
+  background-color: #d97706 !important;
+  color: #ffffff !important;
+  border-radius: 3px;
+}
+
 input[type="date"]::-webkit-datetime-edit-day-field:focus,
 input[type="date"]::-webkit-datetime-edit-month-field:focus,
 input[type="date"]::-webkit-datetime-edit-year-field:focus {
-  background-color: rgba(245, 158, 11, 0.3) !important;
-  color: #d97706 !important;
-  border-radius: 4px;
+  background-color: rgba(245, 158, 11, 0.25) !important;
+  color: #92400e !important;
+  border-radius: 3px;
   outline: none !important;
+}
+
+.dark input[type="date"]::-webkit-datetime-edit-day-field::selection,
+.dark input[type="date"]::-webkit-datetime-edit-month-field::selection,
+.dark input[type="date"]::-webkit-datetime-edit-year-field::selection {
+  background-color: #f59e0b !important;
+  color: #0f172a !important;
+  border-radius: 3px;
 }
 
 .dark input[type="date"]::-webkit-datetime-edit-day-field:focus,
@@ -159,7 +206,7 @@ input[type="date"]::-webkit-datetime-edit-year-field:focus {
 .dark input[type="date"]::-webkit-datetime-edit-year-field:focus {
   background-color: rgba(245, 158, 11, 0.35) !important;
   color: #fbbf24 !important;
-  border-radius: 4px;
+  border-radius: 3px;
   outline: none !important;
 }
 
@@ -167,22 +214,40 @@ input[type="date"]::-webkit-datetime-edit-year-field:focus {
 input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
   opacity: 0.6;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  padding: 2px;
+  border-radius: 4px;
+  transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
   transform: scale(1.1);
+  background-color: rgba(245, 158, 11, 0.15);
 }
 
 .dark input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(0.85) sepia(50%) saturate(1000%) hue-rotate(350deg);
 }
 
-/* Smooth Focus Glow & Outline Reset */
+/* Smooth Focus Glow & Outline Reset - Prevent double browser rings on inputs */
+input:focus,
+input:focus-visible,
+select:focus,
+select:focus-visible,
+textarea:focus,
+textarea:focus-visible {
+  outline: none !important;
+}
+
 *:focus-visible {
-  outline: 2px solid rgba(245, 158, 11, 0.5) !important;
-  outline-offset: 1px !important;
+  outline: none;
+}
+
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid rgba(245, 158, 11, 0.5);
+  outline-offset: 1px;
 }
 
 /* Disable Click / Focus Outline Box on SVG & Recharts Components */
