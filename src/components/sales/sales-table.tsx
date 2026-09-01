@@ -141,22 +141,25 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
     <div className="space-y-6">
       {/* Dynamic Filtered Sales Total Summary Card */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="rounded-2xl border border-amber-300 dark:border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-yellow-500/5 to-amber-500/10 dark:from-slate-900 dark:to-slate-900 p-4 sm:p-5 shadow-sm backdrop-blur-md flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <Badge className="bg-amber-600 text-white font-bold text-[10px] uppercase tracking-wider">
+        <div className="rounded-2xl border border-amber-300 dark:border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-yellow-500/5 to-amber-500/10 dark:from-slate-900 dark:to-slate-900 p-4 sm:p-5 shadow-sm backdrop-blur-md flex items-center justify-between gap-3 min-w-0 overflow-hidden">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
+              <Badge className="bg-amber-600 text-white font-bold text-[10px] uppercase tracking-wider shrink-0">
                 {startDate || endDate || search ? "Filtered Sales Total" : "Total Sales Revenue"}
               </Badge>
               {(startDate || endDate) && (
-                <span className="text-xs text-amber-700 dark:text-amber-400 font-medium">
+                <span className="text-xs text-amber-700 dark:text-amber-400 font-medium truncate">
                   ({startDate ? `From ${startDate}` : ""} {endDate ? `To ${endDate}` : ""})
                 </span>
               )}
             </div>
-            <p className="text-2xl sm:text-3xl font-extrabold font-mono text-amber-900 dark:text-amber-300 mt-2">
+            <p
+              className="text-xl sm:text-2xl lg:text-3xl font-extrabold font-mono text-amber-900 dark:text-amber-300 mt-2 truncate tracking-tight"
+              title={formatCurrency(totalFilteredSalesAmount)}
+            >
               {formatCurrency(totalFilteredSalesAmount)}
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium truncate">
               Total revenue from <strong className="text-slate-900 dark:text-slate-100">{filtered.length}</strong> sales invoice(s)
             </p>
           </div>
@@ -165,15 +168,15 @@ export function SalesTable({ initialData, shopName }: SalesTableProps) {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-amber-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 p-4 sm:p-5 shadow-sm backdrop-blur-md flex items-center justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+        <div className="rounded-2xl border border-amber-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 p-4 sm:p-5 shadow-sm backdrop-blur-md flex items-center justify-between gap-3 min-w-0 overflow-hidden">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 truncate">
               Filtered Records
             </p>
-            <p className="text-2xl sm:text-3xl font-extrabold font-mono text-slate-900 dark:text-slate-100 mt-2">
+            <p className="text-xl sm:text-2xl lg:text-3xl font-extrabold font-mono text-slate-900 dark:text-slate-100 mt-2 truncate">
               {filtered.length} <span className="text-sm font-normal text-slate-500">Bills</span>
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium truncate">
               Average bill value: <strong className="text-slate-800 dark:text-slate-200">{formatCurrency(filtered.length > 0 ? totalFilteredSalesAmount / filtered.length : 0)}</strong>
             </p>
           </div>

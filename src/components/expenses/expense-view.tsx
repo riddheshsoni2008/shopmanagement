@@ -126,19 +126,22 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
       {/* Category Breakdown Cards Grid */}
       <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
         <Card className="border-rose-300 dark:border-rose-500/30 bg-rose-50/70 dark:bg-rose-950/10 col-span-2 sm:col-span-1">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2 min-w-0">
+            <CardTitle className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 truncate">
               Total Expenses
             </CardTitle>
-            <div className="rounded-lg bg-rose-100 dark:bg-rose-500/20 p-2 text-rose-700 dark:text-rose-400">
+            <div className="rounded-lg bg-rose-100 dark:bg-rose-500/20 p-2 text-rose-700 dark:text-rose-400 shrink-0">
               <DollarSign className="h-5 w-5" />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-rose-700 dark:text-rose-400">
+          <CardContent className="min-w-0">
+            <div
+              className="text-lg sm:text-xl font-bold font-mono text-rose-700 dark:text-rose-400 truncate tracking-tight"
+              title={formatCurrency(initialData.totalExpenses)}
+            >
               {formatCurrency(initialData.totalExpenses)}
             </div>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 truncate">
               {initialData.expenses.length} entry/entries
             </p>
           </CardContent>
@@ -146,17 +149,20 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
 
         {Object.entries(initialData.categoryTotals).slice(0, 3).map(([cat, total]) => (
           <Card key={cat}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2 min-w-0">
               <CardTitle className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 truncate">
                 {cat}
               </CardTitle>
               <Tag className="h-4 w-4 text-slate-400 dark:text-slate-500 shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100">
+            <CardContent className="min-w-0">
+              <div
+                className="text-base sm:text-lg font-bold font-mono text-slate-900 dark:text-slate-100 truncate tracking-tight"
+                title={formatCurrency(total)}
+              >
                 {formatCurrency(total)}
               </div>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Category spending</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 truncate">Category spending</p>
             </CardContent>
           </Card>
         ))}

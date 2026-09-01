@@ -186,22 +186,25 @@ export function ReportsView({ initialData }: ReportsViewProps) {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Total Revenue */}
         <Card className="border-amber-300 dark:border-amber-500/30 bg-gradient-to-br from-amber-50/80 to-yellow-50/40 dark:from-amber-500/10 dark:to-slate-900">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div>
-              <CardTitle className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-400">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2 min-w-0">
+            <div className="min-w-0">
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-400 truncate">
                 Total Revenue
               </CardTitle>
-              <p className="text-[10px] text-amber-700/80 dark:text-amber-300/70 font-medium">કુલ વેચાણ આવક</p>
+              <p className="text-[10px] text-amber-700/80 dark:text-amber-300/70 font-medium truncate">કુલ વેચાણ આવક</p>
             </div>
-            <div className="rounded-xl bg-amber-500/20 p-2.5 text-amber-700 dark:text-amber-400 border border-amber-300/50 dark:border-amber-500/30">
+            <div className="rounded-xl bg-amber-500/20 p-2 text-amber-700 dark:text-amber-400 border border-amber-300/50 dark:border-amber-500/30 shrink-0">
               <TrendingUp className="h-5 w-5" />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl sm:text-3xl font-extrabold font-mono text-amber-900 dark:text-amber-300">
+          <CardContent className="min-w-0">
+            <div
+              className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-extrabold font-mono text-amber-900 dark:text-amber-300 truncate tracking-tight"
+              title={formatCurrency(data.totalRevenue)}
+            >
               {formatCurrency(data.totalRevenue)}
             </div>
-            <p className="mt-1.5 text-xs text-slate-600 dark:text-slate-400 font-medium">
+            <p className="mt-1.5 text-xs text-slate-600 dark:text-slate-400 font-medium truncate">
               From <strong className="text-slate-900 dark:text-slate-100">{data.totalSalesCount}</strong> total bill(s)
             </p>
           </CardContent>
@@ -209,22 +212,25 @@ export function ReportsView({ initialData }: ReportsViewProps) {
 
         {/* Total Expenses */}
         <Card className="border-rose-300 dark:border-rose-500/30 bg-gradient-to-br from-rose-50/80 to-red-50/40 dark:from-rose-950/20 dark:to-slate-900">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div>
-              <CardTitle className="text-xs font-bold uppercase tracking-wider text-rose-800 dark:text-rose-400">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2 min-w-0">
+            <div className="min-w-0">
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-rose-800 dark:text-rose-400 truncate">
                 Total Expenses
               </CardTitle>
-              <p className="text-[10px] text-rose-700/80 dark:text-rose-300/70 font-medium">દુકાનનો કુલ ખર્ચ</p>
+              <p className="text-[10px] text-rose-700/80 dark:text-rose-300/70 font-medium truncate">દુકાનનો કુલ ખર્ચ</p>
             </div>
-            <div className="rounded-xl bg-rose-500/20 p-2.5 text-rose-700 dark:text-rose-400 border border-rose-300/50 dark:border-rose-500/30">
+            <div className="rounded-xl bg-rose-500/20 p-2 text-rose-700 dark:text-rose-400 border border-rose-300/50 dark:border-rose-500/30 shrink-0">
               <Wallet className="h-5 w-5" />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl sm:text-3xl font-extrabold font-mono text-rose-900 dark:text-rose-400">
+          <CardContent className="min-w-0">
+            <div
+              className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-extrabold font-mono text-rose-900 dark:text-rose-400 truncate tracking-tight"
+              title={formatCurrency(data.totalExpenses)}
+            >
               {formatCurrency(data.totalExpenses)}
             </div>
-            <p className="mt-1.5 text-xs text-slate-600 dark:text-slate-400 font-medium">
+            <p className="mt-1.5 text-xs text-slate-600 dark:text-slate-400 font-medium truncate">
               Operating shop overheads
             </p>
           </CardContent>
@@ -232,26 +238,27 @@ export function ReportsView({ initialData }: ReportsViewProps) {
 
         {/* Net Profit */}
         <Card className={data.netProfit >= 0 ? "border-emerald-300 dark:border-emerald-500/30 bg-gradient-to-br from-emerald-50/80 to-teal-50/40 dark:from-emerald-500/10 dark:to-slate-900" : "border-rose-300 dark:border-rose-500/30 bg-gradient-to-br from-rose-50/80 to-red-50/40 dark:from-rose-950/20 dark:to-slate-900"}>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div>
-              <CardTitle className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-400">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2 min-w-0">
+            <div className="min-w-0">
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-400 truncate">
                 Net Profit
               </CardTitle>
-              <p className="text-[10px] text-emerald-700/80 dark:text-emerald-300/70 font-medium">ચોખ્ખો નફો / બચત</p>
+              <p className="text-[10px] text-emerald-700/80 dark:text-emerald-300/70 font-medium truncate">ચોખ્ખો નફો / બચત</p>
             </div>
-            <div className="rounded-xl bg-emerald-500/20 p-2.5 text-emerald-700 dark:text-emerald-400 border border-emerald-300/50 dark:border-emerald-500/30">
+            <div className="rounded-xl bg-emerald-500/20 p-2 text-emerald-700 dark:text-emerald-400 border border-emerald-300/50 dark:border-emerald-500/30 shrink-0">
               <ArrowUpRight className="h-5 w-5" />
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="min-w-0">
             <div
-              className={`text-2xl sm:text-3xl font-extrabold font-mono ${
+              className={`text-lg sm:text-xl lg:text-2xl xl:text-3xl font-extrabold font-mono truncate tracking-tight ${
                 data.netProfit >= 0 ? "text-emerald-900 dark:text-emerald-300" : "text-rose-900 dark:text-rose-400"
               }`}
+              title={formatCurrency(data.netProfit)}
             >
               {formatCurrency(data.netProfit)}
             </div>
-            <p className="mt-1.5 text-xs text-slate-600 dark:text-slate-400 font-medium">
+            <p className="mt-1.5 text-xs text-slate-600 dark:text-slate-400 font-medium truncate">
               Margin: <strong className={data.netProfit >= 0 ? "text-emerald-700 dark:text-emerald-400 font-bold" : "text-rose-600 font-bold"}>{profitMargin}% profit</strong>
             </p>
           </CardContent>
@@ -259,22 +266,25 @@ export function ReportsView({ initialData }: ReportsViewProps) {
 
         {/* Average Bill Value */}
         <Card className="border-sky-300 dark:border-blue-500/30 bg-gradient-to-br from-sky-50/80 to-blue-50/40 dark:from-blue-500/10 dark:to-slate-900">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <div>
-              <CardTitle className="text-xs font-bold uppercase tracking-wider text-sky-800 dark:text-blue-400">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2 min-w-0">
+            <div className="min-w-0">
+              <CardTitle className="text-xs font-bold uppercase tracking-wider text-sky-800 dark:text-blue-400 truncate">
                 Avg Order Value
               </CardTitle>
-              <p className="text-[10px] text-sky-700/80 dark:text-blue-300/70 font-medium">સરેરાશ બિલની રકમ</p>
+              <p className="text-[10px] text-sky-700/80 dark:text-blue-300/70 font-medium truncate">સરેરાશ બિલની રકમ</p>
             </div>
-            <div className="rounded-xl bg-blue-500/20 p-2.5 text-sky-700 dark:text-blue-400 border border-sky-300/50 dark:border-blue-500/30">
+            <div className="rounded-xl bg-blue-500/20 p-2 text-sky-700 dark:text-blue-400 border border-sky-300/50 dark:border-blue-500/30 shrink-0">
               <ShoppingBag className="h-5 w-5" />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl sm:text-3xl font-extrabold font-mono text-slate-900 dark:text-slate-100">
+          <CardContent className="min-w-0">
+            <div
+              className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-extrabold font-mono text-slate-900 dark:text-slate-100 truncate tracking-tight"
+              title={formatCurrency(avgOrderValue)}
+            >
               {formatCurrency(avgOrderValue)}
             </div>
-            <p className="mt-1.5 text-xs text-slate-600 dark:text-slate-400 font-medium">Per customer bill sale</p>
+            <p className="mt-1.5 text-xs text-slate-600 dark:text-slate-400 font-medium truncate">Per customer bill sale</p>
           </CardContent>
         </Card>
       </div>
@@ -296,28 +306,28 @@ export function ReportsView({ initialData }: ReportsViewProps) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-amber-200/60 dark:border-slate-800 text-xs">
-          <div className="bg-white/80 dark:bg-slate-800/80 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
-            <p className="text-slate-500 dark:text-slate-400 font-semibold">1. Total Money Received (આવક)</p>
-            <p className="text-lg font-bold font-mono text-amber-800 dark:text-amber-300">
+          <div className="bg-white/80 dark:bg-slate-800/80 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1 min-w-0">
+            <p className="text-slate-500 dark:text-slate-400 font-semibold truncate">1. Total Money Received (આવક)</p>
+            <p className="text-base sm:text-lg font-bold font-mono text-amber-800 dark:text-amber-300 truncate" title={formatCurrency(data.totalRevenue)}>
               {formatCurrency(data.totalRevenue)}
             </p>
-            <p className="text-[11px] text-slate-500">Total customer payments collected across {data.totalSalesCount} bills.</p>
+            <p className="text-[11px] text-slate-500 truncate">Total customer payments collected across {data.totalSalesCount} bills.</p>
           </div>
 
-          <div className="bg-white/80 dark:bg-slate-800/80 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
-            <p className="text-slate-500 dark:text-slate-400 font-semibold">2. Total Money Spent (ખર્ચ)</p>
-            <p className="text-lg font-bold font-mono text-rose-600 dark:text-rose-400">
+          <div className="bg-white/80 dark:bg-slate-800/80 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1 min-w-0">
+            <p className="text-slate-500 dark:text-slate-400 font-semibold truncate">2. Total Money Spent (ખર્ચ)</p>
+            <p className="text-base sm:text-lg font-bold font-mono text-rose-600 dark:text-rose-400 truncate" title={`- ${formatCurrency(data.totalExpenses)}`}>
               - {formatCurrency(data.totalExpenses)}
             </p>
-            <p className="text-[11px] text-slate-500">Rent, staff salaries, bills & custom operational expenses.</p>
+            <p className="text-[11px] text-slate-500 truncate">Rent, staff salaries, bills & custom operational expenses.</p>
           </div>
 
-          <div className="bg-amber-500/10 dark:bg-amber-400/10 p-3.5 rounded-xl border border-amber-300 dark:border-amber-500/30 space-y-1">
-            <p className="text-amber-900 dark:text-amber-300 font-semibold">3. Net Profit Saved (ચોખ્ખી બચત)</p>
-            <p className="text-lg font-bold font-mono text-emerald-600 dark:text-emerald-400">
+          <div className="bg-amber-500/10 dark:bg-amber-400/10 p-3.5 rounded-xl border border-amber-300 dark:border-amber-500/30 space-y-1 min-w-0">
+            <p className="text-amber-900 dark:text-amber-300 font-semibold truncate">3. Net Profit Saved (ચોખ્ખી બચત)</p>
+            <p className="text-base sm:text-lg font-bold font-mono text-emerald-600 dark:text-emerald-400 truncate" title={`= ${formatCurrency(data.netProfit)}`}>
               = {formatCurrency(data.netProfit)}
             </p>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">Your actual net earnings after all expenses ({profitMargin}% margin).</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">Your actual net earnings after all expenses ({profitMargin}% margin).</p>
           </div>
         </div>
       </div>

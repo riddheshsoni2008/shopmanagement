@@ -96,19 +96,22 @@ export default async function DashboardPage({
       <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-5">
         {/* Period Sales Total (Revenue) */}
         <Card className="border-amber-300 dark:border-amber-500/30 bg-amber-50/70 dark:bg-amber-500/10">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2 min-w-0">
+            <CardTitle className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 truncate">
               {periodLabel}&apos;s Revenue (Selling)
             </CardTitle>
-            <div className="rounded-lg bg-amber-100 dark:bg-amber-500/20 p-2 text-amber-700 dark:text-amber-400">
+            <div className="rounded-lg bg-amber-100 dark:bg-amber-500/20 p-2 text-amber-700 dark:text-amber-400 shrink-0">
               <TrendingUp className="h-5 w-5" />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-amber-700 dark:text-amber-400">
+          <CardContent className="min-w-0">
+            <div
+              className="text-lg sm:text-xl xl:text-2xl font-bold font-mono text-amber-700 dark:text-amber-400 truncate tracking-tight"
+              title={formatCurrency(periodRevenue)}
+            >
               {formatCurrency(periodRevenue)}
             </div>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 truncate">
               {metrics?.periodSalesCount || 0} completed transaction(s)
             </p>
           </CardContent>
@@ -117,36 +120,39 @@ export default async function DashboardPage({
         {/* Period Expenses (Admin Only) */}
         {isAdmin ? (
           <Card className="border-rose-300 dark:border-rose-500/20 bg-rose-50/70 dark:bg-rose-950/10">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2 min-w-0">
+              <CardTitle className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 truncate">
                 {periodLabel}&apos;s Expenses
               </CardTitle>
-              <div className="rounded-lg bg-rose-100 dark:bg-rose-500/20 p-2 text-rose-700 dark:text-rose-400">
+              <div className="rounded-lg bg-rose-100 dark:bg-rose-500/20 p-2 text-rose-700 dark:text-rose-400 shrink-0">
                 <DollarSign className="h-5 w-5" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-rose-700 dark:text-rose-400">
+            <CardContent className="min-w-0">
+              <div
+                className="text-lg sm:text-xl xl:text-2xl font-bold font-mono text-rose-700 dark:text-rose-400 truncate tracking-tight"
+                title={formatCurrency(periodExpenses)}
+              >
                 {formatCurrency(periodExpenses)}
               </div>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Logged operating expenses</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 truncate">Logged operating expenses</p>
             </CardContent>
           </Card>
         ) : (
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2 min-w-0">
+              <CardTitle className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 truncate">
                 Total Products
               </CardTitle>
-              <div className="rounded-lg bg-emerald-100 dark:bg-emerald-500/20 p-2 text-emerald-700 dark:text-emerald-400">
+              <div className="rounded-lg bg-emerald-100 dark:bg-emerald-500/20 p-2 text-emerald-700 dark:text-emerald-400 shrink-0">
                 <Gem className="h-5 w-5" />
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            <CardContent className="min-w-0">
+              <div className="text-lg sm:text-xl xl:text-2xl font-bold font-mono text-slate-900 dark:text-slate-100 truncate">
                 {metrics?.totalProductsCount || 0}
               </div>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Active catalog items</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 truncate">Active catalog items</p>
             </CardContent>
           </Card>
         )}
@@ -160,12 +166,12 @@ export default async function DashboardPage({
                 : "border-rose-300 dark:border-rose-500/40 bg-rose-50/70 dark:bg-rose-950/10"
             }
           >
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2 min-w-0">
+              <CardTitle className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 truncate">
                 {periodLabel}&apos;s Net Profit
               </CardTitle>
               <div
-                className={`rounded-lg p-2 ${
+                className={`rounded-lg p-2 shrink-0 ${
                   periodNetProfit >= 0
                     ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400"
                     : "bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400"
@@ -174,33 +180,34 @@ export default async function DashboardPage({
                 <Coins className="h-5 w-5" />
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="min-w-0">
               <div
-                className={`text-2xl font-bold ${
+                className={`text-lg sm:text-xl xl:text-2xl font-bold font-mono truncate tracking-tight ${
                   periodNetProfit >= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"
                 }`}
+                title={formatCurrency(periodNetProfit)}
               >
                 {formatCurrency(periodNetProfit)}
               </div>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Selling − Expenses</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 truncate">Selling − Expenses</p>
             </CardContent>
           </Card>
         )}
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2 min-w-0">
+            <CardTitle className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 truncate">
               {periodLabel}&apos;s Bills
             </CardTitle>
-            <div className="rounded-lg bg-sky-100 dark:bg-blue-500/20 p-2 text-sky-700 dark:text-blue-400">
+            <div className="rounded-lg bg-sky-100 dark:bg-blue-500/20 p-2 text-sky-700 dark:text-blue-400 shrink-0">
               <ShoppingCart className="h-5 w-5" />
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+          <CardContent className="min-w-0">
+            <div className="text-lg sm:text-xl xl:text-2xl font-bold font-mono text-slate-900 dark:text-slate-100 truncate">
               {metrics?.periodSalesCount || 0}
             </div>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Bills issued {periodLabel.toLowerCase() === "today" ? "today" : `in ${periodLabel}`}</p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 truncate">Bills issued {periodLabel.toLowerCase() === "today" ? "today" : `in ${periodLabel}`}</p>
           </CardContent>
         </Card>
 
