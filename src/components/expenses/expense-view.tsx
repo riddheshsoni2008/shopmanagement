@@ -12,6 +12,8 @@ import {
   CheckSquare,
   Square,
   Coins,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,6 +50,10 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [selectedExpenseIds, setSelectedExpenseIds] = useState<string[]>([]);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5; // Display 5 daily date groups per page to avoid long scrolling
 
   const filteredExpenses = initialData.expenses.filter((e) => {
     if (categoryFilter !== "ALL" && e.category !== categoryFilter) return false;
@@ -161,6 +167,7 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
     const day = String(now.getDate()).padStart(2, "0");
     const todayStr = `${year}-${month}-${day}`;
 
+    setCurrentPage(1);
     if (preset === "TODAY") {
       setStartDate(todayStr);
       setEndDate(todayStr);
@@ -259,7 +266,10 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
           <Select
             value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
+            onChange={(e) => {
+              setCategoryFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full sm:w-44"
           >
             <option value="ALL">All Categories</option>
@@ -317,6 +327,7 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
                   setStartDate("");
                   setEndDate("");
                   setCategoryFilter("ALL");
+                  setCurrentPage(1);
                 }}
                 className="h-9 px-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20"
               >
@@ -331,7 +342,10 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
               <Input
                 type="date"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="w-[130px] sm:w-36 h-10 text-xs"
               />
             </div>
@@ -341,7 +355,10 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
               <Input
                 type="date"
                 value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
+                onChange={(e) => {
+                  setEndDate(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className="w-[130px] sm:w-36 h-10 text-xs"
               />
             </div>
@@ -417,92 +434,140 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
             });
             const dailyGroups = Object.values(dailyGroupsMap);
 
-            return dailyGroups.map((group: any) => (
-              <Card
-                key={group.dateStr}
-                className="border-amber-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/90 shadow-sm overflow-hidden"
-              >
-              {/* Daily Header */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-4 py-3 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent dark:from-amber-500/15 border-b border-amber-200/60 dark:border-slate-800">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-400">
-                    <Calendar className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                      {group.formattedDate}
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold">
-                        {group.items.length} {group.items.length === 1 ? "entry" : "entries"}
-                      </span>
-                    </h3>
-                  </div>
-                </div>
+            const totalPages = Math.ceil(dailyGroups.length / pageSize) || 1;
+            const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+            const startIndex = (safeCurrentPage - 1) * pageSize;
+            const paginatedGroups = dailyGroups.slice(startIndex, startIndex + pageSize);
 
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Daily Total:</span>
-                  <Badge className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-2.5 py-1 shadow-sm">
-                    {formatCurrency(group.total)}
-                  </Badge>
-                </div>
-              </div>
-
-              {/* Items List in Daily Document */}
-              <div className="divide-y divide-amber-100 dark:divide-slate-800/60">
-                {group.items.map((expense: any) => {
-                  const isSelected = selectedExpenseIds.includes(expense._id);
-                  return (
-                    <div
-                      key={expense._id}
-                      className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:px-4 gap-3 transition-colors ${
-                        isSelected
-                          ? "bg-amber-50/60 dark:bg-amber-950/20"
-                          : "hover:bg-amber-50/30 dark:hover:bg-slate-800/40"
-                      }`}
-                    >
-                      <div className="flex items-start sm:items-center gap-3 min-w-0">
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => handleToggleSelect(expense._id)}
-                          className="h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500 accent-amber-600 cursor-pointer mt-1 sm:mt-0 shrink-0"
-                        />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <Badge variant="outline" className="text-xs font-semibold">
-                              {expense.category}
-                            </Badge>
-                            <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
-                              Logged by {expense.addedBy?.name || "Admin"}
+            return (
+              <div className="space-y-6">
+                {paginatedGroups.map((group: any) => (
+                  <Card
+                    key={group.dateStr}
+                    className="border-amber-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/90 shadow-sm overflow-hidden"
+                  >
+                    {/* Daily Header */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 px-4 py-3 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent dark:from-amber-500/15 border-b border-amber-200/60 dark:border-slate-800">
+                      <div className="flex items-center gap-2.5">
+                        <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-400">
+                          <Calendar className="h-4 w-4" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                            {group.formattedDate}
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold">
+                              {group.items.length} {group.items.length === 1 ? "entry" : "entries"}
                             </span>
-                          </div>
-                          <p className="text-sm font-medium text-slate-800 dark:text-slate-200 mt-1">
-                            {expense.note || "No note recorded"}
-                          </p>
+                          </h3>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800 pt-2 sm:pt-0">
-                        <span className="text-base font-bold text-rose-600 dark:text-rose-400">
-                          {formatCurrency(expense.amount)}
-                        </span>
-
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(expense._id, expense.category, expense.amount)}
-                          className="h-8 w-8 hover:bg-rose-500/10 text-rose-500 hover:text-rose-600 dark:text-rose-400"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Daily Total:</span>
+                        <Badge className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-2.5 py-1 shadow-sm">
+                          {formatCurrency(group.total)}
+                        </Badge>
                       </div>
                     </div>
-                  );
-                })}
+
+                    {/* Items List in Daily Document */}
+                    <div className="divide-y divide-amber-100 dark:divide-slate-800/60">
+                      {group.items.map((expense: any) => {
+                        const isSelected = selectedExpenseIds.includes(expense._id);
+                        return (
+                          <div
+                            key={expense._id}
+                            className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:px-4 gap-3 transition-colors ${
+                              isSelected
+                                ? "bg-amber-50/60 dark:bg-amber-950/20"
+                                : "hover:bg-amber-50/30 dark:hover:bg-slate-800/40"
+                            }`}
+                          >
+                            <div className="flex items-start sm:items-center gap-3 min-w-0">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => handleToggleSelect(expense._id)}
+                                className="h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500 accent-amber-600 cursor-pointer mt-1 sm:mt-0 shrink-0"
+                              />
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <Badge variant="outline" className="text-xs font-semibold">
+                                    {expense.category}
+                                  </Badge>
+                                  <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                                    Logged by {expense.addedBy?.name || "Admin"}
+                                  </span>
+                                </div>
+                                <p className="text-sm font-medium text-slate-800 dark:text-slate-200 mt-1">
+                                  {expense.note || "No note recorded"}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800 pt-2 sm:pt-0">
+                              <span className="text-base font-bold text-rose-600 dark:text-rose-400">
+                                {formatCurrency(expense.amount)}
+                              </span>
+
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDelete(expense._id, expense.category, expense.amount)}
+                                className="h-8 w-8 hover:bg-rose-500/10 text-rose-500 hover:text-rose-600 dark:text-rose-400"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </Card>
+                ))}
+
+                {/* Pagination Controls Bar */}
+                {dailyGroups.length > 0 && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-amber-200/60 dark:border-slate-800">
+                    <div className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                      Showing dates <span className="font-bold text-slate-900 dark:text-slate-200">{dailyGroups.length === 0 ? 0 : startIndex + 1}</span> to{" "}
+                      <span className="font-bold text-slate-900 dark:text-slate-200">{Math.min(startIndex + pageSize, dailyGroups.length)}</span> of{" "}
+                      <span className="font-bold text-slate-900 dark:text-slate-200">{dailyGroups.length}</span> date groups ({filteredExpenses.length} total entries)
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={safeCurrentPage <= 1}
+                        onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                        className="h-8 px-3 text-xs font-bold border-amber-300 dark:border-slate-700 hover:bg-amber-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 disabled:opacity-40 cursor-pointer"
+                      >
+                        <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                      </Button>
+
+                      <span className="text-xs font-bold px-3 py-1.5 rounded-lg bg-amber-100/80 dark:bg-slate-800 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-slate-700">
+                        Page {safeCurrentPage} of {totalPages}
+                      </span>
+
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={safeCurrentPage >= totalPages}
+                        onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                        className="h-8 px-3 text-xs font-bold border-amber-300 dark:border-slate-700 hover:bg-amber-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 disabled:opacity-40 cursor-pointer"
+                      >
+                        Next <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
-            </Card>
-          ));
-        })()}
-      </div>
+            );
+          })()}
+        </div>
       )}
 
       {/* Expense Dialog */}
