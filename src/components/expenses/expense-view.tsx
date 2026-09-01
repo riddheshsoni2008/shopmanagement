@@ -53,7 +53,7 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5; // Display 5 daily date groups per page to avoid long scrolling
+  const pageSize = 10; // Exactly 10 expense entries allowed per page
 
   const filteredExpenses = initialData.expenses.filter((e) => {
     if (categoryFilter !== "ALL" && e.category !== categoryFilter) return false;
@@ -418,8 +418,15 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
       ) : (
         <div className="space-y-6">
           {(() => {
+            const totalItems = filteredExpenses.length;
+            const totalPages = Math.ceil(totalItems / pageSize) || 1;
+            const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
+            const startIndex = (safeCurrentPage - 1) * pageSize;
+            const currentPageExpenses = filteredExpenses.slice(startIndex, startIndex + pageSize);
+
+            // Group only the 10 expenses of current page by Date
             const dailyGroupsMap: Record<string, { dateStr: string; formattedDate: string; total: number; items: any[] }> = {};
-            filteredExpenses.forEach((expense: any) => {
+            currentPageExpenses.forEach((expense: any) => {
               const dateKey = new Date(expense.date).toISOString().split("T")[0];
               if (!dailyGroupsMap[dateKey]) {
                 dailyGroupsMap[dateKey] = {
@@ -432,12 +439,7 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
               dailyGroupsMap[dateKey].items.push(expense);
               dailyGroupsMap[dateKey].total += expense.amount;
             });
-            const dailyGroups = Object.values(dailyGroupsMap);
-
-            const totalPages = Math.ceil(dailyGroups.length / pageSize) || 1;
-            const safeCurrentPage = Math.min(Math.max(1, currentPage), totalPages);
-            const startIndex = (safeCurrentPage - 1) * pageSize;
-            const paginatedGroups = dailyGroups.slice(startIndex, startIndex + pageSize);
+            const paginatedGroups = Object.values(dailyGroupsMap);
 
             return (
               <div className="space-y-6">
@@ -463,7 +465,7 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Daily Total:</span>
+                        <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Subtotal:</span>
                         <Badge className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-2.5 py-1 shadow-sm">
                           {formatCurrency(group.total)}
                         </Badge>
@@ -527,12 +529,12 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
                 ))}
 
                 {/* Pagination Controls Bar */}
-                {dailyGroups.length > 0 && (
+                {totalItems > 0 && (
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-amber-200/60 dark:border-slate-800">
                     <div className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                      Showing dates <span className="font-bold text-slate-900 dark:text-slate-200">{dailyGroups.length === 0 ? 0 : startIndex + 1}</span> to{" "}
-                      <span className="font-bold text-slate-900 dark:text-slate-200">{Math.min(startIndex + pageSize, dailyGroups.length)}</span> of{" "}
-                      <span className="font-bold text-slate-900 dark:text-slate-200">{dailyGroups.length}</span> date groups ({filteredExpenses.length} total entries)
+                      Showing expenses <span className="font-bold text-slate-900 dark:text-slate-200">{totalItems === 0 ? 0 : startIndex + 1}</span> to{" "}
+                      <span className="font-bold text-slate-900 dark:text-slate-200">{Math.min(startIndex + pageSize, totalItems)}</span> of{" "}
+                      <span className="font-bold text-slate-900 dark:text-slate-200">{totalItems}</span> total entries
                     </div>
 
                     <div className="flex items-center gap-2">
