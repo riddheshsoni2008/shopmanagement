@@ -132,7 +132,7 @@ export async function getDashboardMetrics(
           .lean(),
         Sale.find({ userId: tenantId })
           .sort({ createdAt: -1 })
-          .limit(5)
+          .limit(8)
           .select("customerName totalAmount items createdAt")
           .lean(),
       ]);
