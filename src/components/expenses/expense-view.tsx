@@ -122,19 +122,64 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
     ])
   ).filter(Boolean);
 
-  const goldPurchaseTotal = Object.entries(initialData.categoryTotals || {}).reduce(
-    (acc, [cat, amt]) => {
-      if (cat.toLowerCase().includes("gold")) {
-        return acc + amt;
-      }
-      return acc;
-    },
+  // Filter expenses strictly by date range for dynamic summary cards calculation
+  const dateFilteredExpenses = initialData.expenses.filter((e) => {
+    const expenseDate = new Date(e.date);
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      if (expenseDate < start) return false;
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      if (expenseDate > end) return false;
+    }
+    return true;
+  });
+
+  const dynamicTotalExpenses = dateFilteredExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+
+  const dynamicCategoryTotals = dateFilteredExpenses.reduce((acc, e) => {
+    acc[e.category] = (acc[e.category] || 0) + (Number(e.amount) || 0);
+    return acc;
+  }, {} as Record<string, number>);
+
+  const dynamicGoldPurchaseTotal = (Object.entries(dynamicCategoryTotals) as [string, number][]).reduce(
+    (acc, [cat, amt]) => (cat.toLowerCase().includes("gold") ? acc + amt : acc),
     0
   );
 
-  const otherCategories = Object.entries(initialData.categoryTotals || {}).filter(
+  const dynamicOtherCategories = (Object.entries(dynamicCategoryTotals) as [string, number][]).filter(
     ([cat]) => !cat.toLowerCase().includes("gold")
   );
+
+  const handlePreset = (preset: "TODAY" | "THIS_WEEK" | "THIS_MONTH" | "THIS_YEAR") => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const todayStr = `${year}-${month}-${day}`;
+
+    if (preset === "TODAY") {
+      setStartDate(todayStr);
+      setEndDate(todayStr);
+    } else if (preset === "THIS_WEEK") {
+      const w = new Date();
+      w.setDate(now.getDate() - 7);
+      const wYear = w.getFullYear();
+      const wMonth = String(w.getMonth() + 1).padStart(2, "0");
+      const wDay = String(w.getDate()).padStart(2, "0");
+      setStartDate(`${wYear}-${wMonth}-${wDay}`);
+      setEndDate(todayStr);
+    } else if (preset === "THIS_MONTH") {
+      setStartDate(`${year}-${month}-01`);
+      setEndDate(todayStr);
+    } else if (preset === "THIS_YEAR") {
+      setStartDate(`${year}-01-01`);
+      setEndDate(todayStr);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -153,12 +198,12 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
           <CardContent className="min-w-0">
             <div
               className="text-lg sm:text-xl font-bold font-mono text-rose-700 dark:text-rose-400 truncate tracking-tight"
-              title={formatCurrency(initialData.totalExpenses)}
+              title={formatCurrency(dynamicTotalExpenses)}
             >
-              {formatCurrency(initialData.totalExpenses)}
+              {formatCurrency(dynamicTotalExpenses)}
             </div>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 truncate">
-              {initialData.expenses.length} entry/entries
+              {dateFilteredExpenses.length} entry/entries
             </p>
           </CardContent>
         </Card>
@@ -177,9 +222,9 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
           <CardContent className="min-w-0">
             <div
               className="text-lg sm:text-xl font-bold font-mono text-amber-900 dark:text-amber-200 truncate tracking-tight"
-              title={formatCurrency(goldPurchaseTotal)}
+              title={formatCurrency(dynamicGoldPurchaseTotal)}
             >
-              {formatCurrency(goldPurchaseTotal)}
+              {formatCurrency(dynamicGoldPurchaseTotal)}
             </div>
             <p className="mt-1 text-xs text-amber-700 dark:text-amber-400 truncate">
               Raw gold & metal expenses
@@ -188,7 +233,7 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
         </Card>
 
         {/* Other Category Cards */}
-        {otherCategories.map(([cat, total]) => (
+        {dynamicOtherCategories.map(([cat, total]) => (
           <Card key={cat}>
             <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2 min-w-0">
               <CardTitle className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 truncate">
@@ -224,6 +269,61 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
               </option>
             ))}
           </Select>
+
+          {/* Quick Period Filter Buttons */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => handlePreset("TODAY")}
+              className="h-9 px-2.5 text-xs font-bold border-amber-300 dark:border-slate-700 bg-amber-50/50 dark:bg-slate-800 text-amber-900 dark:text-amber-300 hover:bg-amber-100"
+            >
+              Today
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => handlePreset("THIS_WEEK")}
+              className="h-9 px-2.5 text-xs font-bold border-amber-300 dark:border-slate-700 bg-amber-50/50 dark:bg-slate-800 text-amber-900 dark:text-amber-300 hover:bg-amber-100"
+            >
+              This Week
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => handlePreset("THIS_MONTH")}
+              className="h-9 px-2.5 text-xs font-bold border-amber-300 dark:border-slate-700 bg-amber-50/50 dark:bg-slate-800 text-amber-900 dark:text-amber-300 hover:bg-amber-100"
+            >
+              This Month
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => handlePreset("THIS_YEAR")}
+              className="h-9 px-2.5 text-xs font-bold border-amber-300 dark:border-slate-700 bg-amber-50/50 dark:bg-slate-800 text-amber-900 dark:text-amber-300 hover:bg-amber-100"
+            >
+              This Year
+            </Button>
+            {(startDate || endDate || categoryFilter !== "ALL") && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setStartDate("");
+                  setEndDate("");
+                  setCategoryFilter("ALL");
+                }}
+                className="h-9 px-2 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20"
+              >
+                Reset
+              </Button>
+            )}
+          </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-1.5">
