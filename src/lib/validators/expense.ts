@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 export const expenseCategories = [
+  "Gold Purchase",
+  "Silver Purchase",
   "Rent",
   "Salary",
   "Electricity",

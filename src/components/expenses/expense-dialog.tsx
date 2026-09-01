@@ -174,10 +174,21 @@ export function ExpenseDialog({ isOpen, onClose }: ExpenseDialogProps) {
             Description / Memo (Optional)
           </label>
           <Input
-            placeholder="e.g. Monthly shop rent for Main Market Branch"
+            placeholder={
+              selectedCategory === "Gold Purchase"
+                ? "e.g. Bought 50g 22k raw gold / old gold from supplier"
+                : selectedCategory === "Silver Purchase"
+                ? "e.g. Purchased 1kg silver bullion"
+                : "e.g. Monthly shop rent for Main Market Branch"
+            }
             {...register("note")}
             disabled={isSubmitting}
           />
+          {selectedCategory === "Gold Purchase" && (
+            <p className="mt-1 text-[11px] text-amber-700 dark:text-amber-400 font-medium">
+              💡 Gold & metal purchases are automatically aggregated into your total shop expenses and financial reports.
+            </p>
+          )}
         </div>
 
         {/* Action Buttons */}

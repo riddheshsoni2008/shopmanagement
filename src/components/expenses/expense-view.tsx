@@ -11,6 +11,7 @@ import {
   Download,
   CheckSquare,
   Square,
+  Coins,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -121,10 +122,25 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
     ])
   ).filter(Boolean);
 
+  const goldPurchaseTotal = Object.entries(initialData.categoryTotals || {}).reduce(
+    (acc, [cat, amt]) => {
+      if (cat.toLowerCase().includes("gold")) {
+        return acc + amt;
+      }
+      return acc;
+    },
+    0
+  );
+
+  const otherCategories = Object.entries(initialData.categoryTotals || {}).filter(
+    ([cat]) => !cat.toLowerCase().includes("gold")
+  );
+
   return (
     <div className="space-y-8">
       {/* Category Breakdown Cards Grid */}
       <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+        {/* Total Expenses Card */}
         <Card className="border-rose-300 dark:border-rose-500/30 bg-rose-50/70 dark:bg-rose-950/10 col-span-2 sm:col-span-1">
           <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2 min-w-0">
             <CardTitle className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 truncate">
@@ -147,7 +163,32 @@ export function ExpenseView({ initialData }: ExpenseViewProps) {
           </CardContent>
         </Card>
 
-        {Object.entries(initialData.categoryTotals).slice(0, 3).map(([cat, total]) => (
+        {/* Gold Purchase Card */}
+        <Card className="border-amber-300 dark:border-amber-500/40 bg-amber-50/80 dark:bg-amber-950/20 col-span-2 sm:col-span-1 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2 min-w-0">
+            <CardTitle className="text-xs sm:text-sm font-bold text-amber-900 dark:text-amber-300 truncate flex items-center gap-1.5">
+              <span>Gold Purchase</span>
+              <span className="text-[10px] font-normal text-amber-700 dark:text-amber-400">(સોનું ખરીદી)</span>
+            </CardTitle>
+            <div className="rounded-lg bg-amber-100 dark:bg-amber-500/20 p-2 text-amber-600 dark:text-amber-400 shrink-0">
+              <Coins className="h-5 w-5" />
+            </div>
+          </CardHeader>
+          <CardContent className="min-w-0">
+            <div
+              className="text-lg sm:text-xl font-bold font-mono text-amber-900 dark:text-amber-200 truncate tracking-tight"
+              title={formatCurrency(goldPurchaseTotal)}
+            >
+              {formatCurrency(goldPurchaseTotal)}
+            </div>
+            <p className="mt-1 text-xs text-amber-700 dark:text-amber-400 truncate">
+              Raw gold & metal expenses
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Other Category Cards */}
+        {otherCategories.map(([cat, total]) => (
           <Card key={cat}>
             <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2 min-w-0">
               <CardTitle className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 truncate">
