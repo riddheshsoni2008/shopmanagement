@@ -53,7 +53,7 @@ export async function createSale(input: SaleInput): Promise<ActionResult<{ saleI
 
         if (product.quantity < itemInput.qty) {
           throw new Error(
-            `Insufficient stock for "${product.name}". Available: ${product.quantity}, Requested: ${itemInput.qty}`
+            `Insufficient stock quantity for "${product.name}". Available: ${product.quantity} pcs, Requested: ${itemInput.qty} pcs`
           );
         }
 
@@ -61,6 +61,13 @@ export async function createSale(input: SaleInput): Promise<ActionResult<{ saleI
         const rawPWeight = itemInput.productWeight ?? itemInput.weight ?? 0;
         const pUnit = itemInput.productWeightUnit || "g";
         const pWeightGrams = pUnit === "mg" ? rawPWeight / 1000 : rawPWeight;
+        const totalSoldWeight = Number((itemInput.qty * pWeightGrams).toFixed(4));
+
+        if (product.weightPerPiece < totalSoldWeight) {
+          throw new Error(
+            `Insufficient stock weight for "${product.name}". Available weight: ${product.weightPerPiece} g, Requested sale weight: ${totalSoldWeight} g`
+          );
+        }
 
         const rawJWeight = itemInput.jadatarWeight ?? 0;
         const jUnit = itemInput.jadatarWeightUnit || "g";
@@ -78,11 +85,7 @@ export async function createSale(input: SaleInput): Promise<ActionResult<{ saleI
         const netWeight = itemInput.netWeight !== undefined && itemInput.netWeight > 0 ? itemInput.netWeight : calculatedNetWeight;
 
         product.quantity -= itemInput.qty;
-        const totalSoldWeight = itemInput.qty * pWeightGrams;
-        product.weightPerPiece = Math.max(
-          0,
-          Number((product.weightPerPiece - totalSoldWeight).toFixed(4))
-        );
+        product.weightPerPiece = Number((product.weightPerPiece - totalSoldWeight).toFixed(4));
         await product.save({ session });
 
         // Calculate item line total based on Net Weight

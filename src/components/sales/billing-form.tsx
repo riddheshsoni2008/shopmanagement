@@ -249,6 +249,34 @@ export function BillingForm({ products, rates }: BillingFormProps) {
   const onSubmit = async (values: SaleInput) => {
     setIsSubmitting(true);
     try {
+      // Validate items against stock quantity & stock weight
+      for (let i = 0; i < values.items.length; i++) {
+        const item = values.items[i];
+        const selectedProduct = safeProducts.find((p) => p._id === item.productId);
+        if (selectedProduct) {
+          const rawPWeight = Number(item.productWeight ?? item.weight ?? 0);
+          const pUnit = item.productWeightUnit || "g";
+          const pWeightGrams = pUnit === "mg" ? rawPWeight / 1000 : rawPWeight;
+          const totalSoldWeight = Number(((item.qty || 1) * pWeightGrams).toFixed(4));
+
+          if ((item.qty || 1) > selectedProduct.quantity) {
+            toast.error(
+              `Item #${i + 1} (${selectedProduct.name}): Requested quantity (${item.qty} pcs) exceeds available stock (${selectedProduct.quantity} pcs).`
+            );
+            setIsSubmitting(false);
+            return;
+          }
+
+          if (totalSoldWeight > selectedProduct.weightPerPiece) {
+            toast.error(
+              `Item #${i + 1} (${selectedProduct.name}): Requested weight (${totalSoldWeight} g) exceeds available stock weight (${selectedProduct.weightPerPiece} g).`
+            );
+            setIsSubmitting(false);
+            return;
+          }
+        }
+      }
+
       const res = await createSale(values);
       if (res.success) {
         toast.success("Sale bill submitted successfully!");
@@ -490,8 +518,8 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                           >
                             <option value="">-- Choose Stock Item --</option>
                             {safeProducts.map((p) => (
-                              <option key={p._id} value={p._id} disabled={p.quantity <= 0}>
-                                {p.name} ({p.metal} {p.purity} • {p.quantity} in stock)
+                              <option key={p._id} value={p._id} disabled={p.quantity <= 0 || p.weightPerPiece <= 0}>
+                                {p.name} ({p.metal} {p.purity} • {p.quantity} pcs • {p.weightPerPiece}g in stock)
                               </option>
                             ))}
                           </Select>
@@ -583,6 +611,31 @@ export function BillingForm({ products, rates }: BillingFormProps) {
                               = {(Number(watchItems?.[index]?.productWeight || 0) / 1000).toFixed(3)} g
                             </p>
                           )}
+                          {(() => {
+                            const curItem = watchItems?.[index];
+                            if (!curItem?.productId) return null;
+                            const selP = safeProducts.find((p) => p._id === curItem.productId);
+                            if (!selP) return null;
+
+                            const q = Math.max(1, Number(curItem.qty) || 1);
+                            const rawW = Number(curItem.productWeight ?? curItem.weight ?? 0);
+                            const unit = curItem.productWeightUnit || "g";
+                            const wGrams = unit === "mg" ? rawW / 1000 : rawW;
+                            const totalSoldW = Number((q * wGrams).toFixed(4));
+
+                            if (totalSoldW > selP.weightPerPiece) {
+                              return (
+                                <p className="text-[10px] font-semibold text-rose-600 dark:text-rose-400 mt-1">
+                                  ⚠️ Exceeds stock weight! (Max: {selP.weightPerPiece} g)
+                                </p>
+                              );
+                            }
+                            return (
+                              <p className="text-[9px] text-slate-500 dark:text-slate-400 mt-0.5">
+                                Available: {selP.weightPerPiece} g
+                              </p>
+                            );
+                          })()}
                         </div>
 
                         {/* Rate per gram */}
