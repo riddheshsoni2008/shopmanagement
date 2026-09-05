@@ -28,10 +28,19 @@ export async function loginUser(values: LoginInput): Promise<ActionResult<string
   }
 
   try {
+    await connectDB();
+    const existingUser = await User.findOne({
+      email: validated.data.email.toLowerCase().trim(),
+    }).select("businessCategory");
+
+    const targetDashboard = existingUser?.businessCategory
+      ? `/dashboard/${existingUser.businessCategory}/dashboard`
+      : "/dashboard";
+
     await signIn("credentials", {
       email: validated.data.email.toLowerCase().trim(),
       password: validated.data.password,
-      redirectTo: "/dashboard",
+      redirectTo: targetDashboard,
     });
     return { success: true, data: "Logged in successfully" };
   } catch (error: any) {
@@ -107,12 +116,25 @@ export async function registerUser(
       };
     }
 
+    const defaultShopNames: Record<string, string> = {
+      jewelry: "Zeal Jewellers®",
+      studio: "Camera Studio",
+      clothing: "Clothing Boutique",
+    };
+
+    const finalShopName =
+      validated.data.shopName?.trim() ||
+      defaultShopNames[validated.data.businessCategory] ||
+      "Business Shop";
+
     const hashedPassword = await bcrypt.hash(validated.data.password, 10);
     await User.create({
       name: validated.data.name.trim(),
       email: validated.data.email.toLowerCase().trim(),
       passwordHash: hashedPassword,
       role: validated.data.role || "admin",
+      businessCategory: validated.data.businessCategory,
+      shopName: finalShopName,
     });
 
     return {

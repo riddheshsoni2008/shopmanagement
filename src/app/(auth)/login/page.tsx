@@ -24,6 +24,11 @@ import {
   LogIn,
   UserPlus,
   CheckCircle2,
+  Gem,
+  Camera,
+  Scissors,
+  Building2,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +42,7 @@ export default function LoginPage() {
   const [showRegConfirm, setShowRegConfirm] = useState(false);
   const [showResetNew, setShowResetNew] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [selectedCat, setSelectedCat] = useState<"jewelry" | "studio" | "clothing">("jewelry");
 
   // 1. Sign In Form
   const {
@@ -57,6 +63,7 @@ export default function LoginPage() {
     register: registerReg,
     handleSubmit: handleSubmitReg,
     reset: resetRegForm,
+    setValue: setRegValue,
     formState: { errors: regErrors },
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
@@ -66,6 +73,8 @@ export default function LoginPage() {
       password: "",
       confirmPassword: "",
       role: "admin",
+      businessCategory: "jewelry",
+      shopName: "",
     },
   });
 
@@ -106,7 +115,11 @@ export default function LoginPage() {
   const onRegisterSubmit = async (values: RegisterInput) => {
     setIsPending(true);
     try {
-      const res = await registerUser(values);
+      const payload: RegisterInput = {
+        ...values,
+        businessCategory: selectedCat,
+      };
+      const res = await registerUser(payload);
       if (res.success) {
         toast.success(res.data);
         resetRegForm();
@@ -311,6 +324,118 @@ export default function LoginPage() {
           {/* TAB 2: CREATE ACCOUNT FORM */}
           {activeTab === "register" && (
             <form className="space-y-4" onSubmit={handleSubmitReg(onRegisterSubmit)}>
+              {/* BUSINESS CATEGORY SELECTOR */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+                  Business Category <span className="text-amber-500">*</span>
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {/* Jewelry */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedCat("jewelry");
+                      setRegValue("businessCategory", "jewelry");
+                    }}
+                    className={`relative flex flex-col items-center justify-center p-2.5 rounded-xl border text-center transition-all duration-200 ${
+                      selectedCat === "jewelry"
+                        ? "border-amber-500 bg-amber-500/10 text-amber-950 dark:text-amber-200 ring-2 ring-amber-500/30 shadow-xs"
+                        : "border-slate-200 dark:border-slate-800 hover:border-amber-300 dark:hover:border-amber-600/50 text-slate-600 dark:text-slate-400 bg-white/60 dark:bg-slate-900/60"
+                    }`}
+                  >
+                    {selectedCat === "jewelry" && (
+                      <span className="absolute top-1.5 right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-500 text-white">
+                        <Check className="h-2.5 w-2.5 stroke-[3]" />
+                      </span>
+                    )}
+                    <div className={`p-1.5 rounded-lg mb-1 ${selectedCat === "jewelry" ? "bg-amber-500/20 text-amber-600 dark:text-amber-400" : "bg-slate-100 dark:bg-slate-800 text-slate-500"}`}>
+                      <Gem className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-bold leading-tight">Jewelry</span>
+                    <span className="text-[9px] text-slate-400 dark:text-slate-500 mt-0.5">Stock & Gold</span>
+                  </button>
+
+                  {/* Studio */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedCat("studio");
+                      setRegValue("businessCategory", "studio");
+                    }}
+                    className={`relative flex flex-col items-center justify-center p-2.5 rounded-xl border text-center transition-all duration-200 ${
+                      selectedCat === "studio"
+                        ? "border-violet-500 bg-violet-500/10 text-violet-950 dark:text-violet-200 ring-2 ring-violet-500/30 shadow-xs"
+                        : "border-slate-200 dark:border-slate-800 hover:border-violet-300 dark:hover:border-violet-600/50 text-slate-600 dark:text-slate-400 bg-white/60 dark:bg-slate-900/60"
+                    }`}
+                  >
+                    {selectedCat === "studio" && (
+                      <span className="absolute top-1.5 right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-violet-500 text-white">
+                        <Check className="h-2.5 w-2.5 stroke-[3]" />
+                      </span>
+                    )}
+                    <div className={`p-1.5 rounded-lg mb-1 ${selectedCat === "studio" ? "bg-violet-500/20 text-violet-600 dark:text-violet-400" : "bg-slate-100 dark:bg-slate-800 text-slate-500"}`}>
+                      <Camera className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-bold leading-tight">Studio</span>
+                    <span className="text-[9px] text-slate-400 dark:text-slate-500 mt-0.5">Shoots & Gear</span>
+                  </button>
+
+                  {/* Clothing */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedCat("clothing");
+                      setRegValue("businessCategory", "clothing");
+                    }}
+                    className={`relative flex flex-col items-center justify-center p-2.5 rounded-xl border text-center transition-all duration-200 ${
+                      selectedCat === "clothing"
+                        ? "border-rose-500 bg-rose-500/10 text-rose-950 dark:text-rose-200 ring-2 ring-rose-500/30 shadow-xs"
+                        : "border-slate-200 dark:border-slate-800 hover:border-rose-300 dark:hover:border-rose-600/50 text-slate-600 dark:text-slate-400 bg-white/60 dark:bg-slate-900/60"
+                    }`}
+                  >
+                    {selectedCat === "clothing" && (
+                      <span className="absolute top-1.5 right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-rose-500 text-white">
+                        <Check className="h-2.5 w-2.5 stroke-[3]" />
+                      </span>
+                    )}
+                    <div className={`p-1.5 rounded-lg mb-1 ${selectedCat === "clothing" ? "bg-rose-500/20 text-rose-600 dark:text-rose-400" : "bg-slate-100 dark:bg-slate-800 text-slate-500"}`}>
+                      <Scissors className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-bold leading-tight">Clothing</span>
+                    <span className="text-[9px] text-slate-400 dark:text-slate-500 mt-0.5">Tailoring & Fits</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* SHOP / BUSINESS NAME */}
+              <div>
+                <label
+                  htmlFor="reg-shopName"
+                  className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1"
+                >
+                  Shop / Studio Name <span className="text-slate-400 font-normal lowercase text-[10px]">(optional)</span>
+                </label>
+                <div className="relative">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-amber-600 dark:text-amber-400">
+                    <Building2 className="h-4 w-4" />
+                  </div>
+                  <Input
+                    id="reg-shopName"
+                    type="text"
+                    placeholder={
+                      selectedCat === "jewelry"
+                        ? "e.g. Zeal Jewellers"
+                        : selectedCat === "studio"
+                        ? "e.g. Dreamlens Photography Studio"
+                        : "e.g. Royal Fashion Boutique"
+                    }
+                    className="pl-10 h-10 text-sm"
+                    disabled={isPending}
+                    {...registerReg("shopName")}
+                  />
+                </div>
+              </div>
+
               <div>
                 <label
                   htmlFor="reg-name"
