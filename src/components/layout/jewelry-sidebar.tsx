@@ -68,7 +68,6 @@ export function JewelrySidebar({ user, shopName }: JewelrySidebarProps) {
         <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
           Jewelry Management
         </div>
-        {navItems.map((item) => {
         {visibleItems.map((item) => {
           const Icon = item.icon;
           const isActive =

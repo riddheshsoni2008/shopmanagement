@@ -25,7 +25,6 @@ export interface IOrder extends Document {
   orderNumber: string;
   orderType: string;
   orderDate: Date;
-  dueDate?: Date;
   dueDate?: Date | null;
   status: OrderStatus;
   agreedAmount: number;

@@ -8,7 +8,6 @@ import type { BusinessCategory } from "@/lib/category-config";
 import type { OrderDashboardMetrics } from "@/actions/orders";
 import {
   TrendingUp, DollarSign, Coins, ClipboardList,
-  Clock, CheckCircle2, Plus, ArrowRight,
   Clock, CheckCircle2, Plus, ArrowRight, Filter,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -24,7 +23,6 @@ const STATUS_STYLES: Record<string, string> = {
 
 interface OrderDashboardProps {
   category: "studio" | "clothing";
-  metrics: OrderDashboardMetrics;
   metrics: OrderDashboardMetrics & { period?: string; status?: string };
 }
 

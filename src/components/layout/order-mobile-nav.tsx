@@ -18,7 +18,6 @@ interface OrderMobileNavProps {
   user: { name?: string | null; email?: string | null; role?: "admin" | "staff" };
   category: BusinessCategory;
   shopName?: string;
-}cd 
 } 
 
 export function OrderMobileNav({ isOpen, onClose, user, category, shopName }: OrderMobileNavProps) {

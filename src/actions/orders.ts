@@ -481,11 +481,6 @@ export interface OrderDashboardFilterOptions {
 
 export async function getOrderDashboardMetrics(
   businessCategory: "studio" | "clothing",
-  options: {
-    startDate?: string;
-    endDate?: string;
-  } = {}
-): Promise<ActionResult<OrderDashboardMetrics>> {
   options: OrderDashboardFilterOptions = {}
 ): Promise<ActionResult<OrderDashboardMetrics & { period: string; status: string }>> {
   try {
@@ -495,23 +490,11 @@ export async function getOrderDashboardMetrics(
     await connectDB();
 
     const now = new Date();
-    const defaultStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const start = options.startDate ? new Date(options.startDate) : defaultStart;
-    const end = options.endDate ? new Date(options.endDate) : now;
     const period = options.period || "month";
     let start: Date | null = null;
     let end: Date = options.endDate ? new Date(options.endDate) : now;
     end.setHours(23, 59, 59, 999);
 
-    const [allOrders, expenseAgg, statusAgg] = await Promise.all([
-      Order.find({
-        userId: tenantId,
-        businessCategory,
-        createdAt: { $gte: start, $lte: end },
-      })
-        .sort({ createdAt: -1 })
-        .limit(8)
-        .lean(),
     if (options.startDate) {
       start = new Date(options.startDate);
     } else if (period === "today") {
@@ -554,11 +537,9 @@ export async function getOrderDashboardMetrics(
           $match: {
             userId: tenantId,
             businessCategory,
-            date: { $gte: start, $lte: end },
             ...(start ? { date: { $gte: start, $lte: end } } : {}),
           },
         },
-        { $group: { _id: "$orderId", total: { $sum: "$amount" } } },
         { $group: { _id: null, total: { $sum: "$amount" } } },
       ]),
       Order.aggregate([
@@ -576,19 +557,11 @@ export async function getOrderDashboardMetrics(
       ]),
     ]);
 
-    const expenseMap: Record<string, number> = {};
-    for (const e of expenseAgg) {
-      expenseMap[e._id.toString()] = e.total;
     const expMap: Record<string, number> = {};
     for (const e of recentExpAgg) {
       expMap[e._id.toString()] = e.total;
     }
 
-    const totalRevenue = allOrders.reduce((s, o: any) => s + o.agreedAmount, 0);
-    const totalExpenses = allOrders.reduce(
-      (s, o: any) => s + (expenseMap[o._id.toString()] || 0),
-      0
-    );
     const totalRevenue = aggTotals[0]?.totalRevenue || 0;
     const totalOrders = aggTotals[0]?.totalOrders || 0;
     const totalExpenses = expenseAgg[0]?.total || 0;
@@ -599,8 +572,6 @@ export async function getOrderDashboardMetrics(
       statusMap[s._id] = s.count;
     }
 
-    const recentOrders = allOrders.map((o: any) =>
-      formatOrder(o, [{ amount: expenseMap[o._id.toString()] || 0 }])
     const formattedRecent = recentOrders.map((o: any) =>
       formatOrder(o, [{ amount: expMap[o._id.toString()] || 0 }])
     );
@@ -610,15 +581,12 @@ export async function getOrderDashboardMetrics(
       data: {
         totalRevenue,
         totalExpenses,
-        totalProfit: totalRevenue - totalExpenses,
-        totalOrders: allOrders.length,
         totalProfit,
         totalOrders,
         pendingOrders:
           (statusMap["received"] || 0) + (statusMap["in_progress"] || 0),
         completedOrders:
           (statusMap["completed"] || 0) + (statusMap["delivered"] || 0),
-        recentOrders,
         recentOrders: formattedRecent,
         period,
         status: options.status || "all",
