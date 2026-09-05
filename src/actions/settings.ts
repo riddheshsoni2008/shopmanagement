@@ -136,3 +136,81 @@ export async function updateRateSettings(
     return { success: false, error: "Failed to update rate settings" };
   }
 }
+
+export interface ShopProfileData {
+  shopName: string;
+  name: string;
+  email: string;
+  businessCategory?: string;
+}
+
+export async function getShopProfile(): Promise<ActionResult<ShopProfileData>> {
+  try {
+    const session = await auth();
+    const tenantId = await getTenantId();
+    if (!tenantId) {
+      return { success: false, error: "Unauthorized access" };
+    }
+
+    await connectDB();
+    let user = await User.findById(tenantId).lean();
+    if (!user && session?.user?.id) {
+      user = await User.findById(session.user.id).lean();
+    }
+    if (!user) {
+      return { success: false, error: "User profile not found" };
+    }
+
+    return {
+      success: true,
+      data: {
+        shopName: user.shopName || "",
+        name: user.name || "",
+        email: user.email || "",
+        businessCategory: user.businessCategory,
+      },
+    };
+  } catch (error: any) {
+    console.error("Error fetching shop profile:", error);
+    return { success: false, error: "Failed to fetch shop profile" };
+  }
+}
+
+export async function updateShopProfile(input: {
+  shopName: string;
+  name?: string;
+}): Promise<ActionResult<string>> {
+  try {
+    const session = await auth();
+    const tenantId = await getTenantId();
+    if (!tenantId || !session?.user?.id) {
+      return { success: false, error: "Unauthorized access" };
+    }
+
+    if (!input.shopName || !input.shopName.trim()) {
+      return { success: false, error: "Shop/Business name cannot be empty" };
+    }
+
+    await connectDB();
+    const updateData: Record<string, any> = {
+      shopName: input.shopName.trim(),
+    };
+    if (input.name && input.name.trim()) {
+      updateData.name = input.name.trim();
+    }
+
+    await User.findByIdAndUpdate(tenantId, updateData);
+
+    // Invalidate memory cache for this tenant
+    cachedRateDataMap.delete(tenantId.toString());
+
+    revalidatePath("/", "layout");
+    revalidatePath("/dashboard", "layout");
+
+    return { success: true, data: "Business settings saved successfully" };
+  } catch (error: any) {
+    console.error("Error updating shop profile:", error);
+    return { success: false, error: "Failed to update business settings" };
+  }
+}
+
