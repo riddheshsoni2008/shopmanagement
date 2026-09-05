@@ -15,6 +15,14 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
+  const cat = (session.user as any)?.businessCategory;
+  if (cat === "studio") {
+    redirect("/dashboard/studio/dashboard");
+  }
+  if (cat === "clothing") {
+    redirect("/dashboard/clothing/dashboard");
+  }
+
   const rateResult = await getRateSettings();
   const rates = rateResult.success ? rateResult.data : null;
 

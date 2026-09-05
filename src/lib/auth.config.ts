@@ -15,7 +15,12 @@ export const authConfig: NextAuthConfig = {
       if (isOnLogin) {
         if (isLoggedIn) {
           const cat = (auth?.user as any)?.businessCategory;
-          const dest = cat ? `/dashboard/${cat}/dashboard` : "/select-category";
+          const dest =
+            cat === "studio"
+              ? "/dashboard/studio/dashboard"
+              : cat === "clothing"
+              ? "/dashboard/clothing/dashboard"
+              : "/dashboard";
           return Response.redirect(new URL(dest, nextUrl));
         }
         return true;
@@ -33,11 +38,6 @@ export const authConfig: NextAuthConfig = {
       const userRole = (auth?.user as any)?.role;
       const cat = (auth?.user as any)?.businessCategory;
 
-      // If no category set yet, force to select-category
-      if (!cat && !isOnSelectCategory) {
-        return Response.redirect(new URL("/select-category", nextUrl));
-      }
-
       // Role check for admin-only pages (apply to all category prefixes)
       const adminOnlySegments = ["/expenses", "/reports", "/settings"];
       const isAdminOnlyPath = adminOnlySegments.some((seg) =>
@@ -45,7 +45,13 @@ export const authConfig: NextAuthConfig = {
       );
 
       if (isAdminOnlyPath && userRole !== "admin") {
-        return Response.redirect(new URL(`/dashboard/${cat}/dashboard`, nextUrl));
+        const fallback =
+          cat === "studio"
+            ? "/dashboard/studio/dashboard"
+            : cat === "clothing"
+            ? "/dashboard/clothing/dashboard"
+            : "/dashboard";
+        return Response.redirect(new URL(fallback, nextUrl));
       }
 
       return true;

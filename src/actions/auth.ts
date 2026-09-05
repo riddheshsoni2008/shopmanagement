@@ -33,9 +33,12 @@ export async function loginUser(values: LoginInput): Promise<ActionResult<string
       email: validated.data.email.toLowerCase().trim(),
     }).select("businessCategory");
 
-    const targetDashboard = existingUser?.businessCategory
-      ? `/dashboard/${existingUser.businessCategory}/dashboard`
-      : "/dashboard";
+    const targetDashboard =
+      existingUser?.businessCategory === "studio"
+        ? "/dashboard/studio/dashboard"
+        : existingUser?.businessCategory === "clothing"
+        ? "/dashboard/clothing/dashboard"
+        : "/dashboard";
 
     await signIn("credentials", {
       email: validated.data.email.toLowerCase().trim(),

@@ -1,5 +1,6 @@
 import { getDashboardMetrics, DashboardPeriod } from "@/actions/reports";
 import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
@@ -31,6 +32,18 @@ export default async function DashboardPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const session = await auth();
+  if (!session?.user) {
+    redirect("/login");
+  }
+
+  // If user belongs to Studio or Clothing, route them directly to their dedicated system
+  const cat = (session.user as any)?.businessCategory;
+  if (cat === "studio") {
+    redirect("/dashboard/studio/dashboard");
+  }
+  if (cat === "clothing") {
+    redirect("/dashboard/clothing/dashboard");
+  }
   const isAdmin = (session?.user as any)?.role === "admin";
 
   const params = await searchParams;

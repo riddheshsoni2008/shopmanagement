@@ -11,7 +11,6 @@ import {
   Store,
   User as UserIcon,
   Mail,
-  ArrowRightLeft,
   CheckCircle2,
   Sparkles,
   Loader2,
@@ -186,13 +185,6 @@ export function OrderSettings({ category, profile }: OrderSettingsProps) {
                   </p>
                 </div>
               </div>
-
-              <Link href="/select-category">
-                <Button variant="outline" size="sm" className="text-xs shrink-0 w-full sm:w-auto">
-                  <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5" />
-                  Switch Business Category
-                </Button>
-              </Link>
             </div>
 
             {/* Active Features Checklist */}

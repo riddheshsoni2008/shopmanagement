@@ -2,17 +2,25 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { OrderSidebar } from "@/components/layout/order-sidebar";
 import { OrderNavbar } from "@/components/layout/order-navbar";
-import { getRateSettings } from "@/actions/settings";
+import { connectDB } from "@/lib/db";
+import { User } from "@/models/User";
 
 export default async function StudioLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const cat = (session.user as any).businessCategory;
-  if (cat && cat !== "studio") redirect(`/dashboard/${cat}/dashboard`);
+  const cat = (session.user as any)?.businessCategory;
+  if (cat !== "studio") {
+    if (cat === "clothing") redirect("/dashboard/clothing/dashboard");
+    else redirect("/dashboard");
+  }
 
-  const rateResult = await getRateSettings();
-  const shopName = rateResult.success ? rateResult.data?.shopName : undefined;
+  await connectDB();
+  const userDoc = await User.findById(session.user.id).select("shopName").lean();
+  const shopName =
+    userDoc?.shopName && !userDoc.shopName.includes("Zeal Jewellers")
+      ? userDoc.shopName
+      : "Camera Studio";
 
   return (
     <div className="flex min-h-screen bg-[#faf8f5] dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased selection:bg-violet-500 selection:text-white transition-colors duration-200">

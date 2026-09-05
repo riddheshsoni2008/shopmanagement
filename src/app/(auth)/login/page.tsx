@@ -98,7 +98,7 @@ export default function LoginPage() {
     try {
       const res = await loginUser(values);
       if (res.success) {
-        toast.success("Welcome to Zeal Jewellers!");
+        toast.success("Signed in successfully!");
       } else {
         toast.error(res.error || "Invalid email or password");
       }

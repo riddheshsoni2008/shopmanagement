@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, ClipboardList, PlusCircle, Users,
-  Camera, Scissors, BarChart3, Settings, LogOut, X, RefreshCw,
+  Camera, Scissors, BarChart3, Settings, LogOut, X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logoutUser } from "@/actions/auth";
@@ -80,11 +80,6 @@ export function OrderMobileNav({ isOpen, onClose, user, category, shopName }: Or
               </Link>
             );
           })}
-          <Link href="/select-category" onClick={onClose}
-            className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">
-            <RefreshCw className="h-5 w-5" />
-            Change Category
-          </Link>
         </nav>
 
         <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">

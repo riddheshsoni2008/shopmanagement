@@ -82,7 +82,12 @@ export default function SelectCategoryPage() {
       if (res.success) {
         toast.success(`${CATEGORIES.find((c) => c.id === id)?.label} selected!`);
         // Force a full navigation so the JWT is refreshed on the next request
-        window.location.href = `/dashboard/${id}/dashboard`;
+        window.location.href =
+          id === "studio"
+            ? "/dashboard/studio/dashboard"
+            : id === "clothing"
+            ? "/dashboard/clothing/dashboard"
+            : "/dashboard";
       } else {
         toast.error(res.error || "Failed to set category");
         setIsPending(false);
