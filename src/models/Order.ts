@@ -7,6 +7,7 @@ export interface IStudioExtra {
   photographerName?: string;
   photographerId?: mongoose.Types.ObjectId;
   venueAddress?: string;
+  assignedEquipment?: string[];
 }
 
 export interface IClothingExtra {
@@ -25,9 +26,13 @@ export interface IOrder extends Document {
   orderType: string;
   orderDate: Date;
   dueDate?: Date;
+  dueDate?: Date | null;
   status: OrderStatus;
   agreedAmount: number;
   advanceReceived: number;
+  balanceDue: number;
+  totalExpenses: number;
+  profit: number;
   description?: string;
   studioExtra?: IStudioExtra;
   clothingExtra?: IClothingExtra;
@@ -40,6 +45,7 @@ const StudioExtraSchema = new Schema<IStudioExtra>(
     photographerName: { type: String, trim: true, default: "" },
     photographerId: { type: Schema.Types.ObjectId, ref: "User", default: null },
     venueAddress: { type: String, trim: true, default: "" },
+    assignedEquipment: [{ type: String, trim: true }],
   },
   { _id: false }
 );
@@ -76,6 +82,9 @@ const OrderSchema = new Schema<IOrder>(
     },
     agreedAmount: { type: Number, required: true, min: 0 },
     advanceReceived: { type: Number, required: true, default: 0, min: 0 },
+    balanceDue: { type: Number, default: 0 },
+    totalExpenses: { type: Number, default: 0 },
+    profit: { type: Number, default: 0 },
     description: { type: String, trim: true, default: "" },
     studioExtra: { type: StudioExtraSchema, default: null },
     clothingExtra: { type: ClothingExtraSchema, default: null },
@@ -85,6 +94,7 @@ const OrderSchema = new Schema<IOrder>(
 
 OrderSchema.index({ userId: 1, businessCategory: 1, status: 1 });
 OrderSchema.index({ userId: 1, businessCategory: 1, createdAt: -1 });
+OrderSchema.index({ userId: 1, businessCategory: 1, orderDate: -1 });
 OrderSchema.index({ userId: 1, clientId: 1 });
 OrderSchema.index({ userId: 1, orderNumber: 1 }, { unique: true });
 

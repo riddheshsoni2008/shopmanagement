@@ -34,6 +34,7 @@ const ClientSchema = new Schema<IClient>(
 
 ClientSchema.index({ userId: 1, businessCategory: 1, createdAt: -1 });
 ClientSchema.index({ userId: 1, phone: 1 });
+ClientSchema.index({ userId: 1, businessCategory: 1, phone: 1 });
 
 export const Client: Model<IClient> =
   mongoose.models.Client || mongoose.model<IClient>("Client", ClientSchema);

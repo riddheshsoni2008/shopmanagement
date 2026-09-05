@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { CATEGORY_CONFIGS, ORDER_STATUSES } from "@/lib/category-config";
 import type { BusinessCategory } from "@/lib/category-config";
@@ -8,6 +9,7 @@ import type { OrderDashboardMetrics } from "@/actions/orders";
 import {
   TrendingUp, DollarSign, Coins, ClipboardList,
   Clock, CheckCircle2, Plus, ArrowRight,
+  Clock, CheckCircle2, Plus, ArrowRight, Filter,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,9 +25,12 @@ const STATUS_STYLES: Record<string, string> = {
 interface OrderDashboardProps {
   category: "studio" | "clothing";
   metrics: OrderDashboardMetrics;
+  metrics: OrderDashboardMetrics & { period?: string; status?: string };
 }
 
 export function OrderDashboard({ category, metrics }: OrderDashboardProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const cfg = CATEGORY_CONFIGS[category];
   const base = `/dashboard/${category}`;
   const isStudio = category === "studio";
@@ -40,6 +45,25 @@ export function OrderDashboard({ category, metrics }: OrderDashboardProps) {
     ? "bg-violet-100 dark:bg-violet-500/20 text-violet-700 dark:text-violet-400"
     : "bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400";
 
+  const periodLabel =
+    metrics.period === "today"
+      ? "Today"
+      : metrics.period === "year"
+      ? "This Year"
+      : metrics.period === "all"
+      ? "All Time"
+      : "This Month";
+
+  const updateFilters = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams?.toString() || "");
+    if (value === "all" || (key === "period" && value === "month")) {
+      params.delete(key);
+    } else {
+      params.set(key, value);
+    }
+    router.push(`${base}/dashboard?${params.toString()}`);
+  };
+
   return (
     <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-300">
       {/* Header */}
@@ -50,6 +74,7 @@ export function OrderDashboard({ category, metrics }: OrderDashboardProps) {
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
             This month&apos;s revenue, expenses, and order overview.
+            Real-time orders pipeline, revenue, expenses, and job profitability.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -66,12 +91,61 @@ export function OrderDashboard({ category, metrics }: OrderDashboardProps) {
         </div>
       </div>
 
+      {/* Period and Status Filters */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        {/* Period Selector Tabs */}
+        <div className="inline-flex items-center gap-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-1 shadow-xs">
+          {[
+            { value: "today", label: "Today" },
+            { value: "month", label: "This Month" },
+            { value: "year", label: "This Year" },
+            { value: "all", label: "All Time" },
+          ].map((tab) => {
+            const active = (metrics.period || "month") === tab.value;
+            return (
+              <button
+                key={tab.value}
+                onClick={() => updateFilters("period", tab.value)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  active
+                    ? isStudio
+                      ? "bg-violet-600 text-white shadow-xs"
+                      : "bg-rose-600 text-white shadow-xs"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Status Dropdown Filter */}
+        <div className="flex items-center gap-2">
+          <Filter className="h-3.5 w-3.5 text-slate-400" />
+          <span className="text-xs text-slate-500 font-medium">Status:</span>
+          <select
+            value={metrics.status || "all"}
+            onChange={(e) => updateFilters("status", e.target.value)}
+            className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-slate-400"
+          >
+            <option value="all">All Statuses</option>
+            {ORDER_STATUSES.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {/* Metrics Cards */}
       <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
         <Card className={accentRevenue}>
           <CardHeader className="flex flex-row items-center justify-between pb-2 gap-2">
             <CardTitle className="text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300">
               This Month&apos;s Revenue
+              {periodLabel}&apos;s Revenue
             </CardTitle>
             <div className={`rounded-lg p-2 shrink-0 ${accentIcon}`}>
               <TrendingUp className="h-5 w-5" />
@@ -83,6 +157,7 @@ export function OrderDashboard({ category, metrics }: OrderDashboardProps) {
             </div>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               {metrics.totalOrders} order(s) this period
+              {metrics.totalOrders} order(s) {metrics.status && metrics.status !== "all" ? `(${metrics.status.replace("_", " ")})` : ""}
             </p>
           </CardContent>
         </Card>

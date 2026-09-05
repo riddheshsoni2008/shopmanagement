@@ -30,6 +30,12 @@ const navItems = [
 export function JewelrySidebar({ user, shopName }: JewelrySidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const isAdmin = user.role === "admin";
+
+  const adminOnly = ["/expenses", "/reports", "/settings"];
+  const visibleItems = navItems.filter(
+    (item) => !adminOnly.some((p) => item.href.endsWith(p)) || isAdmin
+  );
 
   const handleLogout = async () => {
     const res = await logoutUser();
@@ -63,6 +69,7 @@ export function JewelrySidebar({ user, shopName }: JewelrySidebarProps) {
           Jewelry Management
         </div>
         {navItems.map((item) => {
+        {visibleItems.map((item) => {
           const Icon = item.icon;
           const isActive =
             pathname === item.href ||

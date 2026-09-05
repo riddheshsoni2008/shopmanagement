@@ -19,6 +19,7 @@ interface OrderMobileNavProps {
   category: BusinessCategory;
   shopName?: string;
 }cd 
+} 
 
 export function OrderMobileNav({ isOpen, onClose, user, category, shopName }: OrderMobileNavProps) {
   const pathname = usePathname();
