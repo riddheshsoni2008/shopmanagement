@@ -1,5 +1,7 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
+export type BusinessCategory = "jewelry" | "studio" | "clothing";
+
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId;
   name: string;
@@ -11,6 +13,7 @@ export interface IUser extends Document {
   goldRate18k?: number;
   silverRate?: number;
   shopName?: string;
+  businessCategory?: BusinessCategory;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -33,6 +36,11 @@ const UserSchema = new Schema<IUser>(
     goldRate18k: { type: Number, default: 5900 },
     silverRate: { type: Number, default: 85 },
     shopName: { type: String, default: "Zeal Jewellers®" },
+    businessCategory: {
+      type: String,
+      enum: ["jewelry", "studio", "clothing"],
+      default: null,
+    },
   },
   {
     timestamps: true,
